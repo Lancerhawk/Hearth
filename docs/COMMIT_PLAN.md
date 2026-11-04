@@ -31,8 +31,10 @@ main
 ├── feature/expenses
 ├── feature/savings
 ├── feature/charges
+├── feature/month-calendar
 ├── feature/recurring-bills
 ├── feature/dashboard
+├── feature/statements-export
 ├── feature/notifications
 ├── feature/settings-polish
 └── chore/seed-readme-qa
@@ -93,8 +95,8 @@ Branch column = where that commit is created before merge.
 
 | # | Branch | Commit message | What lands |
 |---|--------|----------------|------------|
-| 07 | `chore/docker-postgres` | `chore: add Docker Compose Postgres for Hearth` | `docker-compose.yml`, container `hearth-postgres` |
-| 08 | `chore/docker-postgres` | `chore: add env examples for local database` | `.env.example`, documented `DATABASE_URL` |
+| 07 | `chore/docker-postgres` | `chore: add Docker Compose Postgres and Mailpit` | `hearth-postgres` + `hearth-mailpit` |
+| 08 | `chore/docker-postgres` | `chore: add env examples for database and SMTP` | `DATABASE_URL` + Mailpit SMTP vars |
 | 09 | `chore/prisma-foundation` | `chore: initialize Prisma with PostgreSQL` | Prisma client singleton, schema stub |
 | 10 | `chore/prisma-foundation` | `chore: add core domain Prisma models` | User/workspace/budget/entry/bill/notification models |
 | 11 | `chore/prisma-foundation` | `chore: create initial migration and generate client` | first migration applied locally |
@@ -133,10 +135,11 @@ Branch column = where that commit is created before merge.
 
 | # | Commit message | What lands |
 |---|----------------|------------|
-| 20 | `feat(members): invite member by email with secure token` | invite create + revoke |
-| 21 | `feat(members): accept invite flow and join workspace` | `/invite/[token]` |
-| 22 | `feat(members): members list with role change and remove` | members page |
-| 23 | `feat(members): notify owners when invite is accepted` | notification rows |
+| 20 | `feat(mail): add SMTP mailer pointed at Mailpit` | `lib/mail`, invite template |
+| 21 | `feat(members): invite member by email with secure token` | create + send email + revoke |
+| 22 | `feat(members): accept invite signup and join workspace` | `/invite/[token]` register/login |
+| 23 | `feat(members): members list with role change and remove` | members page |
+| 24 | `feat(members): notify owners when invite is accepted` | notification rows |
 
 **Merge → `main`**
 
@@ -146,9 +149,9 @@ Branch column = where that commit is created before merge.
 
 | # | Commit message | What lands |
 |---|----------------|------------|
-| 24 | `feat(ui): add authenticated app shell layout` | sidebar, header, mobile sheet |
-| 25 | `feat(ui): add workspace-scoped navigation routes` | nav links under `[workspaceSlug]` |
-| 26 | `feat(ui): add empty states and shared page header` | reusable layout pieces |
+| 25 | `feat(ui): add authenticated app shell layout` | sidebar, header, mobile sheet |
+| 26 | `feat(ui): add workspace-scoped navigation routes` | nav links under `[workspaceSlug]` |
+| 27 | `feat(ui): add empty states and shared page header` | reusable layout pieces |
 
 **Merge → `main`**
 
@@ -158,8 +161,8 @@ Branch column = where that commit is created before merge.
 
 | # | Commit message | What lands |
 |---|----------------|------------|
-| 27 | `feat(categories): CRUD categories for a workspace` | actions + page |
-| 28 | `feat(categories): add category picker for entry forms` | shared select component |
+| 28 | `feat(categories): CRUD categories for a workspace` | actions + page |
+| 29 | `feat(categories): add category picker for entry forms` | shared select component |
 
 **Merge → `main`**
 
@@ -169,98 +172,121 @@ Branch column = where that commit is created before merge.
 
 | # | Commit message | What lands |
 |---|----------------|------------|
-| 29 | `feat(budget): ensure monthly budget period helper` | create month if missing |
-| 30 | `feat(budget): centralize remaining-budget calculations` | `lib/budget/calculations.ts` |
-| 31 | `feat(budget): add month picker and summary cards` | shared UI |
+| 30 | `feat(budget): ensure monthly budget period helper` | create month if missing |
+| 31 | `feat(budget): centralize month day and category counters` | `calculations.ts` + `day-map.ts` |
+| 32 | `feat(budget): add month picker and counter strip` | shared UI |
 
 **Merge → `main`**
 
 ---
 
-### Phase 9 — Money entry domains
+### Phase 9 — Money entry domains (always store createdById)
 
 #### `feature/income`
 
 | # | Commit message |
 |---|----------------|
-| 32 | `feat(income): add income entry CRUD actions` |
-| 33 | `feat(income): build income list and form UI` |
+| 33 | `feat(income): add income CRUD with creator attribution` |
+| 34 | `feat(income): build income list showing who added when` |
 
 #### `feature/expenses`
 
 | # | Commit message |
 |---|----------------|
-| 34 | `feat(expenses): add expense entry CRUD with categories` |
-| 35 | `feat(expenses): build expenses page with category totals` |
+| 35 | `feat(expenses): add expense CRUD with creator attribution` |
+| 36 | `feat(expenses): build expenses list with member filter` |
 
 #### `feature/savings`
 
 | # | Commit message |
 |---|----------------|
-| 36 | `feat(savings): add savings entry CRUD and page` |
+| 37 | `feat(savings): add savings CRUD with creator attribution` |
 
 #### `feature/charges`
 
 | # | Commit message |
 |---|----------------|
-| 37 | `feat(charges): add miscellaneous charge CRUD and page` |
+| 38 | `feat(charges): add charge CRUD with creator attribution` |
 
 **Merge each → `main` after its commits**
 
 ---
 
-### Phase 10 — Recurring bills (`feature/recurring-bills`)
+### Phase 10 — Month calendar + list activity (`feature/month-calendar`)
 
 | # | Commit message | What lands |
 |---|----------------|------------|
-| 38 | `feat(bills): manage recurring bill templates` | CRUD templates |
-| 39 | `feat(bills): generate monthly bill instances` | on month ensure |
-| 40 | `feat(bills): mark bills paid skipped with status UI` | badges, actions |
-| 41 | `feat(bills): include paid bills in spent calculations` | wire into calc helper |
+| 39 | `feat(month): build calendar grid with day spend counters` | MonthCalendar, DayCell |
+| 40 | `feat(month): add day panel with who-added details` | click day → list + add |
+| 41 | `feat(month): add list view with attribution columns` | Calendar \| List + added by |
+| 42 | `feat(month): wire filters including member and URL state` | year/month/day/view/member |
 
 **Merge → `main`**
 
 ---
 
-### Phase 11 — Dashboard (`feature/dashboard`)
+### Phase 11 — Recurring bills (`feature/recurring-bills`)
 
 | # | Commit message | What lands |
 |---|----------------|------------|
-| 42 | `feat(dashboard): remaining budget hero and progress` | core KPIs |
-| 43 | `feat(dashboard): category breakdown chart and bills widget` | Recharts + due list |
-| 44 | `feat(dashboard): recent activity feed` | last entries across types |
+| 43 | `feat(bills): manage recurring bill templates` | CRUD templates |
+| 44 | `feat(bills): generate monthly bill instances` | on month ensure |
+| 45 | `feat(bills): mark bills paid skipped with status UI` | badges, calendar markers |
+| 46 | `feat(bills): include paid bills in spent calculations` | wire into calc helper |
 
 **Merge → `main`**
 
 ---
 
-### Phase 12 — Notifications (`feature/notifications`)
+### Phase 12 — Dashboard (`feature/dashboard`)
 
 | # | Commit message | What lands |
 |---|----------------|------------|
-| 45 | `feat(notifications): create notification helpers and types` | create/mark-read |
-| 46 | `feat(notifications): sync due-soon and overdue bill alerts` | lazy sync on load |
-| 47 | `feat(notifications): add notification center UI` | bell, panel, page |
-| 48 | `feat(notifications): emit budget-low alerts after mutations` | 15% rule |
+| 47 | `feat(dashboard): remaining budget hero and progress` | core KPIs |
+| 48 | `feat(dashboard): category breakdown and today week strip` | Recharts + mini calendar link |
+| 49 | `feat(dashboard): recent activity feed with actors` | who added what recently |
 
 **Merge → `main`**
 
 ---
 
-### Phase 13 — Polish (`feature/settings-polish` → `chore/seed-readme-qa`)
+### Phase 13 — Statements export (`feature/statements-export`)
+
+| # | Commit message | What lands |
+|---|----------------|------------|
+| 50 | `feat(statements): build filtered rows including attribution` | who + when columns |
+| 51 | `feat(statements): design printable statement table document` | preview canvas + print CSS |
+| 52 | `feat(statements): add preview page with print and PDF actions` | `/statements/preview` |
+| 53 | `feat(statements): add CSV download and export entry points` | Export menu; CSV has addedBy |
+
+**Merge → `main`**
+
+---
+
+### Phase 14 — Notifications (`feature/notifications`)
+
+| # | Commit message | What lands |
+|---|----------------|------------|
+| 54 | `feat(notifications): create notification helpers and types` | create/mark-read |
+| 55 | `feat(notifications): sync due-soon and overdue bill alerts` | lazy sync on load |
+| 56 | `feat(notifications): add notification center UI` | bell, panel, page |
+| 57 | `feat(notifications): emit budget-low alerts after mutations` | 15% rule |
+
+**Merge → `main`**
+
+---
+
+### Phase 15 — Polish (`feature/settings-polish` → `chore/seed-readme-qa`)
 
 | # | Branch | Commit message | What lands |
 |---|--------|----------------|------------|
-| 49 | `feature/settings-polish` | `feat(settings): workspace and profile settings pages` | name, currency, profile |
-| 50 | `feature/settings-polish` | `feat(ui): refine empty states loading and toasts` | polish pass |
-| 51 | `chore/seed-readme-qa` | `chore: add Prisma seed for demo household` | optional demo data |
-| 52 | `chore/seed-readme-qa` | `docs: add README with local setup instructions` | runbook |
+| 58 | `feature/settings-polish` | `feat(settings): workspace and profile settings pages` | name, currency, profile |
+| 59 | `chore/seed-readme-qa` | `chore: add Prisma seed for multi-member household` | two users + attributed buys |
+| 60 | `chore/seed-readme-qa` | `docs: add README with local setup instructions` | Postgres + Mailpit runbook |
 
-> Note: commits 01–52 can be trimmed to land in the **40–50** band by combining small polish commits if needed. Prefer keeping domain commits atomic; squash only pure typo/fix commits if over 50.
+> Subject commits land around **~50–60**. Prefer keeping invites+mail, calendar, and statements atomic. If trimming toward **40–50**, fold settings into seed/README — do **not** drop Mailpit invites, attribution, or statement preview/print.
 
-**Recommended keep list if trimming:** drop or fold #04 into #03, fold #26 into #24, fold #50 into #49 → lands ~**49** meaningful commits including docs, or ~**47** without double-counting merges.
-
-Merge commits (`Merge branch 'feature/…'`) are **additional** history nodes and do **not** count toward the 40–50 feature commits unless you want them included. Plan assumes **~45 subject commits** + ~15 `--no-ff` merge commits on `main`.
+Merge commits (`Merge branch 'feature/…'`) are **additional** history nodes.
 
 ---
 
@@ -282,12 +308,14 @@ Use this as the execution checklist while building:
 - [ ] merge `feature/expenses`
 - [ ] merge `feature/savings`
 - [ ] merge `feature/charges`
+- [ ] merge `feature/month-calendar`
 - [ ] merge `feature/recurring-bills`
 - [ ] merge `feature/dashboard`
+- [ ] merge `feature/statements-export`
 - [ ] merge `feature/notifications`
 - [ ] merge `feature/settings-polish`
 - [ ] merge `chore/seed-readme-qa`
-- [ ] Local smoke test (register → invite → month entries → bills → notifications)
+- [ ] Local smoke test (register → Mailpit invite → second user signup/join → each adds expense → filter by member → statement shows who/when → print/CSV → bills → notifications)
 - [ ] Push / create remote **only when you say so**
 
 ---
@@ -305,11 +333,12 @@ pnpm dlx shadcn@latest init
 pnpm dlx shadcn@latest add button input label card dialog dropdown-menu sheet badge table tabs select separator avatar sonner form textarea checkbox popover calendar command scroll-area skeleton
 
 # Data / auth / forms
-pnpm add @prisma/client next-auth@beta @auth/prisma-adapter bcryptjs zod react-hook-form @hookform/resolvers date-fns recharts
-pnpm add -D prisma tsx @types/bcryptjs
+pnpm add @prisma/client next-auth@beta @auth/prisma-adapter bcryptjs zod react-hook-form @hookform/resolvers date-fns recharts nodemailer
+pnpm add -D prisma tsx @types/bcryptjs @types/nodemailer
 
-# Docker DB
+# Docker DB + Mailpit
 docker compose up -d
+# Mailpit UI: http://localhost:8025
 
 # Prisma
 pnpm exec prisma init
