@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth.js ───────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  memberships   WorkspaceMembership[]
+  sentInvites   WorkspaceInvite[]     @relation("InviteSender")
+  notifications Notification[]
+
+  incomesCreated  IncomeEntry[]  @relation("IncomeCreatedBy")
+  expensesCreated ExpenseEntry[] @relation("ExpenseCreatedBy")
+  savingsCreated  SavingsEntry[] @relation("SavingsCreatedBy")
+  chargesCreated  ChargeEntry[]  @relation("ChargeCreatedBy")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Workspace ─────────────────────────────────────────────
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  currency  String   @default("INR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members       WorkspaceMembership[]
+  invites       WorkspaceInvite[]
+  categories    Category[]
+  budgets       MonthlyBudget[]
+  bills         RecurringBill[]
+  notifications Notification[]
+}
+
+model WorkspaceMembership {
+  id          String        @id @default(cuid())
+  role        WorkspaceRole @default(MEMBER)
+  userId      String
+  workspaceId String
+  createdAt   DateTime      @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}
+
+model WorkspaceInvite {
+  id          String        @id @default(cuid())
+  email       String
+  token       String        @unique
+  role        WorkspaceRole @default(MEMBER)
+  status      InviteStatus  @default(PENDING)
+  expiresAt   DateTime
+  workspaceId String
+  invitedById String
+  createdAt   DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy User      @relation("InviteSender", fields: [invitedById], references: [id])
+
+  @@index([email, status])
+}
+
+// ─── Categories & monthly budget ───────────────────────────
+
+enum CategoryType {
+  EXPENSE
+  CHARGE
+  SAVINGS
+  INCOME
+}
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String
+  icon        String?
+  color       String?
+  type        CategoryType
+  workspaceId String
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  expenses  ExpenseEntry[]
+  charges   ChargeEntry[]
+
+  @@unique([workspaceId, name, type])
+}
+
+model MonthlyBudget {
+  id          String   @id @default(cuid())
+  year        Int
+  month       Int
+  note        String?
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  incomes       IncomeEntry[]
+  expenses      ExpenseEntry[]
+  savings       SavingsEntry[]
+  charges       ChargeEntry[]
+  billInstances BillInstance[]
+
+  @@unique([workspaceId, year, month])
+}
+
+// ─── Money entries (attribution required) ──────────────────
+
+model IncomeEntry {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Decimal  @db.Decimal(12, 2)
+  earnedOn    DateTime @default(now())
+  note        String?
+  budgetId    String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  budget    MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("IncomeCreatedBy", fields: [createdById], references: [id])
+}
+
+model ExpenseEntry {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Decimal  @db.Decimal(12, 2)
+  spentOn     DateTime @default(now())
+  note        String?
+  categoryId  String?
+  budgetId    String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  category  Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  budget    MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("ExpenseCreatedBy", fields: [createdById], references: [id])
+}
+
+model SavingsEntry {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Decimal  @db.Decimal(12, 2)
+  savedOn     DateTime @default(now())
+  note        String?
+  budgetId    String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  budget    MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("SavingsCreatedBy", fields: [createdById], references: [id])
+}
+
+model ChargeEntry {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Decimal  @db.Decimal(12, 2)
+  chargedOn   DateTime @default(now())
+  note        String?
+  categoryId  String?
+  budgetId    String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  category  Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  budget    MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("ChargeCreatedBy", fields: [createdById], references: [id])
+}
+
+// ─── Recurring bills ───────────────────────────────────────
+
+enum BillStatus {
+  PENDING
+  PAID
+  SKIPPED
+}
+
+model RecurringBill {
+  id          String   @id @default(cuid())
+  name        String
+  amount      Decimal  @db.Decimal(12, 2)
+  dayOfMonth  Int
+  isActive    Boolean  @default(true)
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  instances BillInstance[]
+}
+
+model BillInstance {
+  id              String     @id @default(cuid())
+  dueDate         DateTime
+  amount          Decimal    @db.Decimal(12, 2)
+  status          BillStatus @default(PENDING)
+  paidAt          DateTime?
+  recurringBillId String
+  budgetId        String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  recurringBill RecurringBill @relation(fields: [recurringBillId], references: [id], onDelete: Cascade)
+  budget        MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@unique([recurringBillId, budgetId])
+}
+
+// ─── Notifications ─────────────────────────────────────────
+
+enum NotificationType {
+  BILL_DUE_SOON
+  BILL_OVERDUE
+  INVITE_RECEIVED
+  INVITE_ACCEPTED
+  MEMBER_JOINED
+  BUDGET_LOW
+  GENERIC
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  title       String
+  body        String
+  href        String?
+  readAt      DateTime?
+  userId      String
+  workspaceId String?
+  createdAt   DateTime         @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
