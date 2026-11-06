@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import type { WorkspaceRole } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { WorkspaceRole } from "@/types/prisma";
 
 const roleRank: Record<WorkspaceRole, number> = {
   MEMBER: 1,

@@ -1,4 +1,4 @@
-import type { CategoryType, Prisma } from "@prisma/client";
+import type { CategoryType } from "@/types/prisma";
 
 const defaults: Array<{ name: string; type: CategoryType; color: string }> = [
   { name: "Groceries", type: "EXPENSE", color: "#5B8A72" },
@@ -16,9 +16,7 @@ const defaults: Array<{ name: string; type: CategoryType; color: string }> = [
   { name: "Investments", type: "SAVINGS", color: "#2F5D50" },
 ];
 
-export function defaultCategoryCreates(
-  workspaceId: string,
-): Prisma.CategoryCreateManyInput[] {
+export function defaultCategoryCreates(workspaceId: string) {
   return defaults.map((item) => ({
     ...item,
     workspaceId,
