@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { WorkspaceRole } from "@/types/prisma";
@@ -11,10 +11,16 @@ const roleRank: Record<WorkspaceRole, number> = {
 
 export async function requireUser() {
   const session = await auth();
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.email) {
     redirect("/login");
   }
-  return session.user;
+
+  return {
+    id: session.user.id,
+    name: session.user.name ?? null,
+    email: session.user.email,
+    image: session.user.image ?? null,
+  };
 }
 
 export async function requireMembership(
@@ -35,7 +41,7 @@ export async function requireMembership(
   });
 
   if (!membership) {
-    redirect("/app");
+    notFound();
   }
 
   if (roleRank[membership.role] < roleRank[minRole]) {

@@ -9,7 +9,8 @@ export const createWorkspaceSchema = z.object({
   currency: z
     .string()
     .trim()
-    .length(3, "Use a 3-letter currency code")
+    .toUpperCase()
+    .regex(/^[A-Z]{3}$/, "Use a 3-letter currency code like INR or USD")
     .default("INR"),
 });
 

@@ -20,7 +20,7 @@ export default async function WorkspaceDashboardPage({
 }) {
   const { workspaceSlug } = await params;
   const { workspace, membership, user } = await requireMembership(workspaceSlug);
-  const memberships = await listUserWorkspaces(user.id!);
+  const memberships = await listUserWorkspaces(user.id);
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col gap-8 px-6 py-12">

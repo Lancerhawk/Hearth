@@ -6,13 +6,14 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
 const credentialsSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().trim().email(),
+  password: z.string().min(1),
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
