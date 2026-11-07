@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { WorkspaceRole } from "@/types/prisma";
@@ -10,6 +11,8 @@ const roleRank: Record<WorkspaceRole, number> = {
 };
 
 export async function requireUser() {
+  // Auth/session uses crypto — must run at request time (Cache Components).
+  await connection();
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
