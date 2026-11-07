@@ -10,6 +10,10 @@ import { defaultCategoryCreates } from "@/lib/workspace/seed-categories";
 export type WorkspaceActionState = {
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  values?: {
+    name?: string;
+    currency?: string;
+  };
 };
 
 export async function createWorkspaceAction(
@@ -18,13 +22,16 @@ export async function createWorkspaceAction(
 ): Promise<WorkspaceActionState> {
   const user = await requireUser();
 
-  const parsed = createWorkspaceSchema.safeParse({
-    name: formData.get("name"),
-    currency: formData.get("currency") || "INR",
-  });
+  const values = {
+    name: String(formData.get("name") ?? ""),
+    currency: String(formData.get("currency") || "INR"),
+  };
+
+  const parsed = createWorkspaceSchema.safeParse(values);
 
   if (!parsed.success) {
     return {
+      values,
       fieldErrors: parsed.error.flatten().fieldErrors,
       error: "Please fix the highlighted fields.",
     };
@@ -37,10 +44,10 @@ export async function createWorkspaceAction(
       data: {
         name: parsed.data.name,
         slug,
-        currency: parsed.data.currency.toUpperCase(),
+        currency: parsed.data.currency,
         members: {
           create: {
-            userId: user.id!,
+            userId: user.id,
             role: "OWNER",
           },
         },

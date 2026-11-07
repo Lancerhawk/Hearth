@@ -48,6 +48,8 @@ export function CreateWorkspaceForm() {
               placeholder="Our Home"
               required
               disabled={pending}
+              defaultValue={state.values?.name}
+              key={`name-${state.values?.name ?? "empty"}-${state.error ?? "ok"}`}
             />
             {state.fieldErrors?.name?.[0] ? (
               <p className="text-sm text-destructive">
@@ -60,9 +62,10 @@ export function CreateWorkspaceForm() {
             <Input
               id="currency"
               name="currency"
-              defaultValue="INR"
+              defaultValue={state.values?.currency ?? "INR"}
               maxLength={3}
               disabled={pending}
+              key={`currency-${state.values?.currency ?? "INR"}-${state.error ?? "ok"}`}
             />
             {state.fieldErrors?.currency?.[0] ? (
               <p className="text-sm text-destructive">

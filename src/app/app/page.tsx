@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export default async function AppHomePage() {
   const user = await requireUser();
-  const memberships = await listUserWorkspaces(user.id!);
+  const memberships = await listUserWorkspaces(user.id);
 
   if (memberships.length === 1) {
     redirect(`/app/${memberships[0].workspace.slug}/dashboard`);

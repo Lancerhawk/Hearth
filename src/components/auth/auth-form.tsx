@@ -21,7 +21,12 @@ import {
 
 const initialState: AuthActionState = {};
 
-export function RegisterForm() {
+function CallbackField({ callbackUrl }: { callbackUrl?: string }) {
+  if (!callbackUrl) return null;
+  return <input type="hidden" name="callbackUrl" value={callbackUrl} />;
+}
+
+export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, formAction, pending] = useActionState(
     registerAction,
     initialState,
@@ -36,6 +41,7 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <form action={formAction}>
+        <CallbackField callbackUrl={callbackUrl} />
         <CardContent className="space-y-4">
           {state.error ? (
             <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -50,6 +56,8 @@ export function RegisterForm() {
               autoComplete="name"
               required
               disabled={pending}
+              defaultValue={state.values?.name}
+              key={`reg-name-${state.values?.name ?? ""}-${state.error ?? "ok"}`}
             />
             {state.fieldErrors?.name?.[0] ? (
               <p className="text-sm text-destructive">
@@ -66,6 +74,8 @@ export function RegisterForm() {
               autoComplete="email"
               required
               disabled={pending}
+              defaultValue={state.values?.email}
+              key={`reg-email-${state.values?.email ?? ""}-${state.error ?? "ok"}`}
             />
             {state.fieldErrors?.email?.[0] ? (
               <p className="text-sm text-destructive">
@@ -97,7 +107,14 @@ export function RegisterForm() {
           </Button>
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+            <Link
+              href={
+                callbackUrl
+                  ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                  : "/login"
+              }
+              className="text-primary underline-offset-4 hover:underline"
+            >
               Sign in
             </Link>
           </p>
@@ -107,7 +124,7 @@ export function RegisterForm() {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, formAction, pending] = useActionState(
     loginAction,
     initialState,
@@ -120,6 +137,7 @@ export function LoginForm() {
         <CardDescription>Sign in to your Hearth workspace.</CardDescription>
       </CardHeader>
       <form action={formAction}>
+        <CallbackField callbackUrl={callbackUrl} />
         <CardContent className="space-y-4">
           {state.error ? (
             <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -135,6 +153,8 @@ export function LoginForm() {
               autoComplete="email"
               required
               disabled={pending}
+              defaultValue={state.values?.email}
+              key={`login-email-${state.values?.email ?? ""}-${state.error ?? "ok"}`}
             />
             {state.fieldErrors?.email?.[0] ? (
               <p className="text-sm text-destructive">
@@ -166,7 +186,11 @@ export function LoginForm() {
           <p className="text-sm text-muted-foreground">
             New here?{" "}
             <Link
-              href="/register"
+              href={
+                callbackUrl
+                  ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                  : "/register"
+              }
               className="text-primary underline-offset-4 hover:underline"
             >
               Create an account

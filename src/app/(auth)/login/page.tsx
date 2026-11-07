@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "Sign in",
 };
 
-export default function LoginPage() {
-  return <LoginForm />;
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  return <LoginForm callbackUrl={callbackUrl} />;
 }

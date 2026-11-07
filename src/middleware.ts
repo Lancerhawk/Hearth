@@ -10,8 +10,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isApp = pathname.startsWith("/app");
+    pathname === "/login" || pathname === "/register";
+  const isApp = pathname === "/app" || pathname.startsWith("/app/");
 
   if (isApp && !token) {
     const login = new URL("/login", request.url);
@@ -27,5 +27,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*", "/login", "/register"],
+  matcher: ["/app", "/app/:path*", "/login", "/register"],
 };
