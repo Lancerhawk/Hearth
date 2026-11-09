@@ -20,6 +20,10 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAuthPage && token) {
+    const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
+    if (callbackUrl?.startsWith("/invite/")) {
+      return NextResponse.redirect(new URL(callbackUrl, request.url));
+    }
     return NextResponse.redirect(new URL("/app", request.url));
   }
 
@@ -27,5 +31,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app", "/app/:path*", "/login", "/register"],
+  matcher: ["/app", "/app/:path*", "/login", "/register", "/invite/:path*"],
 };
