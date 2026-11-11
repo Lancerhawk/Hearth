@@ -1,0 +1,119 @@
+import type { Metadata } from "next";
+import {
+  createRecurringBillAction,
+  setBillStatusAction,
+  toggleRecurringBillAction,
+} from "@/actions/bills";
+import { BillForm } from "@/components/bills/bill-form";
+import { MonthPicker } from "@/components/budget/month-picker";
+import { Button } from "@/components/ui/button";
+import { requireMembership } from "@/lib/budget/access";
+import { loadMonthBudget } from "@/lib/budget/load-month";
+import { parsePeriod } from "@/lib/budget/period";
+import { formatCurrency } from "@/lib/money";
+import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = { title: "Bills" };
+
+export default async function BillsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ workspaceSlug: string }>;
+  searchParams: Promise<{ year?: string; month?: string }>;
+}) {
+  const { workspaceSlug } = await params;
+  const sp = await searchParams;
+  const { workspace, membership } = await requireMembership(workspaceSlug);
+  const canAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
+  const { year, month } = parsePeriod(sp.year, sp.month);
+  const { budget } = await loadMonthBudget(workspace.id, year, month);
+  const templates = await prisma.recurringBill.findMany({
+    where: { workspaceId: workspace.id },
+    orderBy: { dayOfMonth: "asc" },
+  });
+  const create = createRecurringBillAction.bind(null, workspaceSlug);
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-heading text-3xl tracking-tight">Bills</h1>
+          <p className="text-muted-foreground">Recurring templates and this month&apos;s instances.</p>
+        </div>
+        <MonthPicker basePath={`/app/${workspaceSlug}/bills`} year={year} month={month} />
+      </div>
+
+      {canAdmin ? <BillForm action={create} /> : null}
+
+      <section className="space-y-3">
+        <h2 className="font-heading text-xl">This month</h2>
+        <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
+          {budget.billInstances.length === 0 ? (
+            <li className="px-4 py-6 text-sm text-muted-foreground">No bill instances yet.</li>
+          ) : (
+            budget.billInstances.map((b) => (
+              <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                <div>
+                  <p className="font-medium">{b.recurringBill.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Due {b.dueDate.toISOString().slice(0, 10)} · {b.status.toLowerCase()}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>{formatCurrency(b.amount, workspace.currency)}</span>
+                  {(["PENDING", "PAID", "SKIPPED"] as const).map((status) => (
+                    <form
+                      key={status}
+                      action={async () => {
+                        "use server";
+                        await setBillStatusAction(workspaceSlug, b.id, status);
+                      }}
+                    >
+                      <Button
+                        type="submit"
+                        size="sm"
+                        variant={b.status === status ? "default" : "outline"}
+                      >
+                        {status.toLowerCase()}
+                      </Button>
+                    </form>
+                  ))}
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-heading text-xl">Templates</h2>
+        <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
+          {templates.map((t) => (
+            <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+              <div>
+                <p className="font-medium">{t.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  Day {t.dayOfMonth} · {formatCurrency(t.amount, workspace.currency)}
+                  {t.isActive ? "" : " · inactive"}
+                </p>
+              </div>
+              {canAdmin ? (
+                <form
+                  action={async () => {
+                    "use server";
+                    await toggleRecurringBillAction(workspaceSlug, t.id, !t.isActive);
+                  }}
+                >
+                  <Button type="submit" size="sm" variant="outline">
+                    {t.isActive ? "Deactivate" : "Activate"}
+                  </Button>
+                </form>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
