@@ -142,3 +142,26 @@
     font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   }
 }
+
+@media print {
+  body {
+    background: white !important;
+    background-image: none !important;
+  }
+
+  aside,
+  header,
+  .print\\:hidden,
+  nav {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .statement-doc {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
