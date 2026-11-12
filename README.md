@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hearth
 
-## Getting Started
+Household budget app for families — shared workspaces, attributed spending, month calendar, recurring bills, printable statements, and Mailpit-backed invites.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + TypeScript + Tailwind + shadcn/ui
+- Auth.js (credentials) + Prisma + PostgreSQL
+- Docker Compose: Postgres + Mailpit
+- pnpm
+
+## Local setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# 1. Install
+pnpm install
+
+# 2. Env
+cp .env.example .env
+# Ensure DATABASE_URL, AUTH_SECRET, AUTH_URL, SMTP_* point at local Docker
+
+# 3. Infra
+docker compose up -d
+# Postgres: localhost:5432
+# Mailpit UI: http://localhost:8025
+
+# 4. Schema
+pnpm exec prisma migrate dev
+pnpm db:seed   # optional demo household
+
+# 5. App
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Demo seed accounts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Email | Password | Role |
+|-------|----------|------|
+| `arin@hearth.local` | `password123` | Owner |
+| `sam@hearth.local` | `password123` | Member |
 
-## Learn More
+Workspace: `/app/demo-home/dashboard`
 
-To learn more about Next.js, take a look at the following resources:
+## Smoke path
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Register or use seed users
+2. Create a workspace (or open Demo Home)
+3. Invite a second email → check Mailpit at `:8025`
+4. Accept invite as that user
+5. Each member adds expenses → filter by member on Expenses / Month
+6. Open Statement → Print / CSV (includes Added by)
+7. Add a recurring bill → mark paid → check Alerts for due/overdue
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+| Script | Purpose |
+|--------|---------|
+| `pnpm dev` | Dev server |
+| `pnpm build` / `pnpm start` | Production |
+| `pnpm typecheck` | TypeScript |
+| `pnpm lint` | ESLint |
+| `pnpm db:migrate` | Prisma migrate |
+| `pnpm db:seed` | Seed demo data |
+| `pnpm db:studio` | Prisma Studio |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Docs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [`docs/FEATURES.md`](./docs/FEATURES.md) — product + architecture
+- [`docs/COMMIT_PLAN.md`](./docs/COMMIT_PLAN.md) — branch/commit delivery map
+
+## Notes
+
+- Work is local-only until you ask to push a remote.
+- Invites use SMTP → Mailpit in development (`SMTP_HOST` / `SMTP_PORT`).
+- Money rows always store `createdById` for attribution on lists and statements.
