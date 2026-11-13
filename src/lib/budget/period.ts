@@ -25,21 +25,15 @@ export function parsePeriod(
 }
 
 export async function ensureMonthlyBudget(workspaceId: string, year: number, month: number) {
-  const existing = await prisma.monthlyBudget.findUnique({
+  const budget = await prisma.monthlyBudget.upsert({
     where: {
       workspaceId_year_month: { workspaceId, year, month },
     },
+    create: { workspaceId, year, month },
+    update: {},
   });
-  if (existing) {
-    await generateMissingBillInstances(existing.id, workspaceId, year, month);
-    return existing;
-  }
-
-  const created = await prisma.monthlyBudget.create({
-    data: { workspaceId, year, month },
-  });
-  await generateMissingBillInstances(created.id, workspaceId, year, month);
-  return created;
+  await generateMissingBillInstances(budget.id, workspaceId, year, month);
+  return budget;
 }
 
 async function generateMissingBillInstances(
