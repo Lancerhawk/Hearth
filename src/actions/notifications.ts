@@ -21,12 +21,20 @@ export async function markAllNotificationsReadAction(workspaceSlug?: string) {
       userId: user.id,
       readAt: null,
       ...(workspaceSlug
-        ? { workspace: { slug: workspaceSlug } }
+        ? {
+            OR: [
+              { workspace: { slug: workspaceSlug } },
+              { workspaceId: null },
+            ],
+          }
         : {}),
     },
     data: { readAt: new Date() },
   });
   revalidatePath("/app", "layout");
+  if (workspaceSlug) {
+    revalidatePath(`/app/${workspaceSlug}/notifications`);
+  }
 }
 
 export async function syncBillNotifications(workspaceId: string, workspaceSlug: string) {
