@@ -151,7 +151,7 @@
 
   aside,
   header,
-  .print\\:hidden,
+  .no-print,
   nav {
     display: none !important;
   }
