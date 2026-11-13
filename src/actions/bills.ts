@@ -55,14 +55,28 @@ export async function setBillStatusAction(
   instanceId: string,
   status: "PENDING" | "PAID" | "SKIPPED",
 ) {
-  await requireMembership(workspaceSlug);
-  await prisma.billInstance.update({
+  const { workspace } = await requireMembership(workspaceSlug);
+  const instance = await prisma.billInstance.update({
     where: { id: instanceId },
     data: {
       status,
       paidAt: status === "PAID" ? new Date() : null,
     },
+    include: { recurringBill: true },
   });
+
+  if (status === "PAID" || status === "SKIPPED") {
+    await prisma.notification.updateMany({
+      where: {
+        workspaceId: workspace.id,
+        readAt: null,
+        type: { in: ["BILL_DUE_SOON", "BILL_OVERDUE"] },
+        title: { contains: instance.recurringBill.name },
+      },
+      data: { readAt: new Date() },
+    });
+  }
+
   revalidatePath(`/app/${workspaceSlug}`, "layout");
 }
 

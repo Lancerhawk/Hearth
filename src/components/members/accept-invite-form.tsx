@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 export function AcceptInviteForm({ token }: { token: string }) {
   const bound = acceptInviteAction.bind(null, token);
   const [state, formAction, pending] = useActionState(
-    async (_prev: { error?: string }, _formData: FormData) => {
+    async (prev: { error?: string }, formData: FormData) => {
+      void prev;
+      void formData;
       const result = await bound();
       if (result && "error" in result) return { error: result.error };
       return {};
