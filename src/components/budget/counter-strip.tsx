@@ -1,3 +1,4 @@
+import { StatTile } from "@/components/design/stat-tile";
 import { formatCurrency } from "@/lib/money";
 
 export function CounterStrip({
@@ -26,15 +27,7 @@ export function CounterStrip({
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {items.map((item) => (
-        <div
-          key={item.label}
-          className="rounded-xl border border-border/70 bg-card/70 px-3 py-3"
-        >
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {item.label}
-          </p>
-          <p className="mt-1 font-heading text-xl tracking-tight">{item.value}</p>
-        </div>
+        <StatTile key={item.label} label={item.label} value={item.value} />
       ))}
     </div>
   );
