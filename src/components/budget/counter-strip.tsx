@@ -8,6 +8,7 @@ export function CounterStrip({
   remaining,
   entryCount,
   pendingBills,
+  moneyInLabel = "Funds",
 }: {
   currency: string;
   income: number;
@@ -15,9 +16,10 @@ export function CounterStrip({
   remaining: number;
   entryCount: number;
   pendingBills: number;
+  moneyInLabel?: string;
 }) {
   const items = [
-    { label: "Income", value: formatCurrency(income, currency) },
+    { label: moneyInLabel, value: formatCurrency(income, currency) },
     { label: "Spent", value: formatCurrency(spent, currency) },
     { label: "Remaining", value: formatCurrency(remaining, currency) },
     { label: "Entries", value: String(entryCount) },

@@ -5,6 +5,7 @@
  * Values must stay in sync with prisma/schema.prisma.
  */
 export type WorkspaceRole = "OWNER" | "ADMIN" | "MEMBER";
+export type WorkspaceKind = "HOME" | "PERSONAL";
 export type CategoryType = "EXPENSE" | "CHARGE" | "SAVINGS" | "INCOME";
 export type BillStatus = "PENDING" | "PAID" | "SKIPPED";
 export type InviteStatus = "PENDING" | "ACCEPTED" | "REVOKED" | "EXPIRED";

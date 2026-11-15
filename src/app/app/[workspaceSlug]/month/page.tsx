@@ -14,6 +14,7 @@ import { loadMonthBudget } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { moneyInLabel } from "@/lib/workspace/labels";
 
 export const metadata: Metadata = { title: "Month" };
 
@@ -113,6 +114,7 @@ export default async function MonthPage({
         remaining={summary.remaining}
         entryCount={summary.monthEntryCount}
         pendingBills={summary.pendingBillsCount}
+        moneyInLabel={moneyInLabel(workspace.kind)}
       />
 
       <div className="flex flex-wrap items-center gap-2">

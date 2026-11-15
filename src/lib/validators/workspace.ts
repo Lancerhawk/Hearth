@@ -12,6 +12,7 @@ export const createWorkspaceSchema = z.object({
     .toUpperCase()
     .regex(/^[A-Z]{3}$/, "Use a 3-letter currency code like INR or USD")
     .default("INR"),
+  kind: z.enum(["HOME", "PERSONAL"]).default("HOME"),
 });
 
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;

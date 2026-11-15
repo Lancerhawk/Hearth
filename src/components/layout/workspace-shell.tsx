@@ -7,32 +7,34 @@ import { BrandMark } from "@/components/design/brand-mark";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const links = [
-  { href: "dashboard", label: "Dashboard" },
-  { href: "month", label: "Month" },
-  { href: "income", label: "Income" },
-  { href: "expenses", label: "Expenses" },
-  { href: "savings", label: "Savings" },
-  { href: "charges", label: "Charges" },
-  { href: "bills", label: "Bills" },
-  { href: "members", label: "Members" },
-  { href: "categories", label: "Categories" },
-  { href: "notifications", label: "Alerts" },
-  { href: "statements/preview", label: "Statement" },
-  { href: "settings", label: "Settings" },
-];
-
 export function WorkspaceShell({
   workspaceSlug,
   workspaceName,
   unreadCount,
+  moneyInLabel = "Funds",
   children,
 }: {
   workspaceSlug: string;
   workspaceName: string;
   unreadCount: number;
+  moneyInLabel?: string;
   children: React.ReactNode;
 }) {
+  const links = [
+    { href: "dashboard", label: "Dashboard" },
+    { href: "month", label: "Month" },
+    { href: "income", label: moneyInLabel },
+    { href: "expenses", label: "Expenses" },
+    { href: "savings", label: "Savings" },
+    { href: "charges", label: "Charges" },
+    { href: "bills", label: "Bills" },
+    { href: "members", label: "Members" },
+    { href: "categories", label: "Categories" },
+    { href: "notifications", label: "Alerts" },
+    { href: "statements/preview", label: "Statement" },
+    { href: "settings", label: "Settings" },
+  ];
+
   const base = `/app/${workspaceSlug}`;
   const pathname = usePathname();
 

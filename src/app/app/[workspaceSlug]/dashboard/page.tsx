@@ -13,6 +13,7 @@ import { loadMonthBudget } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { moneyInLabel } from "@/lib/workspace/labels";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -29,6 +30,7 @@ export default async function WorkspaceDashboardPage({
   const { year, month } = parsePeriod(sp.year, sp.month);
   const { budget, summary } = await loadMonthBudget(workspace.id, year, month);
   const base = `/app/${workspaceSlug}`;
+  const inLabel = moneyInLabel(workspace.kind);
 
   const categoryTotals = new Map<string, number>();
   for (const e of budget.expenses) {
@@ -55,7 +57,7 @@ export default async function WorkspaceDashboardPage({
     ...budget.incomes.map((e) => ({
       id: e.id,
       label: e.title,
-      kind: "Income",
+      kind: inLabel,
       amount: toNumber(e.amount),
       at: e.createdAt,
       by: actorLabel(e.createdBy),
@@ -111,8 +113,8 @@ export default async function WorkspaceDashboardPage({
           {formatCurrency(summary.remaining, workspace.currency)}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          of {formatCurrency(summary.totalIncome, workspace.currency)} income ·{" "}
-          {progress}% spent
+          of {formatCurrency(summary.totalIncome, workspace.currency)}{" "}
+          {inLabel.toLowerCase()} · {progress}% spent
         </p>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
           <div
@@ -129,6 +131,7 @@ export default async function WorkspaceDashboardPage({
         remaining={summary.remaining}
         entryCount={summary.monthEntryCount}
         pendingBills={summary.pendingBillsCount}
+        moneyInLabel={inLabel}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
