@@ -1,6 +1,7 @@
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
 import { buildDayMap } from "@/lib/budget/day-map";
 import { ensureMonthlyBudget } from "@/lib/budget/period";
+import { rebalanceEntriesToDateMonth } from "@/lib/budget/rebalance-entries";
 import { prisma } from "@/lib/prisma";
 
 const creatorSelect = {
@@ -15,6 +16,9 @@ export async function loadMonthBudget(
   year: number,
   month: number,
 ) {
+  // Repair older rows that were filed under the viewed month instead of spent-on month.
+  await rebalanceEntriesToDateMonth(workspaceId);
+
   const budget = await ensureMonthlyBudget(workspaceId, year, month);
 
   const full = await prisma.monthlyBudget.findUniqueOrThrow({

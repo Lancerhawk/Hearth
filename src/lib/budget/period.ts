@@ -24,6 +24,30 @@ export function parsePeriod(
   return { year, month };
 }
 
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+export function daysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
+}
+
+/** Inclusive ISO date bounds for a calendar month. */
+export function monthDateBounds(year: number, month: number) {
+  return {
+    from: `${year}-${pad2(month)}-01`,
+    to: `${year}-${pad2(month)}-${pad2(daysInMonth(year, month))}`,
+  };
+}
+
+/** Year/month from an entry date (local calendar). */
+export function periodFromDate(date: Date) {
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+  };
+}
+
 export async function ensureMonthlyBudget(
   workspaceId: string,
   year: number,
@@ -73,8 +97,4 @@ async function generateMissingBillInstances(
   if (toCreate.length > 0) {
     await prisma.billInstance.createMany({ data: toCreate });
   }
-}
-
-function daysInMonth(year: number, month: number) {
-  return new Date(year, month, 0).getDate();
 }

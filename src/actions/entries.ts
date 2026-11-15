@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { requireMembership, requireUser } from "@/lib/budget/access";
-import { ensureMonthlyBudget, parsePeriod } from "@/lib/budget/period";
+import {
+  ensureMonthlyBudget,
+  parsePeriod,
+  periodFromDate,
+} from "@/lib/budget/period";
 import { createNotification } from "@/lib/notifications/create";
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +21,26 @@ export type EntryActionState = {
 function parseDate(value: string) {
   const d = new Date(`${value}T12:00:00`);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function monthLabel(year: number, month: number) {
+  return new Date(year, month - 1, 1).toLocaleString("en", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function savedMessage(
+  kind: string,
+  viewYear: number,
+  viewMonth: number,
+  date: Date,
+) {
+  const { year, month } = periodFromDate(date);
+  if (year === viewYear && month === viewMonth) {
+    return `${kind} added.`;
+  }
+  return `${kind} saved to ${monthLabel(year, month)}. Switch the month picker to see it.`;
 }
 
 async function maybeBudgetLow(
@@ -85,7 +109,12 @@ export async function addExpenseAction(
   const spentOn = parseDate(parsed.data.date);
   if (!spentOn) return { error: "Invalid date." };
 
-  const budget = await ensureMonthlyBudget(workspace.id, year, month);
+  const period = periodFromDate(spentOn);
+  const budget = await ensureMonthlyBudget(
+    workspace.id,
+    period.year,
+    period.month,
+  );
   await prisma.expenseEntry.create({
     data: {
       title: parsed.data.title,
@@ -99,7 +128,9 @@ export async function addExpenseAction(
   });
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   revalidatePath(`/app/${workspaceSlug}`, "layout");
-  return { success: "Expense added." };
+  return {
+    success: savedMessage("Expense", year, month, spentOn),
+  };
 }
 
 export async function addIncomeAction(
@@ -124,7 +155,12 @@ export async function addIncomeAction(
   }
   const earnedOn = parseDate(parsed.data.date);
   if (!earnedOn) return { error: "Invalid date." };
-  const budget = await ensureMonthlyBudget(workspace.id, year, month);
+  const period = periodFromDate(earnedOn);
+  const budget = await ensureMonthlyBudget(
+    workspace.id,
+    period.year,
+    period.month,
+  );
   await prisma.incomeEntry.create({
     data: {
       title: parsed.data.title,
@@ -136,7 +172,9 @@ export async function addIncomeAction(
     },
   });
   revalidatePath(`/app/${workspaceSlug}`, "layout");
-  return { success: "Income added." };
+  return {
+    success: savedMessage("Entry", year, month, earnedOn),
+  };
 }
 
 export async function addSavingsAction(
@@ -161,7 +199,12 @@ export async function addSavingsAction(
   }
   const savedOn = parseDate(parsed.data.date);
   if (!savedOn) return { error: "Invalid date." };
-  const budget = await ensureMonthlyBudget(workspace.id, year, month);
+  const period = periodFromDate(savedOn);
+  const budget = await ensureMonthlyBudget(
+    workspace.id,
+    period.year,
+    period.month,
+  );
   await prisma.savingsEntry.create({
     data: {
       title: parsed.data.title,
@@ -174,7 +217,9 @@ export async function addSavingsAction(
   });
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   revalidatePath(`/app/${workspaceSlug}`, "layout");
-  return { success: "Savings logged." };
+  return {
+    success: savedMessage("Savings", year, month, savedOn),
+  };
 }
 
 export async function addChargeAction(
@@ -200,7 +245,12 @@ export async function addChargeAction(
   }
   const chargedOn = parseDate(parsed.data.date);
   if (!chargedOn) return { error: "Invalid date." };
-  const budget = await ensureMonthlyBudget(workspace.id, year, month);
+  const period = periodFromDate(chargedOn);
+  const budget = await ensureMonthlyBudget(
+    workspace.id,
+    period.year,
+    period.month,
+  );
   await prisma.chargeEntry.create({
     data: {
       title: parsed.data.title,
@@ -214,7 +264,9 @@ export async function addChargeAction(
   });
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   revalidatePath(`/app/${workspaceSlug}`, "layout");
-  return { success: "Charge added." };
+  return {
+    success: savedMessage("Charge", year, month, chargedOn),
+  };
 }
 
 export type EntryKind = "expense" | "income" | "savings" | "charge";
@@ -280,8 +332,15 @@ export async function updateEntryAction(
   const onDate = parseDate(parsed.data.date);
   if (!onDate) return { error: "Invalid date." };
 
-  const budgetId = await assertEntryInWorkspace(type, id, workspace.id);
-  if (!budgetId) return { error: "Entry not found." };
+  const existingBudgetId = await assertEntryInWorkspace(type, id, workspace.id);
+  if (!existingBudgetId) return { error: "Entry not found." };
+
+  const period = periodFromDate(onDate);
+  const budget = await ensureMonthlyBudget(
+    workspace.id,
+    period.year,
+    period.month,
+  );
 
   if (type === "expense") {
     await prisma.expenseEntry.update({
@@ -292,6 +351,7 @@ export async function updateEntryAction(
         spentOn: onDate,
         note: parsed.data.note || null,
         categoryId: parsed.data.categoryId || null,
+        budgetId: budget.id,
       },
     });
   } else if (type === "income") {
@@ -302,6 +362,7 @@ export async function updateEntryAction(
         amount: parsed.data.amount,
         earnedOn: onDate,
         note: parsed.data.note || null,
+        budgetId: budget.id,
       },
     });
   } else if (type === "savings") {
@@ -312,6 +373,7 @@ export async function updateEntryAction(
         amount: parsed.data.amount,
         savedOn: onDate,
         note: parsed.data.note || null,
+        budgetId: budget.id,
       },
     });
   } else {
@@ -323,12 +385,13 @@ export async function updateEntryAction(
         chargedOn: onDate,
         note: parsed.data.note || null,
         categoryId: parsed.data.categoryId || null,
+        budgetId: budget.id,
       },
     });
   }
 
   if (type !== "income") {
-    await maybeBudgetLow(workspace.id, workspaceSlug, budgetId);
+    await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   }
   revalidatePath(`/app/${workspaceSlug}`, "layout");
   return { success: "Entry updated." };

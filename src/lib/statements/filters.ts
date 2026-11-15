@@ -1,4 +1,6 @@
-import { parsePeriod } from "@/lib/budget/period";
+import { monthDateBounds, parsePeriod } from "@/lib/budget/period";
+
+export { monthDateBounds };
 
 export const STATEMENT_KINDS = [
   "full",
@@ -43,21 +45,6 @@ export function statementKindLabel(
     case "spent":
       return "Monthly spend";
   }
-}
-
-function pad2(n: number) {
-  return String(n).padStart(2, "0");
-}
-
-export function daysInMonth(year: number, month: number) {
-  return new Date(year, month, 0).getDate();
-}
-
-export function monthDateBounds(year: number, month: number) {
-  return {
-    from: `${year}-${pad2(month)}-01`,
-    to: `${year}-${pad2(month)}-${pad2(daysInMonth(year, month))}`,
-  };
 }
 
 function isIsoDate(value: string) {
