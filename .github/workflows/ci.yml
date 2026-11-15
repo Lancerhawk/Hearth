@@ -35,4 +35,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Format · Lint · Typecheck
-        run: pnpm ci
+        run: pnpm check
