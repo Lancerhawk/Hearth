@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && node scripts/link-prisma.cjs && node scripts/migrate-deploy.cjs && next build",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck",
+    "build:verify": "prisma generate && node scripts/link-prisma.cjs && next build",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build:verify",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
