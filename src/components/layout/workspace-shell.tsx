@@ -95,6 +95,7 @@ export function WorkspaceShell({
             </Link>
             <Link
               href={`${base}/notifications`}
+              title="Notifications"
               aria-label={
                 unreadCount > 0
                   ? `Notifications, ${unreadCount} unread`
@@ -102,13 +103,12 @@ export function WorkspaceShell({
               }
               className={cn(
                 headerBtn,
-                "relative",
+                "relative size-8 px-0",
                 notificationsActive &&
                   "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
               )}
             >
               <Bell className="size-4" />
-              <span className="hidden sm:inline">Notifications</span>
               {unreadCount > 0 ? (
                 <span className="absolute -top-1.5 -right-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-hearth-moss px-1 py-0.5 text-[10px] leading-none text-primary-foreground">
                   {unreadCount > 99 ? "99+" : unreadCount}
@@ -117,14 +117,16 @@ export function WorkspaceShell({
             </Link>
             <Link
               href={`${base}/settings`}
+              title="Settings"
+              aria-label="Settings"
               className={cn(
                 headerBtn,
+                "size-8 px-0",
                 settingsActive &&
                   "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
               )}
             >
               <Settings className="size-4" />
-              <span className="hidden sm:inline">Settings</span>
             </Link>
             <form action={logoutAction}>
               <Button
