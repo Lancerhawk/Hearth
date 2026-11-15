@@ -21,17 +21,17 @@ Each workspace has its own currency, members, categories, bills, and month histo
 
 Everything important is tied to a **year + month** (e.g. November 2026 ≠ October 2026):
 
-| Area        | What it tracks                                      |
-| ----------- | --------------------------------------------------- |
+| Area           | What it tracks                                   |
+| -------------- | ------------------------------------------------ |
 | Funds / Income | Money available that month                       |
-| Expenses    | Day-to-day spending (optional category)             |
-| Charges     | One-off hits                                        |
-| Savings     | Amounts set aside                                   |
-| Bills       | Recurring obligations (pending / paid / skipped)    |
-| Month       | Calendar + list of activity for the period          |
-| Dashboard   | Counters, category rollups, recent activity         |
-| Statement   | Filtered printable / CSV report                     |
-| Alerts      | Due soon, overdue, invites, budget-low              |
+| Expenses       | Day-to-day spending (optional category)          |
+| Charges        | One-off hits                                     |
+| Savings        | Amounts set aside                                |
+| Bills          | Recurring obligations (pending / paid / skipped) |
+| Month          | Calendar + list of activity for the period       |
+| Dashboard      | Counters, category rollups, recent activity      |
+| Statement      | Filtered printable / CSV report                  |
+| Alerts         | Due soon, overdue, invites, budget-low           |
 
 Counters recalculate from the month’s rows: income in, spend out (expenses + charges + savings + paid bills), remaining = in − out.
 
@@ -53,16 +53,16 @@ On **Statement** you pick a kind and filters; print and CSV use the same rows:
 
 ### Stack
 
-| Layer        | Choice                                              |
-| ------------ | --------------------------------------------------- |
-| App          | Next.js App Router, React 19, TypeScript            |
-| UI           | Tailwind + shadcn/ui-style primitives               |
-| Auth         | Auth.js (NextAuth v5) credentials + JWT session     |
-| Data         | Prisma 6 → PostgreSQL                               |
-| Validation   | Zod (+ React Hook Form where needed)                |
-| Email        | Nodemailer → SMTP (Mailpit locally)                 |
-| Deploy       | Vercel (`syd1`) + Supabase Postgres in production   |
-| Tooling      | pnpm, ESLint, Prettier, GitHub Actions              |
+| Layer      | Choice                                            |
+| ---------- | ------------------------------------------------- |
+| App        | Next.js App Router, React 19, TypeScript          |
+| UI         | Tailwind + shadcn/ui-style primitives             |
+| Auth       | Auth.js (NextAuth v5) credentials + JWT session   |
+| Data       | Prisma 6 → PostgreSQL                             |
+| Validation | Zod (+ React Hook Form where needed)              |
+| Email      | Nodemailer → SMTP (Mailpit locally)               |
+| Deploy     | Vercel (`syd1`) + Supabase Postgres in production |
+| Tooling    | pnpm, ESLint, Prettier, GitHub Actions            |
 
 ### High-level architecture
 
@@ -256,30 +256,30 @@ Workspace: `/app/demo-home/dashboard`
 
 ## Scripts
 
-| Script            | Purpose                                              |
-| ----------------- | ---------------------------------------------------- |
-| `pnpm dev`        | Dev server                                           |
-| `pnpm check`      | Prettier + lint + typecheck + build verify           |
-| `pnpm build`      | Migrate deploy + production Next build               |
-| `pnpm start`      | Run production server                                |
-| `pnpm typecheck`  | `next typegen` + `tsc`                               |
-| `pnpm lint`       | ESLint                                               |
-| `pnpm format`     | Prettier write                                       |
-| `pnpm db:migrate` | Prisma migrate dev                                   |
-| `pnpm db:seed`    | Seed demo data                                       |
-| `pnpm db:studio`  | Prisma Studio                                        |
+| Script            | Purpose                                    |
+| ----------------- | ------------------------------------------ |
+| `pnpm dev`        | Dev server                                 |
+| `pnpm check`      | Prettier + lint + typecheck + build verify |
+| `pnpm build`      | Migrate deploy + production Next build     |
+| `pnpm start`      | Run production server                      |
+| `pnpm typecheck`  | `next typegen` + `tsc`                     |
+| `pnpm lint`       | ESLint                                     |
+| `pnpm format`     | Prettier write                             |
+| `pnpm db:migrate` | Prisma migrate dev                         |
+| `pnpm db:seed`    | Seed demo data                             |
+| `pnpm db:studio`  | Prisma Studio                              |
 
 ---
 
 ## Environment (overview)
 
-| Variable        | Role                                                                 |
-| --------------- | -------------------------------------------------------------------- |
-| `DATABASE_URL`  | App queries (prod: Supabase transaction pooler `:6543` + pgbouncer) |
-| `DIRECT_URL`    | Optional; preferred for `prisma migrate deploy` (session `:5432`)   |
-| `AUTH_SECRET`   | Auth.js signing secret                                               |
-| `AUTH_URL`      | Canonical app URL                                                    |
-| `SMTP_*`        | Invite email (Mailpit locally)                                       |
+| Variable       | Role                                                                |
+| -------------- | ------------------------------------------------------------------- |
+| `DATABASE_URL` | App queries (prod: Supabase transaction pooler `:6543` + pgbouncer) |
+| `DIRECT_URL`   | Optional; preferred for `prisma migrate deploy` (session `:5432`)   |
+| `AUTH_SECRET`  | Auth.js signing secret                                              |
+| `AUTH_URL`     | Canonical app URL                                                   |
+| `SMTP_*`       | Invite email (Mailpit locally)                                      |
 
 See [`.env.example`](./.env.example) for full templates.
 
