@@ -22,7 +22,11 @@ export function MoneyList({
 }) {
   if (items.length === 0) {
     return (
-      <EmptyHint title={emptyTitle} description={emptyDescription} className={className} />
+      <EmptyHint
+        title={emptyTitle}
+        description={emptyDescription}
+        className={className}
+      />
     );
   }
 

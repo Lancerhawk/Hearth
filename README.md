@@ -36,10 +36,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Demo seed accounts
 
-| Email | Password | Role |
-|-------|----------|------|
-| `arin@hearth.local` | `password123` | Owner |
-| `sam@hearth.local` | `password123` | Member |
+| Email               | Password      | Role   |
+| ------------------- | ------------- | ------ |
+| `arin@hearth.local` | `password123` | Owner  |
+| `sam@hearth.local`  | `password123` | Member |
 
 Workspace: `/app/demo-home/dashboard`
 
@@ -55,15 +55,15 @@ Workspace: `/app/demo-home/dashboard`
 
 ## Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `pnpm dev` | Dev server |
-| `pnpm build` / `pnpm start` | Production |
-| `pnpm typecheck` | TypeScript |
-| `pnpm lint` | ESLint |
-| `pnpm db:migrate` | Prisma migrate |
-| `pnpm db:seed` | Seed demo data |
-| `pnpm db:studio` | Prisma Studio |
+| Script                      | Purpose        |
+| --------------------------- | -------------- |
+| `pnpm dev`                  | Dev server     |
+| `pnpm build` / `pnpm start` | Production     |
+| `pnpm typecheck`            | TypeScript     |
+| `pnpm lint`                 | ESLint         |
+| `pnpm db:migrate`           | Prisma migrate |
+| `pnpm db:seed`              | Seed demo data |
+| `pnpm db:studio`            | Prisma Studio  |
 
 ## Docs
 

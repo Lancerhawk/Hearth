@@ -27,7 +27,10 @@ export function WorkspaceSwitcher({
             key={m.workspace.id}
             href={`/app/${m.workspace.slug}/dashboard`}
             className={cn(
-              buttonVariants({ variant: active ? "default" : "outline", size: "sm" }),
+              buttonVariants({
+                variant: active ? "default" : "outline",
+                size: "sm",
+              }),
             )}
           >
             {m.workspace.name}

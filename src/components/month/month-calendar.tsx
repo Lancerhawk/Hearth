@@ -38,7 +38,12 @@ export function MonthCalendar({
       ))}
       {cells.map((cell) => {
         if (!cell.day) {
-          return <div key={cell.key} className="min-h-20 rounded-xl bg-transparent" />;
+          return (
+            <div
+              key={cell.key}
+              className="min-h-20 rounded-xl bg-transparent"
+            />
+          );
         }
         const key = `${year}-${String(month).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
         const bucket = dayMap[key];

@@ -31,58 +31,58 @@ main
 
 ### Docs (`docs/design-system`)
 
-| # | Message |
-|---|---------|
-| D01 | `docs: add Hearth visual design system` |
+| #   | Message                                   |
+| --- | ----------------------------------------- |
+| D01 | `docs: add Hearth visual design system`   |
 | D02 | `docs: add design branch and commit plan` |
 
 ### Tokens (`design/tokens`)
 
-| # | Message |
-|---|---------|
+| #   | Message                                                   |
+| --- | --------------------------------------------------------- |
 | D03 | `style: lock Ink Moss Paper brand colors into CSS tokens` |
-| D04 | `style: map brand trio into semantic theme variables` |
+| D04 | `style: map brand trio into semantic theme variables`     |
 
 ### Primitives (`design/primitives`)
 
-| # | Message |
-|---|---------|
+| #   | Message                                               |
+| --- | ----------------------------------------------------- |
 | D05 | `feat(ui): add PageHeader BrandMark and SectionTitle` |
-| D06 | `feat(ui): add Surface FormBanner and EmptyHint` |
-| D07 | `feat(ui): add StatTile FilterChip and MoneyList` |
+| D06 | `feat(ui): add Surface FormBanner and EmptyHint`      |
+| D07 | `feat(ui): add StatTile FilterChip and MoneyList`     |
 
 ### Motion (`design/motion`)
 
-| # | Message |
-|---|---------|
+| #   | Message                                                 |
+| --- | ------------------------------------------------------- |
 | D08 | `style: add hearth fade-up and soft interaction motion` |
 
 ### Shell (`design/shell`)
 
-| # | Message |
-|---|---------|
+| #   | Message                                                  |
+| --- | -------------------------------------------------------- |
 | D09 | `feat(ui): restyle workspace shell with Moss active nav` |
 
 ### Marketing / auth (`design/marketing-auth`)
 
-| # | Message |
-|---|---------|
+| #   | Message                                               |
+| --- | ----------------------------------------------------- |
 | D10 | `feat(ui): redesign landing hero on Paper atmosphere` |
-| D11 | `feat(ui): restyle auth layout and forms` |
+| D11 | `feat(ui): restyle auth layout and forms`             |
 
 ### App surfaces (`design/app-surfaces`)
 
-| # | Message |
-|---|---------|
+| #   | Message                                                       |
+| --- | ------------------------------------------------------------- |
 | D12 | `feat(ui): apply design primitives to dashboard and counters` |
-| D13 | `feat(ui): restyle month calendar and money CRUD pages` |
+| D13 | `feat(ui): restyle month calendar and money CRUD pages`       |
 
 ### Polish (`design/polish-pass`)
 
-| # | Message |
-|---|---------|
+| #   | Message                                                  |
+| --- | -------------------------------------------------------- |
 | D14 | `feat(ui): align statements members settings and alerts` |
-| D15 | `chore: wire EntryForm and bills forms onto Surface` |
+| D15 | `chore: wire EntryForm and bills forms onto Surface`     |
 
 Merge each branch → `main` in order after its commits.
 

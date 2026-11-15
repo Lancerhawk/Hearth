@@ -24,31 +24,41 @@ export function WorkspaceSettingsForm({
   const [state, formAction, pending] = useActionState(action, {});
   return (
     <Surface>
-    <form action={formAction} className="space-y-3">
-      <SectionTitle>Workspace</SectionTitle>
-      {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
-      {state.success ? <FormBanner tone="success">{state.success}</FormBanner> : null}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" defaultValue={name} required disabled={pending} />
+      <form action={formAction} className="space-y-3">
+        <SectionTitle>Workspace</SectionTitle>
+        {state.error ? (
+          <FormBanner tone="error">{state.error}</FormBanner>
+        ) : null}
+        {state.success ? (
+          <FormBanner tone="success">{state.success}</FormBanner>
+        ) : null}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              name="name"
+              defaultValue={name}
+              required
+              disabled={pending}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="currency">Currency</Label>
+            <Input
+              id="currency"
+              name="currency"
+              defaultValue={currency}
+              maxLength={3}
+              required
+              disabled={pending}
+            />
+          </div>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="currency">Currency</Label>
-          <Input
-            id="currency"
-            name="currency"
-            defaultValue={currency}
-            maxLength={3}
-            required
-            disabled={pending}
-          />
-        </div>
-      </div>
-      <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save workspace"}
-      </Button>
-    </form>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving…" : "Save workspace"}
+        </Button>
+      </form>
     </Surface>
   );
 }
@@ -66,24 +76,28 @@ export function ProfileSettingsForm({
   const [state, formAction, pending] = useActionState(action, {});
   return (
     <Surface>
-    <form action={formAction} className="space-y-3">
-      <SectionTitle>Profile</SectionTitle>
-      {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
-      {state.success ? <FormBanner tone="success">{state.success}</FormBanner> : null}
-      <div className="space-y-1.5">
-        <Label htmlFor="profile-name">Display name</Label>
-        <Input
-          id="profile-name"
-          name="name"
-          defaultValue={name}
-          required
-          disabled={pending}
-        />
-      </div>
-      <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save profile"}
-      </Button>
-    </form>
+      <form action={formAction} className="space-y-3">
+        <SectionTitle>Profile</SectionTitle>
+        {state.error ? (
+          <FormBanner tone="error">{state.error}</FormBanner>
+        ) : null}
+        {state.success ? (
+          <FormBanner tone="success">{state.success}</FormBanner>
+        ) : null}
+        <div className="space-y-1.5">
+          <Label htmlFor="profile-name">Display name</Label>
+          <Input
+            id="profile-name"
+            name="name"
+            defaultValue={name}
+            required
+            disabled={pending}
+          />
+        </div>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving…" : "Save profile"}
+        </Button>
+      </form>
     </Surface>
   );
 }

@@ -9,7 +9,10 @@ export default function Home() {
       <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-10">
         <BrandMark href="/" size="md" />
         <div className="flex items-center gap-2">
-          <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }))}>
+          <Link
+            href="/login"
+            className={cn(buttonVariants({ variant: "ghost" }))}
+          >
             Sign in
           </Link>
           <Link href="/register" className={cn(buttonVariants())}>
@@ -31,7 +34,10 @@ export default function Home() {
             a calendar that shows what the house bought, and who logged it.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
-            <Link href="/register" className={cn(buttonVariants({ size: "lg" }))}>
+            <Link
+              href="/register"
+              className={cn(buttonVariants({ size: "lg" }))}
+            >
               Create your workspace
             </Link>
             <Link

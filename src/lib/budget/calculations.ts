@@ -1,7 +1,10 @@
 import { toNumber, type MoneyInput } from "@/lib/money";
 
 export type MoneyRow = { amount: MoneyInput };
-export type BillRow = { amount: MoneyInput; status: "PENDING" | "PAID" | "SKIPPED" };
+export type BillRow = {
+  amount: MoneyInput;
+  status: "PENDING" | "PAID" | "SKIPPED";
+};
 
 export function sumAmounts(rows: MoneyRow[]): number {
   return rows.reduce((acc, row) => acc + toNumber(row.amount), 0);

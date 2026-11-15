@@ -69,7 +69,9 @@ async function main() {
     where: { workspaceId: workspace.id, name: "Groceries" },
   });
 
-  const incomeCount = await prisma.incomeEntry.count({ where: { budgetId: budget.id } });
+  const incomeCount = await prisma.incomeEntry.count({
+    where: { budgetId: budget.id },
+  });
   if (incomeCount === 0) {
     await prisma.incomeEntry.create({
       data: {

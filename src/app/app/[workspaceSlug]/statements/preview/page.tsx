@@ -46,7 +46,11 @@ export default async function StatementPreviewPage({
           description="Printable month report with who added each line."
           trailing={
             <div className="flex flex-wrap items-center gap-2">
-              <MonthPicker basePath={`${base}/preview`} year={year} month={month} />
+              <MonthPicker
+                basePath={`${base}/preview`}
+                year={year}
+                month={month}
+              />
               <PrintButton />
               <Link
                 href={`${base}/csv?year=${year}&month=${month}`}
@@ -64,7 +68,9 @@ export default async function StatementPreviewPage({
         className="statement-doc print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none"
       >
         <header className="mb-6 border-b border-border pb-4">
-          <p className="font-heading text-4xl tracking-tight text-hearth-ink">Hearth</p>
+          <p className="font-heading text-4xl tracking-tight text-hearth-ink">
+            Hearth
+          </p>
           <p className="mt-1 text-lg">{workspace.name}</p>
           <p className="text-sm text-muted-foreground">
             Statement for {month}/{year} · {workspace.currency}
@@ -93,7 +99,10 @@ export default async function StatementPreviewPage({
               </tr>
             ) : (
               rows.map((row, i) => (
-                <tr key={`${row.type}-${row.recordedAt}-${i}`} className="border-b border-border/50">
+                <tr
+                  key={`${row.type}-${row.recordedAt}-${i}`}
+                  className="border-b border-border/50"
+                >
                   <td className="py-2 pr-2">{i + 1}</td>
                   <td className="py-2 pr-2">{row.date}</td>
                   <td className="py-2 pr-2">{row.title}</td>

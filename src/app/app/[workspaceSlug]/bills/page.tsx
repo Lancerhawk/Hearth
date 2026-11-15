@@ -56,14 +56,20 @@ export default async function BillsPage({
         <SectionTitle>This month</SectionTitle>
         <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
           {budget.billInstances.length === 0 ? (
-            <li className="px-4 py-6 text-sm text-muted-foreground">No bill instances yet.</li>
+            <li className="px-4 py-6 text-sm text-muted-foreground">
+              No bill instances yet.
+            </li>
           ) : (
             budget.billInstances.map((b) => (
-              <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+              <li
+                key={b.id}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+              >
                 <div>
                   <p className="font-medium">{b.recurringBill.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    Due {b.dueDate.toISOString().slice(0, 10)} · {b.status.toLowerCase()}
+                    Due {b.dueDate.toISOString().slice(0, 10)} ·{" "}
+                    {b.status.toLowerCase()}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -96,11 +102,15 @@ export default async function BillsPage({
         <SectionTitle>Templates</SectionTitle>
         <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
           {templates.map((t) => (
-            <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <li
+              key={t.id}
+              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+            >
               <div>
                 <p className="font-medium">{t.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  Day {t.dayOfMonth} · {formatCurrency(t.amount, workspace.currency)}
+                  Day {t.dayOfMonth} ·{" "}
+                  {formatCurrency(t.amount, workspace.currency)}
                   {t.isActive ? "" : " · inactive"}
                 </p>
               </div>
@@ -108,7 +118,11 @@ export default async function BillsPage({
                 <form
                   action={async () => {
                     "use server";
-                    await toggleRecurringBillAction(workspaceSlug, t.id, !t.isActive);
+                    await toggleRecurringBillAction(
+                      workspaceSlug,
+                      t.id,
+                      !t.isActive,
+                    );
                   }}
                 >
                   <Button type="submit" size="sm" variant="outline">

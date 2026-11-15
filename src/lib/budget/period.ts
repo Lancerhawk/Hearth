@@ -24,7 +24,11 @@ export function parsePeriod(
   return { year, month };
 }
 
-export async function ensureMonthlyBudget(workspaceId: string, year: number, month: number) {
+export async function ensureMonthlyBudget(
+  workspaceId: string,
+  year: number,
+  month: number,
+) {
   const budget = await prisma.monthlyBudget.upsert({
     where: {
       workspaceId_year_month: { workspaceId, year, month },

@@ -48,7 +48,9 @@ export default async function NotificationsPage({
 
       <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
         {notifications.length === 0 ? (
-          <li className="px-4 py-6 text-sm text-muted-foreground">No notifications yet.</li>
+          <li className="px-4 py-6 text-sm text-muted-foreground">
+            No notifications yet.
+          </li>
         ) : (
           notifications.map((n) => (
             <li
@@ -66,7 +68,10 @@ export default async function NotificationsPage({
                 {n.href ? (
                   <Link
                     href={n.href}
-                    className={cn(buttonVariants({ variant: "link", size: "sm" }), "px-0")}
+                    className={cn(
+                      buttonVariants({ variant: "link", size: "sm" }),
+                      "px-0",
+                    )}
                   >
                     Open
                   </Link>

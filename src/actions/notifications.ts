@@ -22,10 +22,7 @@ export async function markAllNotificationsReadAction(workspaceSlug?: string) {
       readAt: null,
       ...(workspaceSlug
         ? {
-            OR: [
-              { workspace: { slug: workspaceSlug } },
-              { workspaceId: null },
-            ],
+            OR: [{ workspace: { slug: workspaceSlug } }, { workspaceId: null }],
           }
         : {}),
     },
@@ -37,7 +34,10 @@ export async function markAllNotificationsReadAction(workspaceSlug?: string) {
   }
 }
 
-export async function syncBillNotifications(workspaceId: string, workspaceSlug: string) {
+export async function syncBillNotifications(
+  workspaceId: string,
+  workspaceSlug: string,
+) {
   const today = startOfDay(new Date());
   const instances = await prisma.billInstance.findMany({
     where: {

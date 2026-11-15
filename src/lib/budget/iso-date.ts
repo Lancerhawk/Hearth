@@ -5,7 +5,9 @@ export function toIsoDate(date = new Date()) {
   return `${y}-${m}-${d}`;
 }
 
-export function actorLabel(user?: { name: string | null; email: string } | null) {
+export function actorLabel(
+  user?: { name: string | null; email: string } | null,
+) {
   if (!user) return "—";
   return user.name ?? user.email;
 }

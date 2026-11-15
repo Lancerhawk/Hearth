@@ -33,7 +33,10 @@ export default async function WorkspaceDashboardPage({
   const categoryTotals = new Map<string, number>();
   for (const e of budget.expenses) {
     const key = e.category?.name ?? "Uncategorized";
-    categoryTotals.set(key, (categoryTotals.get(key) ?? 0) + toNumber(e.amount));
+    categoryTotals.set(
+      key,
+      (categoryTotals.get(key) ?? 0) + toNumber(e.amount),
+    );
   }
   const chartData = [...categoryTotals.entries()]
     .map(([name, amount]) => ({ name, amount }))
@@ -79,7 +82,10 @@ export default async function WorkspaceDashboardPage({
 
   const progress =
     summary.totalIncome > 0
-      ? Math.min(100, Math.round((summary.totalSpent / summary.totalIncome) * 100))
+      ? Math.min(
+          100,
+          Math.round((summary.totalSpent / summary.totalIncome) * 100),
+        )
       : 0;
 
   return (
@@ -88,11 +94,18 @@ export default async function WorkspaceDashboardPage({
         title={workspace.name}
         description="Household overview"
         trailing={
-          <MonthPicker basePath={`${base}/dashboard`} year={year} month={month} />
+          <MonthPicker
+            basePath={`${base}/dashboard`}
+            year={year}
+            month={month}
+          />
         }
       />
 
-      <Surface padding="lg" className="bg-[color-mix(in_srgb,var(--hearth-moss)_6%,var(--hearth-paper))]">
+      <Surface
+        padding="lg"
+        className="bg-[color-mix(in_srgb,var(--hearth-moss)_6%,var(--hearth-paper))]"
+      >
         <p className="text-sm text-muted-foreground">Remaining this month</p>
         <p className="mt-1 font-heading text-5xl tracking-tight text-hearth-ink">
           {formatCurrency(summary.remaining, workspace.currency)}
@@ -130,7 +143,9 @@ export default async function WorkspaceDashboardPage({
           <SectionTitle>Bills this month</SectionTitle>
           <ul className="mt-3 space-y-2">
             {budget.billInstances.length === 0 ? (
-              <li className="text-sm text-muted-foreground">No recurring bills yet.</li>
+              <li className="text-sm text-muted-foreground">
+                No recurring bills yet.
+              </li>
             ) : (
               budget.billInstances.slice(0, 6).map((b) => (
                 <li key={b.id} className="flex justify-between text-sm">
@@ -149,7 +164,10 @@ export default async function WorkspaceDashboardPage({
           </ul>
           <Link
             href={`${base}/bills`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4")}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "mt-4",
+            )}
           >
             Manage bills
           </Link>
@@ -170,7 +188,9 @@ export default async function WorkspaceDashboardPage({
                 className="flex flex-wrap justify-between gap-2 text-sm"
               >
                 <span>
-                  <span className="font-medium text-hearth-ink">{row.label}</span>
+                  <span className="font-medium text-hearth-ink">
+                    {row.label}
+                  </span>
                   <span className="text-muted-foreground">
                     {" "}
                     · {row.kind} · {row.by}

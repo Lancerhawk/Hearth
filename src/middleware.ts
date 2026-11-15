@@ -9,8 +9,7 @@ export async function middleware(request: NextRequest) {
   });
 
   const { pathname } = request.nextUrl;
-  const isAuthPage =
-    pathname === "/login" || pathname === "/register";
+  const isAuthPage = pathname === "/login" || pathname === "/register";
   const isApp = pathname === "/app" || pathname.startsWith("/app/");
 
   if (isApp && !token) {

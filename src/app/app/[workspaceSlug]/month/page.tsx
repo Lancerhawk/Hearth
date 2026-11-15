@@ -37,7 +37,11 @@ export default async function MonthPage({
   const view = sp.view === "list" ? "list" : "calendar";
   const selectedDay = sp.day ? Number(sp.day) : undefined;
   const memberFilter = sp.member?.trim() || "";
-  const { budget, summary, dayMap } = await loadMonthBudget(workspace.id, year, month);
+  const { budget, summary, dayMap } = await loadMonthBudget(
+    workspace.id,
+    year,
+    month,
+  );
   const members = await prisma.workspaceMembership.findMany({
     where: { workspaceId: workspace.id },
     include: { user: true },
@@ -124,7 +128,10 @@ export default async function MonthPage({
         >
           List
         </FilterChip>
-        <FilterChip href={`${base}${qs({ member: "" })}`} active={!memberFilter}>
+        <FilterChip
+          href={`${base}${qs({ member: "" })}`}
+          active={!memberFilter}
+        >
           Everyone
         </FilterChip>
         {members.map((m) => (
@@ -165,7 +172,9 @@ export default async function MonthPage({
                 activity.map((row) => (
                   <li key={row.id} className="text-sm">
                     <div className="flex justify-between gap-2">
-                      <span className="font-medium text-hearth-ink">{row.title}</span>
+                      <span className="font-medium text-hearth-ink">
+                        {row.title}
+                      </span>
                       <span className="font-heading text-hearth-ink">
                         {formatCurrency(row.amount, workspace.currency)}
                       </span>

@@ -73,7 +73,11 @@
   --secondary: color-mix(in srgb, var(--hearth-paper) 70%, white);
   --secondary-foreground: var(--hearth-ink);
   --muted: color-mix(in srgb, var(--hearth-paper) 78%, white);
-  --muted-foreground: color-mix(in srgb, var(--hearth-ink) 55%, var(--hearth-paper));
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--hearth-ink) 55%,
+    var(--hearth-paper)
+  );
   --accent: color-mix(in srgb, var(--hearth-moss) 14%, var(--hearth-paper));
   --accent-foreground: var(--hearth-ink);
   --destructive: #9a3f2f;
@@ -90,9 +94,17 @@
   --sidebar-foreground: var(--hearth-ink);
   --sidebar-primary: var(--hearth-moss);
   --sidebar-primary-foreground: #f7f5f0;
-  --sidebar-accent: color-mix(in srgb, var(--hearth-moss) 12%, var(--hearth-paper));
+  --sidebar-accent: color-mix(
+    in srgb,
+    var(--hearth-moss) 12%,
+    var(--hearth-paper)
+  );
   --sidebar-accent-foreground: var(--hearth-ink);
-  --sidebar-border: color-mix(in srgb, var(--hearth-ink) 10%, var(--hearth-paper));
+  --sidebar-border: color-mix(
+    in srgb,
+    var(--hearth-ink) 10%,
+    var(--hearth-paper)
+  );
   --sidebar-ring: var(--hearth-moss);
 }
 
@@ -124,7 +136,11 @@
   --sidebar-foreground: var(--hearth-paper);
   --sidebar-primary: color-mix(in srgb, var(--hearth-moss) 70%, white);
   --sidebar-primary-foreground: var(--hearth-ink);
-  --sidebar-accent: color-mix(in srgb, var(--hearth-moss) 30%, var(--hearth-ink));
+  --sidebar-accent: color-mix(
+    in srgb,
+    var(--hearth-moss) 30%,
+    var(--hearth-ink)
+  );
   --sidebar-accent-foreground: var(--hearth-paper);
   --sidebar-border: color-mix(in srgb, var(--hearth-paper) 12%, transparent);
   --sidebar-ring: color-mix(in srgb, var(--hearth-moss) 70%, white);

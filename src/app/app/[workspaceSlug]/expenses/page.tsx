@@ -53,7 +53,10 @@ export default async function ExpensesPage({
       />
 
       <div className="flex flex-wrap gap-2">
-        <FilterChip href={`${base}?year=${year}&month=${month}`} active={!memberFilter}>
+        <FilterChip
+          href={`${base}?year=${year}&month=${month}`}
+          active={!memberFilter}
+        >
           Everyone
         </FilterChip>
         {members.map((m) => (

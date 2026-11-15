@@ -54,7 +54,10 @@ export default async function MembersPage({
         <SectionTitle>Household</SectionTitle>
         <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
           {members.map((m) => (
-            <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <li
+              key={m.id}
+              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+            >
               <div>
                 <p className="font-medium">{m.user.name ?? m.user.email}</p>
                 <p className="text-xs text-muted-foreground">{m.user.email}</p>
@@ -119,7 +122,12 @@ export default async function MembersPage({
                       await revokeInviteAction(workspaceSlug, inv.id);
                     }}
                   >
-                    <button type="submit" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+                    <button
+                      type="submit"
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "sm" }),
+                      )}
+                    >
                       Revoke
                     </button>
                   </form>

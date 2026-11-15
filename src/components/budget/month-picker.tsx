@@ -11,8 +11,10 @@ export function MonthPicker({
   year: number;
   month: number;
 }) {
-  const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
-  const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+  const prev =
+    month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+  const next =
+    month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
   const label = new Date(year, month - 1, 1).toLocaleString("en", {
     month: "long",
     year: "numeric",

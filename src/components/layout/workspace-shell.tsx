@@ -40,12 +40,13 @@ export function WorkspaceShell({
     <div className="flex min-h-full flex-1">
       <aside className="hidden w-60 shrink-0 border-r border-sidebar-border bg-sidebar/90 p-5 md:flex md:flex-col">
         <BrandMark href={`${base}/dashboard`} size="md" />
-        <p className="mt-1 truncate text-xs text-muted-foreground">{workspaceName}</p>
+        <p className="mt-1 truncate text-xs text-muted-foreground">
+          {workspaceName}
+        </p>
         <nav className="mt-7 flex flex-1 flex-col gap-0.5">
           {links.map((link) => {
             const href = `${base}/${link.href}`;
-            const active =
-              pathname === href || pathname.startsWith(`${href}/`);
+            const active = pathname === href || pathname.startsWith(`${href}/`);
             return (
               <Link
                 key={link.href}
@@ -70,7 +71,10 @@ export function WorkspaceShell({
         <div className="mt-4 space-y-2 border-t border-sidebar-border pt-4">
           <Link
             href="/app"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "w-full",
+            )}
           >
             Workspaces
           </Link>
@@ -115,7 +119,9 @@ export function WorkspaceShell({
             );
           })}
         </div>
-        <main className="hearth-enter flex-1 px-4 py-6 md:px-8">{children}</main>
+        <main className="hearth-enter flex-1 px-4 py-6 md:px-8">
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -35,7 +35,9 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
       </p>
       <form action={formAction} className="mt-6 space-y-4">
         <CallbackField callbackUrl={callbackUrl} />
-        {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
+        {state.error ? (
+          <FormBanner tone="error">{state.error}</FormBanner>
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
           <Input
@@ -48,7 +50,9 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
             key={`reg-name-${state.values?.name ?? ""}-${state.error ?? "ok"}`}
           />
           {state.fieldErrors?.name?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.name[0]}</p>
+            <p className="text-sm text-destructive">
+              {state.fieldErrors.name[0]}
+            </p>
           ) : null}
         </div>
         <div className="space-y-2">
@@ -64,7 +68,9 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
             key={`reg-email-${state.values?.email ?? ""}-${state.error ?? "ok"}`}
           />
           {state.fieldErrors?.email?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.email[0]}</p>
+            <p className="text-sm text-destructive">
+              {state.fieldErrors.email[0]}
+            </p>
           ) : null}
         </div>
         <div className="space-y-2">
@@ -121,7 +127,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       </p>
       <form action={formAction} className="mt-6 space-y-4">
         <CallbackField callbackUrl={callbackUrl} />
-        {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
+        {state.error ? (
+          <FormBanner tone="error">{state.error}</FormBanner>
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -135,7 +143,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
             key={`login-email-${state.values?.email ?? ""}-${state.error ?? "ok"}`}
           />
           {state.fieldErrors?.email?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.email[0]}</p>
+            <p className="text-sm text-destructive">
+              {state.fieldErrors.email[0]}
+            </p>
           ) : null}
         </div>
         <div className="space-y-2">

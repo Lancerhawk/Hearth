@@ -4,8 +4,8 @@
 **Tagline:** Household money, kept together.  
 **One-liner:** Multi-member household budget workspaces with monthly income, fixed bills, daily spend (calendar + list), filter-aware print/PDF statements, savings, and smart due-date alerts.
 
-This document is the source of truth for *what* we build.  
-See [`COMMIT_PLAN.md`](./COMMIT_PLAN.md) for *how* we ship it (branches, ~45 commits, merge order).
+This document is the source of truth for _what_ we build.  
+See [`COMMIT_PLAN.md`](./COMMIT_PLAN.md) for _how_ we ship it (branches, ~45 commits, merge order).
 
 ---
 
@@ -58,22 +58,22 @@ Everything is workspace-scoped and **month-scoped** (Nov 2026 ≠ Oct 2026). Fam
 
 ## 3. Tech stack (locked)
 
-| Layer | Choice |
-|--------|--------|
-| Framework | Next.js 15 (App Router) + TypeScript |
-| Styling | Tailwind CSS v4 |
-| UI kit | shadcn/ui (Radix) — reusable primitives |
-| Auth | Auth.js (NextAuth v5) — Credentials + Prisma adapter |
-| ORM | Prisma |
-| DB | PostgreSQL 16 in Docker (`hearth-postgres`) |
-| Validation | Zod |
-| Forms | React Hook Form + Zod |
-| Dates | date-fns |
-| Charts | Recharts (dashboard only) |
-| Email (local) | **Mailpit** in Docker (SMTP catcher + web UI) |
-| Email (later) | Resend / SES / etc. — same `lib/mail` interface |
-| Package manager | pnpm |
-| Container | `docker-compose.yml` (Postgres + Mailpit) |
+| Layer           | Choice                                               |
+| --------------- | ---------------------------------------------------- |
+| Framework       | Next.js 15 (App Router) + TypeScript                 |
+| Styling         | Tailwind CSS v4                                      |
+| UI kit          | shadcn/ui (Radix) — reusable primitives              |
+| Auth            | Auth.js (NextAuth v5) — Credentials + Prisma adapter |
+| ORM             | Prisma                                               |
+| DB              | PostgreSQL 16 in Docker (`hearth-postgres`)          |
+| Validation      | Zod                                                  |
+| Forms           | React Hook Form + Zod                                |
+| Dates           | date-fns                                             |
+| Charts          | Recharts (dashboard only)                            |
+| Email (local)   | **Mailpit** in Docker (SMTP catcher + web UI)        |
+| Email (later)   | Resend / SES / etc. — same `lib/mail` interface      |
+| Package manager | pnpm                                                 |
+| Container       | `docker-compose.yml` (Postgres + Mailpit)            |
 
 ### App identity
 
@@ -109,17 +109,17 @@ User
 1. **Workspace isolation** — every query is scoped by `workspaceId` + membership check.
 2. **MonthlyBudget** — unique `(workspaceId, year, month)`. Opening a month creates the budget shell (and optionally clones unpaid recurring bills). Switching month never mixes entries across months.
 3. **Day-dated entries** — every expense/charge/income/savings row has a real date (`spentOn` / `chargedOn` / etc.). Calendar cells group by that date within the selected month.
-4. **Budget math (per month)**  
-   - `totalIncome` = sum(IncomeEntry.amount)  
-   - `totalExpenses` = sum(ExpenseEntry.amount)  
-   - `totalSavings` = sum(SavingsEntry.amount)  
-   - `totalCharges` = sum(ChargeEntry.amount)  
-   - `totalCommittedBills` = sum(RecurringBillInstance.amount) for that month  
-   - `totalSpent` = expenses + charges + paid bill amounts + savings (configurable; default: expenses + charges + savings + paid bills)  
-   - `remaining` = totalIncome − totalSpent  
-   - **Day counters:** `daySpend(date)` = expenses + charges on that date; `dayCount(date)` = number of those entries  
+4. **Budget math (per month)**
+   - `totalIncome` = sum(IncomeEntry.amount)
+   - `totalExpenses` = sum(ExpenseEntry.amount)
+   - `totalSavings` = sum(SavingsEntry.amount)
+   - `totalCharges` = sum(ChargeEntry.amount)
+   - `totalCommittedBills` = sum(RecurringBillInstance.amount) for that month
+   - `totalSpent` = expenses + charges + paid bill amounts + savings (configurable; default: expenses + charges + savings + paid bills)
+   - `remaining` = totalIncome − totalSpent
+   - **Day counters:** `daySpend(date)` = expenses + charges on that date; `dayCount(date)` = number of those entries
    - **Category counters:** sum + count of entries in that category for the month  
-   Exact formulas are centralized in `lib/budget/calculations.ts` so UI never invents math.
+     Exact formulas are centralized in `lib/budget/calculations.ts` so UI never invents math.
 5. **Recurring bills** are permanent templates (`dayOfMonth`, amount, name). Each month gets a **BillInstance** with `status: PENDING | PAID | SKIPPED` and `dueDate`. Bills also appear on the calendar on their `dueDate`.
 6. **Categories** are workspace-owned (Groceries, Transport, Utilities, …). Expenses/charges attach to a category; category totals auto-aggregate.
 7. **Roles** — `OWNER` | `ADMIN` | `MEMBER`. Owner can delete workspace; Admin can invite/manage; Member can add/edit money entries.
@@ -388,28 +388,28 @@ Auth.js `Account` / `Session` / `VerificationToken` models are included via Pris
 
 **Invite flow (end-to-end)**
 
-1. Owner/Admin enters family member email + role → creates invite token  
-2. App **sends invite email over SMTP** (Mailpit locally; swap provider later without changing call sites)  
-3. Email contains workspace name, inviter name, and link: `/invite/[token]`  
+1. Owner/Admin enters family member email + role → creates invite token
+2. App **sends invite email over SMTP** (Mailpit locally; swap provider later without changing call sites)
+3. Email contains workspace name, inviter name, and link: `/invite/[token]`
 4. Invitee opens link:
-   - **No account** → register form (email prefilled from invite) → account created → membership attached → redirect into workspace  
-   - **Already logged in / has account** → accept → join workspace  
-5. Inviter gets in-app notification; invite status → `ACCEPTED`  
+   - **No account** → register form (email prefilled from invite) → account created → membership attached → redirect into workspace
+   - **Already logged in / has account** → accept → join workspace
+5. Inviter gets in-app notification; invite status → `ACCEPTED`
 6. New member can add income/expenses/etc. — every row is tagged with **their user id + timestamp**
 
 **Also**
 
-- List members + roles  
-- Change role / remove member (OWNER/ADMIN)  
-- Revoke pending invite (email link then fails with clear message)  
-- Resend invite email  
-- Mailpit UI at `http://localhost:8025` to inspect invite emails during local dev  
+- List members + roles
+- Change role / remove member (OWNER/ADMIN)
+- Revoke pending invite (email link then fails with clear message)
+- Resend invite email
+- Mailpit UI at `http://localhost:8025` to inspect invite emails during local dev
 
 **Attribution everywhere after join**
 
-- Lists show **Added by** (display name) + **Recorded at**  
-- Day panel / calendar detail shows who logged each purchase  
-- Filter by member (“only Arin’s entries”)  
+- Lists show **Added by** (display name) + **Recorded at**
+- Day panel / calendar detail shows who logged each purchase
+- Filter by member (“only Arin’s entries”)
 - Statements / print / CSV include the same columns (see M)
 
 ### D. Monthly budget period (month is the unit of truth)
@@ -466,14 +466,14 @@ This is how the household sees “what we bought here and there” for the selec
 
 **Counters that always stay in sync**
 
-| Counter | Meaning |
-|---------|---------|
-| Month remaining | Income − spent (authoritative) |
-| Month spent | Expenses + charges + savings + paid bills |
-| Month entry count | Number of expense+charge rows this month |
-| Day spend | Sum for that calendar date |
-| Day count | Number of purchases that date |
-| Category total + count | Per category for the month |
+| Counter                | Meaning                                   |
+| ---------------------- | ----------------------------------------- |
+| Month remaining        | Income − spent (authoritative)            |
+| Month spent            | Expenses + charges + savings + paid bills |
+| Month entry count      | Number of expense+charge rows this month  |
+| Day spend              | Sum for that calendar date                |
+| Day count              | Number of purchases that date             |
+| Category total + count | Per category for the month                |
 
 All counters recompute after every add/edit/delete (server calculation → UI refresh). No client-only fake math.
 
@@ -481,7 +481,7 @@ All counters recompute after every add/edit/delete (server calculation → UI re
 
 - Add / edit / delete income (salary, bonus, side income)
 - List incomes for the month
-- Also visible on calendar on `earnedOn` date (income marker, not counted in day *spend*)
+- Also visible on calendar on `earnedOn` date (income marker, not counted in day _spend_)
 - Contributes to total available budget
 
 ### G. Recurring / permanent bills
@@ -564,10 +564,10 @@ The preview header shows a human-readable **Filter summary** chip row so you kno
 
 **Flow**
 
-1. Set filters on the list/month page  
-2. Click **Export / Print**  
-3. Open **Preview** (full-screen dialog or `/statements/preview` route)  
-4. Review designed table + totals  
+1. Set filters on the list/month page
+2. Click **Export / Print**
+3. Open **Preview** (full-screen dialog or `/statements/preview` route)
+4. Review designed table + totals
 5. Actions:
    - **Print** — browser print dialog (print CSS, no app chrome)
    - **Download PDF** — same layout, saved as PDF
@@ -794,13 +794,13 @@ Category total for Groceries = sum of expense (and optionally charge) rows with 
 
 ## 9. Notification logic (authoritative)
 
-| Event | When created | Audience |
-|--------|----------------|----------|
-| `INVITE_RECEIVED` | Invite created (if user email exists) | Invitee |
-| `INVITE_ACCEPTED` / `MEMBER_JOINED` | Invite accepted | OWNER + ADMIN |
-| `BILL_DUE_SOON` | Sync: dueDate within next 3 days, PENDING, not already notified for that instance+type | All workspace members |
-| `BILL_OVERDUE` | Sync: dueDate < today, PENDING | All workspace members |
-| `BUDGET_LOW` | After mutation: remaining < 15% of income (and income > 0) | All workspace members |
+| Event                               | When created                                                                           | Audience              |
+| ----------------------------------- | -------------------------------------------------------------------------------------- | --------------------- |
+| `INVITE_RECEIVED`                   | Invite created (if user email exists)                                                  | Invitee               |
+| `INVITE_ACCEPTED` / `MEMBER_JOINED` | Invite accepted                                                                        | OWNER + ADMIN         |
+| `BILL_DUE_SOON`                     | Sync: dueDate within next 3 days, PENDING, not already notified for that instance+type | All workspace members |
+| `BILL_OVERDUE`                      | Sync: dueDate < today, PENDING                                                         | All workspace members |
+| `BUDGET_LOW`                        | After mutation: remaining < 15% of income (and income > 0)                             | All workspace members |
 
 Unread = `readAt IS NULL`. Bell badge = unread count for current user (optionally filtered to active workspace).
 
@@ -808,16 +808,16 @@ Unread = `readAt IS NULL`. Bell badge = unread count for current user (optionall
 
 ## 10. AuthZ matrix
 
-| Action | OWNER | ADMIN | MEMBER |
-|--------|-------|-------|--------|
-| View data | ✓ | ✓ | ✓ |
-| Add/edit own-style money entries | ✓ | ✓ | ✓ |
-| Manage categories | ✓ | ✓ | ✗ |
-| Manage recurring bills | ✓ | ✓ | ✗ |
-| Invite / remove members | ✓ | ✓ | ✗ |
-| Change roles | ✓ | ✗* | ✗ |
-| Delete workspace | ✓ | ✗ | ✗ |
-| Leave workspace | ✓** | ✓ | ✓ |
+| Action                           | OWNER | ADMIN | MEMBER |
+| -------------------------------- | ----- | ----- | ------ |
+| View data                        | ✓     | ✓     | ✓      |
+| Add/edit own-style money entries | ✓     | ✓     | ✓      |
+| Manage categories                | ✓     | ✓     | ✗      |
+| Manage recurring bills           | ✓     | ✓     | ✗      |
+| Invite / remove members          | ✓     | ✓     | ✗      |
+| Change roles                     | ✓     | ✗*    | ✗      |
+| Delete workspace                 | ✓     | ✗     | ✗      |
+| Leave workspace                  | ✓**   | ✓     | ✓      |
 
 \* ADMIN cannot change OWNER.  
 \*\* OWNER must transfer ownership before leave (v1: block leave if sole owner).
@@ -847,8 +847,8 @@ services:
     container_name: hearth-mailpit
     restart: unless-stopped
     ports:
-      - "1025:1025"   # SMTP
-      - "8025:8025"   # Web UI — open to see invite emails
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI — open to see invite emails
 ```
 
 ```env
@@ -918,4 +918,4 @@ pnpm dev
 
 ---
 
-*Hearth v1 — planned for local-first delivery via feature branches documented in COMMIT_PLAN.md.*
+_Hearth v1 — planned for local-first delivery via feature branches documented in COMMIT_PLAN.md._

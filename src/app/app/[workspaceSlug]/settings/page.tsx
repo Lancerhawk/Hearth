@@ -21,7 +21,10 @@ export default async function SettingsPage({
   const { workspace, membership } = await requireMembership(workspaceSlug);
   const user = await requireUser();
   const isOwner = membership.role === "OWNER";
-  const workspaceAction = updateWorkspaceSettingsAction.bind(null, workspaceSlug);
+  const workspaceAction = updateWorkspaceSettingsAction.bind(
+    null,
+    workspaceSlug,
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
@@ -42,7 +45,10 @@ export default async function SettingsPage({
         </p>
       )}
 
-      <ProfileSettingsForm action={updateProfileAction} name={user.name ?? ""} />
+      <ProfileSettingsForm
+        action={updateProfileAction}
+        name={user.name ?? ""}
+      />
     </div>
   );
 }

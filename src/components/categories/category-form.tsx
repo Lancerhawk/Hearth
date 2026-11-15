@@ -20,38 +20,47 @@ export function CategoryForm({
 
   return (
     <Surface>
-    <form action={formAction} className="space-y-3">
-      {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
-      {state.success ? <FormBanner tone="success">{state.success}</FormBanner> : null}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" required disabled={pending} />
+      <form action={formAction} className="space-y-3">
+        {state.error ? (
+          <FormBanner tone="error">{state.error}</FormBanner>
+        ) : null}
+        {state.success ? (
+          <FormBanner tone="success">{state.success}</FormBanner>
+        ) : null}
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" name="name" required disabled={pending} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="type">Type</Label>
+            <select
+              id="type"
+              name="type"
+              className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm"
+              defaultValue="EXPENSE"
+              disabled={pending}
+            >
+              <option value="EXPENSE">Expense</option>
+              <option value="CHARGE">Charge</option>
+              <option value="SAVINGS">Savings</option>
+              <option value="INCOME">Income</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="color">Color</Label>
+            <Input
+              id="color"
+              name="color"
+              placeholder="#6b7c5a"
+              disabled={pending}
+            />
+          </div>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="type">Type</Label>
-          <select
-            id="type"
-            name="type"
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm"
-            defaultValue="EXPENSE"
-            disabled={pending}
-          >
-            <option value="EXPENSE">Expense</option>
-            <option value="CHARGE">Charge</option>
-            <option value="SAVINGS">Savings</option>
-            <option value="INCOME">Income</option>
-          </select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="color">Color</Label>
-          <Input id="color" name="color" placeholder="#6b7c5a" disabled={pending} />
-        </div>
-      </div>
-      <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Add category"}
-      </Button>
-    </form>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving…" : "Add category"}
+        </Button>
+      </form>
     </Surface>
   );
 }

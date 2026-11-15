@@ -24,7 +24,9 @@ export default async function InvitePage({
     return (
       <div className="mx-auto max-w-lg px-6 py-20">
         <h1 className="font-heading text-3xl">Invite unavailable</h1>
-        <p className="mt-2 text-muted-foreground">This invite is invalid or revoked.</p>
+        <p className="mt-2 text-muted-foreground">
+          This invite is invalid or revoked.
+        </p>
       </div>
     );
   }
@@ -32,7 +34,9 @@ export default async function InvitePage({
   return (
     <div className="mx-auto flex min-h-full max-w-lg flex-col justify-center px-6 py-20">
       <p className="font-heading text-4xl tracking-tight">Hearth</p>
-      <h1 className="mt-4 font-heading text-2xl">Join {invite.workspace.name}</h1>
+      <h1 className="mt-4 font-heading text-2xl">
+        Join {invite.workspace.name}
+      </h1>
       <p className="mt-2 text-muted-foreground">
         {(invite.invitedBy.name ?? invite.invitedBy.email) + " "}
         invited <strong>{invite.email}</strong> as {invite.role.toLowerCase()}.

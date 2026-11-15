@@ -41,7 +41,11 @@ export default async function SavingsPage({
         }
       />
 
-      <EntryForm action={action} defaultDate={toIsoDate()} submitLabel="Add savings" />
+      <EntryForm
+        action={action}
+        defaultDate={toIsoDate()}
+        submitLabel="Add savings"
+      />
 
       <MoneyList
         emptyTitle="No savings this month"

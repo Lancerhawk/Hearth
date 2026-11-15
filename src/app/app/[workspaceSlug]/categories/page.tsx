@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { createCategoryAction, deleteCategoryAction } from "@/actions/categories";
+import {
+  createCategoryAction,
+  deleteCategoryAction,
+} from "@/actions/categories";
 import { CategoryForm } from "@/components/categories/category-form";
 import { PageHeader } from "@/components/design/page-header";
 import { Button } from "@/components/ui/button";
@@ -33,7 +36,10 @@ export default async function CategoriesPage({
 
       <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
         {categories.map((c) => (
-          <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
+          <li
+            key={c.id}
+            className="flex items-center justify-between gap-3 px-4 py-3"
+          >
             <div className="flex items-center gap-3">
               <span
                 className="h-3 w-3 rounded-full"
@@ -41,7 +47,9 @@ export default async function CategoriesPage({
               />
               <div>
                 <p className="font-medium">{c.name}</p>
-                <p className="text-xs text-muted-foreground">{c.type.toLowerCase()}</p>
+                <p className="text-xs text-muted-foreground">
+                  {c.type.toLowerCase()}
+                </p>
               </div>
             </div>
             {canAdmin ? (

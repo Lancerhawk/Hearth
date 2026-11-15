@@ -19,7 +19,11 @@ function parseDate(value: string) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-async function maybeBudgetLow(workspaceId: string, workspaceSlug: string, budgetId: string) {
+async function maybeBudgetLow(
+  workspaceId: string,
+  workspaceSlug: string,
+  budgetId: string,
+) {
   const budget = await prisma.monthlyBudget.findUnique({
     where: { id: budgetId },
     include: {

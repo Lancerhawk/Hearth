@@ -6,10 +6,7 @@ import { redirect } from "next/navigation";
 import { addDays } from "date-fns";
 import { requireMembership, requireUser } from "@/lib/budget/access";
 import { sendMail } from "@/lib/mail/send";
-import {
-  inviteEmailHtml,
-  inviteEmailText,
-} from "@/lib/mail/templates/invite";
+import { inviteEmailHtml, inviteEmailText } from "@/lib/mail/templates/invite";
 import {
   createNotification,
   notifyWorkspaceAdmins,
@@ -24,7 +21,9 @@ export type InviteActionState = {
 };
 
 function appUrl() {
-  return process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  return (
+    process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000"
+  );
 }
 
 export async function inviteMemberAction(
@@ -76,22 +75,28 @@ export async function inviteMemberAction(
   const inviteUrl = `${appUrl()}/invite/${invite.token}`;
   const inviterName = user.name ?? user.email;
 
-  await sendMail({
-    to: email,
-    subject: `Join ${workspace.name} on Hearth`,
-    html: inviteEmailHtml({
-      workspaceName: workspace.name,
-      inviterName,
-      inviteUrl,
-      role: parsed.data.role,
-    }),
-    text: inviteEmailText({
-      workspaceName: workspace.name,
-      inviterName,
-      inviteUrl,
-      role: parsed.data.role,
-    }),
-  });
+  let mailSent = true;
+  try {
+    await sendMail({
+      to: email,
+      subject: `Join ${workspace.name} on Hearth`,
+      html: inviteEmailHtml({
+        workspaceName: workspace.name,
+        inviterName,
+        inviteUrl,
+        role: parsed.data.role,
+      }),
+      text: inviteEmailText({
+        workspaceName: workspace.name,
+        inviterName,
+        inviteUrl,
+        role: parsed.data.role,
+      }),
+    });
+  } catch (err) {
+    mailSent = false;
+    console.error("Invite email failed (invite still created):", err);
+  }
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
@@ -106,10 +111,18 @@ export async function inviteMemberAction(
   }
 
   revalidatePath(`/app/${workspaceSlug}/members`);
+  if (!mailSent) {
+    return {
+      success: `Invite created for ${email}, but email could not be sent yet. Share this link: ${inviteUrl}`,
+    };
+  }
   return { success: `Invite sent to ${email}.` };
 }
 
-export async function revokeInviteAction(workspaceSlug: string, inviteId: string) {
+export async function revokeInviteAction(
+  workspaceSlug: string,
+  inviteId: string,
+) {
   await requireMembership(workspaceSlug, "ADMIN");
   await prisma.workspaceInvite.updateMany({
     where: { id: inviteId, status: "PENDING" },

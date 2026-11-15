@@ -18,7 +18,10 @@ export function EntryForm({
   showCategory,
   submitLabel,
 }: {
-  action: (prev: EntryActionState, formData: FormData) => Promise<EntryActionState>;
+  action: (
+    prev: EntryActionState,
+    formData: FormData,
+  ) => Promise<EntryActionState>;
   categories?: CategoryOption[];
   defaultDate: string;
   showCategory?: boolean;
@@ -29,8 +32,12 @@ export function EntryForm({
   return (
     <Surface>
       <form action={formAction} className="space-y-3">
-        {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
-        {state.success ? <FormBanner tone="success">{state.success}</FormBanner> : null}
+        {state.error ? (
+          <FormBanner tone="error">{state.error}</FormBanner>
+        ) : null}
+        {state.success ? (
+          <FormBanner tone="success">{state.success}</FormBanner>
+        ) : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="title">Title</Label>

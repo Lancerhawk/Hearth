@@ -41,7 +41,11 @@ export default async function IncomePage({
         }
       />
 
-      <EntryForm action={action} defaultDate={toIsoDate()} submitLabel="Add income" />
+      <EntryForm
+        action={action}
+        defaultDate={toIsoDate()}
+        submitLabel="Add income"
+      />
 
       <MoneyList
         emptyTitle="No income this month"
