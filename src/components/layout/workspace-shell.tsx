@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, Settings } from "lucide-react";
 import { logoutAction } from "@/actions/auth";
 import { BrandMark } from "@/components/design/brand-mark";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+const headerBtn =
+  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border/80 bg-transparent px-2.5 text-sm text-hearth-ink transition-colors duration-150 hover:border-hearth-moss/45 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/40";
 
 export function WorkspaceShell({
   workspaceSlug,
@@ -32,11 +35,15 @@ export function WorkspaceShell({
     { href: "members", label: "Members" },
     { href: "categories", label: "Categories" },
     { href: "statements/preview", label: "Statement" },
-    { href: "settings", label: "Settings" },
   ];
 
   const base = `/app/${workspaceSlug}`;
   const pathname = usePathname();
+  const settingsActive =
+    pathname === `${base}/settings` || pathname.startsWith(`${base}/settings/`);
+  const notificationsActive =
+    pathname === `${base}/notifications` ||
+    pathname.startsWith(`${base}/notifications/`);
 
   return (
     <div className="flex min-h-full flex-1">
@@ -53,10 +60,10 @@ export function WorkspaceShell({
                 key={link.href}
                 href={href}
                 className={cn(
-                  "rounded-md px-2.5 py-2 text-sm transition-colors",
+                  "rounded-md px-2.5 py-2 text-sm transition-colors duration-150",
                   active
                     ? "hearth-nav-active font-medium"
-                    : "text-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    : "text-foreground/75 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] hover:text-hearth-ink",
                 )}
               >
                 {link.label}
@@ -83,10 +90,7 @@ export function WorkspaceShell({
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Link
-              href="/app"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
+            <Link href="/app" className={headerBtn}>
               Workspaces
             </Link>
             <Link
@@ -97,8 +101,10 @@ export function WorkspaceShell({
                   : "Notifications"
               }
               className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "relative gap-1.5",
+                headerBtn,
+                "relative",
+                notificationsActive &&
+                  "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
               )}
             >
               <Bell className="size-4" />
@@ -109,12 +115,26 @@ export function WorkspaceShell({
                 </span>
               ) : null}
             </Link>
+            <Link
+              href={`${base}/settings`}
+              className={cn(
+                headerBtn,
+                settingsActive &&
+                  "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
+              )}
+            >
+              <Settings className="size-4" />
+              <span className="hidden sm:inline">Settings</span>
+            </Link>
             <form action={logoutAction}>
               <Button
                 type="submit"
                 variant="ghost"
                 size="sm"
-                className="gap-1.5"
+                className={cn(
+                  headerBtn,
+                  "border-transparent hover:border-hearth-moss/45",
+                )}
               >
                 <LogOut className="size-4" />
                 <span className="hidden sm:inline">Sign out</span>
@@ -132,10 +152,10 @@ export function WorkspaceShell({
                 key={link.href}
                 href={href}
                 className={cn(
-                  "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors",
+                  "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors duration-150",
                   active
                     ? "border-hearth-moss bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] text-hearth-ink"
-                    : "border-border text-muted-foreground",
+                    : "border-border text-muted-foreground hover:border-hearth-moss/40 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_10%,var(--hearth-paper))] hover:text-hearth-ink",
                 )}
               >
                 {link.label}
