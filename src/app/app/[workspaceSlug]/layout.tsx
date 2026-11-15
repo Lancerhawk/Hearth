@@ -1,6 +1,7 @@
+import { after } from "next/server";
+import { syncBillNotifications } from "@/actions/notifications";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { requireMembership } from "@/lib/budget/access";
-import { syncBillNotifications } from "@/actions/notifications";
 import { prisma } from "@/lib/prisma";
 
 export default async function WorkspaceLayout({
@@ -13,7 +14,10 @@ export default async function WorkspaceLayout({
   const { workspaceSlug } = await params;
   const { workspace, user } = await requireMembership(workspaceSlug);
 
-  await syncBillNotifications(workspace.id, workspace.slug);
+  // Don't block navigation on bill-alert sync (was N+1 queries every click).
+  after(() => {
+    void syncBillNotifications(workspace.id, workspace.slug);
+  });
 
   const unreadCount = await prisma.notification.count({
     where: {

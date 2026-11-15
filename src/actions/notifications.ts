@@ -39,21 +39,40 @@ export async function syncBillNotifications(
   workspaceSlug: string,
 ) {
   const today = startOfDay(new Date());
-  const instances = await prisma.billInstance.findMany({
-    where: {
-      status: "PENDING",
-      budget: { workspaceId },
-    },
-    include: {
-      recurringBill: true,
-      budget: true,
-    },
-  });
+  const [instances, members, existingToday] = await Promise.all([
+    prisma.billInstance.findMany({
+      where: {
+        status: "PENDING",
+        budget: { workspaceId },
+      },
+      include: { recurringBill: true },
+    }),
+    prisma.workspaceMembership.findMany({
+      where: { workspaceId },
+      select: { userId: true },
+    }),
+    prisma.notification.findMany({
+      where: {
+        workspaceId,
+        type: { in: ["BILL_DUE_SOON", "BILL_OVERDUE"] },
+        createdAt: { gte: today },
+      },
+      select: { userId: true, type: true, title: true },
+    }),
+  ]);
 
-  const members = await prisma.workspaceMembership.findMany({
-    where: { workspaceId },
-    select: { userId: true },
-  });
+  const seen = new Set(
+    existingToday.map((n) => `${n.userId}|${n.type}|${n.title}`),
+  );
+
+  const toCreate: Array<{
+    userId: string;
+    workspaceId: string;
+    type: "BILL_DUE_SOON" | "BILL_OVERDUE";
+    title: string;
+    body: string;
+    href: string;
+  }> = [];
 
   for (const instance of instances) {
     const due = startOfDay(instance.dueDate);
@@ -63,35 +82,31 @@ export async function syncBillNotifications(
     else if (days <= 3) type = "BILL_DUE_SOON";
     if (!type) continue;
 
-    for (const member of members) {
-      const existing = await prisma.notification.findFirst({
-        where: {
-          userId: member.userId,
-          workspaceId,
-          type,
-          href: `/app/${workspaceSlug}/bills`,
-          title: { contains: instance.recurringBill.name },
-          createdAt: { gte: startOfDay(new Date()) },
-        },
-      });
-      if (existing) continue;
+    const title =
+      type === "BILL_OVERDUE"
+        ? `${instance.recurringBill.name} is overdue`
+        : `${instance.recurringBill.name} due soon`;
+    const body =
+      type === "BILL_OVERDUE"
+        ? `Was due ${Math.abs(days)} day(s) ago.`
+        : `Due in ${days} day(s).`;
 
-      await prisma.notification.create({
-        data: {
-          userId: member.userId,
-          workspaceId,
-          type,
-          title:
-            type === "BILL_OVERDUE"
-              ? `${instance.recurringBill.name} is overdue`
-              : `${instance.recurringBill.name} due soon`,
-          body:
-            type === "BILL_OVERDUE"
-              ? `Was due ${Math.abs(days)} day(s) ago.`
-              : `Due in ${days} day(s).`,
-          href: `/app/${workspaceSlug}/bills`,
-        },
+    for (const member of members) {
+      const key = `${member.userId}|${type}|${title}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      toCreate.push({
+        userId: member.userId,
+        workspaceId,
+        type,
+        title,
+        body,
+        href: `/app/${workspaceSlug}/bills`,
       });
     }
+  }
+
+  if (toCreate.length > 0) {
+    await prisma.notification.createMany({ data: toCreate });
   }
 }
