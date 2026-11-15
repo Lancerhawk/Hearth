@@ -4,6 +4,7 @@ import {
   markAllNotificationsReadAction,
   markNotificationReadAction,
 } from "@/actions/notifications";
+import { PageHeader } from "@/components/design/page-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { requireMembership, requireUser } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
@@ -33,19 +34,19 @@ export default async function NotificationsPage({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-3xl tracking-tight">Alerts</h1>
-          <p className="text-muted-foreground">Invites, bills, and budget warnings.</p>
-        </div>
-        <form action={markAll}>
-          <Button type="submit" variant="outline" size="sm">
-            Mark all read
-          </Button>
-        </form>
-      </div>
+      <PageHeader
+        title="Alerts"
+        description="Invites, bills, and budget warnings."
+        trailing={
+          <form action={markAll}>
+            <Button type="submit" variant="outline" size="sm">
+              Mark all read
+            </Button>
+          </form>
+        }
+      />
 
-      <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
+      <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
         {notifications.length === 0 ? (
           <li className="px-4 py-6 text-sm text-muted-foreground">No notifications yet.</li>
         ) : (

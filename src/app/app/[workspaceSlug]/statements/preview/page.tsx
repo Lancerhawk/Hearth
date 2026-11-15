@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MonthPicker } from "@/components/budget/month-picker";
+import { PageHeader } from "@/components/design/page-header";
+import { Surface } from "@/components/design/surface";
 import { PrintButton } from "@/components/statements/print-button";
 import { buttonVariants } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
@@ -38,28 +40,31 @@ export default async function StatementPreviewPage({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="no-print flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-heading text-3xl tracking-tight">Statement</h1>
-          <p className="text-muted-foreground">
-            Printable month report with who added each line.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <MonthPicker basePath={`${base}/preview`} year={year} month={month} />
-          <PrintButton />
-          <Link
-            href={`${base}/csv?year=${year}&month=${month}`}
-            className={cn(buttonVariants({ variant: "outline" }))}
-          >
-            Download CSV
-          </Link>
-        </div>
+      <div className="no-print">
+        <PageHeader
+          title="Statement"
+          description="Printable month report with who added each line."
+          trailing={
+            <div className="flex flex-wrap items-center gap-2">
+              <MonthPicker basePath={`${base}/preview`} year={year} month={month} />
+              <PrintButton />
+              <Link
+                href={`${base}/csv?year=${year}&month=${month}`}
+                className={cn(buttonVariants({ variant: "outline" }))}
+              >
+                Download CSV
+              </Link>
+            </div>
+          }
+        />
       </div>
 
-      <article className="statement-doc rounded-xl border border-border/70 bg-card p-6 print:rounded-none print:border-0 print:p-0">
+      <Surface
+        padding="lg"
+        className="statement-doc print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none"
+      >
         <header className="mb-6 border-b border-border pb-4">
-          <p className="font-heading text-4xl tracking-tight">Hearth</p>
+          <p className="font-heading text-4xl tracking-tight text-hearth-ink">Hearth</p>
           <p className="mt-1 text-lg">{workspace.name}</p>
           <p className="text-sm text-muted-foreground">
             Statement for {month}/{year} · {workspace.currency}
@@ -117,7 +122,7 @@ export default async function StatementPreviewPage({
             </tr>
           </tfoot>
         </table>
-      </article>
+      </Surface>
     </div>
   );
 }

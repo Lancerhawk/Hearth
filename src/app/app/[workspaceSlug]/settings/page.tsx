@@ -3,6 +3,7 @@ import {
   updateProfileAction,
   updateWorkspaceSettingsAction,
 } from "@/actions/settings";
+import { PageHeader } from "@/components/design/page-header";
 import {
   ProfileSettingsForm,
   WorkspaceSettingsForm,
@@ -24,10 +25,10 @@ export default async function SettingsPage({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
-      <div>
-        <h1 className="font-heading text-3xl tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Workspace and profile preferences.</p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Workspace and profile preferences."
+      />
 
       {isOwner ? (
         <WorkspaceSettingsForm

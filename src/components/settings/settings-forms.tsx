@@ -2,6 +2,9 @@
 
 import { useActionState } from "react";
 import type { SettingsActionState } from "@/actions/settings";
+import { FormBanner } from "@/components/design/form-banner";
+import { SectionTitle } from "@/components/design/section-title";
+import { Surface } from "@/components/design/surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +23,11 @@ export function WorkspaceSettingsForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
-    <form action={formAction} className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">
-      <h2 className="font-heading text-xl">Workspace</h2>
-      {state.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
-      ) : null}
-      {state.success ? (
-        <p className="text-sm text-primary">{state.success}</p>
-      ) : null}
+    <Surface>
+    <form action={formAction} className="space-y-3">
+      <SectionTitle>Workspace</SectionTitle>
+      {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
+      {state.success ? <FormBanner tone="success">{state.success}</FormBanner> : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>
@@ -49,6 +49,7 @@ export function WorkspaceSettingsForm({
         {pending ? "Saving…" : "Save workspace"}
       </Button>
     </form>
+    </Surface>
   );
 }
 
@@ -64,14 +65,11 @@ export function ProfileSettingsForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
-    <form action={formAction} className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">
-      <h2 className="font-heading text-xl">Profile</h2>
-      {state.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
-      ) : null}
-      {state.success ? (
-        <p className="text-sm text-primary">{state.success}</p>
-      ) : null}
+    <Surface>
+    <form action={formAction} className="space-y-3">
+      <SectionTitle>Profile</SectionTitle>
+      {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
+      {state.success ? <FormBanner tone="success">{state.success}</FormBanner> : null}
       <div className="space-y-1.5">
         <Label htmlFor="profile-name">Display name</Label>
         <Input
@@ -86,5 +84,6 @@ export function ProfileSettingsForm({
         {pending ? "Saving…" : "Save profile"}
       </Button>
     </form>
+    </Surface>
   );
 }

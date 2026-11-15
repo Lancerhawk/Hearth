@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createCategoryAction, deleteCategoryAction } from "@/actions/categories";
 import { CategoryForm } from "@/components/categories/category-form";
+import { PageHeader } from "@/components/design/page-header";
 import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
@@ -23,14 +24,14 @@ export default async function CategoriesPage({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      <div>
-        <h1 className="font-heading text-3xl tracking-tight">Categories</h1>
-        <p className="text-muted-foreground">Organize expenses and charges.</p>
-      </div>
+      <PageHeader
+        title="Categories"
+        description="Organize expenses and charges."
+      />
 
       {canAdmin ? <CategoryForm action={create} /> : null}
 
-      <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
+      <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
         {categories.map((c) => (
           <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="flex items-center gap-3">
