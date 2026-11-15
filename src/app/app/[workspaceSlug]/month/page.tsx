@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CounterStrip } from "@/components/budget/counter-strip";
 import { MonthPicker } from "@/components/budget/month-picker";
+import { FilterChip } from "@/components/design/filter-chip";
+import { MoneyList } from "@/components/design/money-list";
+import { PageHeader } from "@/components/design/page-header";
+import { SectionTitle } from "@/components/design/section-title";
+import { Surface } from "@/components/design/surface";
 import { MonthCalendar } from "@/components/month/month-calendar";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel } from "@/lib/budget/iso-date";
@@ -9,7 +14,6 @@ import { loadMonthBudget } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Month" };
 
@@ -46,7 +50,8 @@ export default async function MonthPage({
     p.set("month", String(month));
     p.set("view", String(extra.view ?? view));
     if (extra.day) p.set("day", String(extra.day));
-    if (extra.member ?? memberFilter) p.set("member", String(extra.member ?? memberFilter));
+    const member = extra.member !== undefined ? extra.member : memberFilter;
+    if (member) p.set("member", String(member));
     return `?${p.toString()}`;
   };
 
@@ -85,21 +90,17 @@ export default async function MonthPage({
   ]
     .filter((row) => (memberFilter ? row.createdById === memberFilter : true))
     .filter((row) =>
-      selectedDay
-        ? Number(row.date.slice(-2)) === selectedDay
-        : true,
+      selectedDay ? Number(row.date.slice(-2)) === selectedDay : true,
     )
     .sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-heading text-3xl tracking-tight">Month</h1>
-          <p className="text-muted-foreground">Calendar and list of spending activity.</p>
-        </div>
-        <MonthPicker basePath={base} year={year} month={month} />
-      </div>
+      <PageHeader
+        title="Month"
+        description="Calendar and list of spending activity."
+        trailing={<MonthPicker basePath={base} year={year} month={month} />}
+      />
 
       <CounterStrip
         currency={workspace.currency}
@@ -111,72 +112,63 @@ export default async function MonthPage({
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <Link
+        <FilterChip
           href={`${base}${qs({ view: "calendar", day: selectedDay })}`}
-          className={cn(
-            "rounded-full border px-3 py-1 text-xs",
-            view === "calendar" ? "border-primary bg-accent" : "border-border",
-          )}
+          active={view === "calendar"}
         >
           Calendar
-        </Link>
-        <Link
+        </FilterChip>
+        <FilterChip
           href={`${base}${qs({ view: "list", day: undefined })}`}
-          className={cn(
-            "rounded-full border px-3 py-1 text-xs",
-            view === "list" ? "border-primary bg-accent" : "border-border",
-          )}
+          active={view === "list"}
         >
           List
-        </Link>
-        <Link
-          href={`${base}${qs({ member: "" })}`}
-          className={cn(
-            "rounded-full border px-3 py-1 text-xs",
-            !memberFilter ? "border-primary bg-accent" : "border-border",
-          )}
-        >
+        </FilterChip>
+        <FilterChip href={`${base}${qs({ member: "" })}`} active={!memberFilter}>
           Everyone
-        </Link>
+        </FilterChip>
         {members.map((m) => (
-          <Link
+          <FilterChip
             key={m.userId}
             href={`${base}${qs({ member: m.userId })}`}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs",
-              memberFilter === m.userId ? "border-primary bg-accent" : "border-border",
-            )}
+            active={memberFilter === m.userId}
           >
             {m.user.name ?? m.user.email}
-          </Link>
+          </FilterChip>
         ))}
       </div>
 
       {view === "calendar" ? (
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <MonthCalendar
-            year={year}
-            month={month}
-            dayMap={dayMap}
-            currency={workspace.currency}
-            basePath={base}
-            selectedDay={selectedDay}
-          />
-          <section className="rounded-xl border border-border/70 bg-card/60 p-4">
-            <h2 className="font-heading text-xl">
+          <Surface padding="sm">
+            <MonthCalendar
+              year={year}
+              month={month}
+              dayMap={dayMap}
+              currency={workspace.currency}
+              basePath={base}
+              selectedDay={selectedDay}
+            />
+          </Surface>
+          <Surface>
+            <SectionTitle>
               {selectedDay ? `Day ${selectedDay}` : "Pick a day"}
-            </h2>
+            </SectionTitle>
             <ul className="mt-3 space-y-2">
               {activity.length === 0 ? (
                 <li className="text-sm text-muted-foreground">
-                  {selectedDay ? "Nothing logged." : "Select a day on the calendar."}
+                  {selectedDay
+                    ? "Nothing logged."
+                    : "Select a day on the calendar."}
                 </li>
               ) : (
                 activity.map((row) => (
                   <li key={row.id} className="text-sm">
                     <div className="flex justify-between gap-2">
-                      <span className="font-medium">{row.title}</span>
-                      <span>{formatCurrency(row.amount, workspace.currency)}</span>
+                      <span className="font-medium text-hearth-ink">{row.title}</span>
+                      <span className="font-heading text-hearth-ink">
+                        {formatCurrency(row.amount, workspace.currency)}
+                      </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {row.kind}
@@ -188,31 +180,22 @@ export default async function MonthPage({
             </ul>
             <Link
               href={`/app/${workspaceSlug}/expenses?year=${year}&month=${month}`}
-              className="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
+              className="mt-4 inline-block text-sm text-hearth-moss underline-offset-4 hover:underline"
             >
               Add expense
             </Link>
-          </section>
+          </Surface>
         </div>
       ) : (
-        <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
-          {activity.length === 0 ? (
-            <li className="px-4 py-6 text-sm text-muted-foreground">No activity this month.</li>
-          ) : (
-            activity.map((row) => (
-              <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-                <div>
-                  <p className="font-medium">{row.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {row.date} · {row.kind}
-                    {row.category ? ` · ${row.category}` : ""} · added by {row.addedBy}
-                  </p>
-                </div>
-                <span>{formatCurrency(row.amount, workspace.currency)}</span>
-              </li>
-            ))
-          )}
-        </ul>
+        <MoneyList
+          emptyTitle="No activity this month"
+          items={activity.map((row) => ({
+            id: row.id,
+            title: row.title,
+            meta: `${row.date} · ${row.kind}${row.category ? ` · ${row.category}` : ""} · added by ${row.addedBy}`,
+            amount: formatCurrency(row.amount, workspace.currency),
+          }))}
+        />
       )}
     </div>
   );

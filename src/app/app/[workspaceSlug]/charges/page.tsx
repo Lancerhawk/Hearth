@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { addChargeAction, deleteEntryAction } from "@/actions/entries";
-import { EntryForm } from "@/components/entries/entry-form";
 import { MonthPicker } from "@/components/budget/month-picker";
+import { MoneyList } from "@/components/design/money-list";
+import { PageHeader } from "@/components/design/page-header";
+import { EntryForm } from "@/components/entries/entry-form";
 import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
@@ -32,13 +34,17 @@ export default async function ChargesPage({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-heading text-3xl tracking-tight">Charges</h1>
-          <p className="text-muted-foreground">One-off or card charges for the month.</p>
-        </div>
-        <MonthPicker basePath={`/app/${workspaceSlug}/charges`} year={year} month={month} />
-      </div>
+      <PageHeader
+        title="Charges"
+        description="One-off or card charges for the month."
+        trailing={
+          <MonthPicker
+            basePath={`/app/${workspaceSlug}/charges`}
+            year={year}
+            month={month}
+          />
+        }
+      />
 
       <EntryForm
         action={action}
@@ -48,37 +54,27 @@ export default async function ChargesPage({
         submitLabel="Add charge"
       />
 
-      <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
-        {budget.charges.length === 0 ? (
-          <li className="px-4 py-6 text-sm text-muted-foreground">No charges this month.</li>
-        ) : (
-          budget.charges.map((row) => (
-            <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-              <div>
-                <p className="font-medium">{row.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {row.chargedOn.toISOString().slice(0, 10)}
-                  {row.category ? ` · ${row.category.name}` : ""}
-                  {" · "}added by {actorLabel(row.createdBy)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>{formatCurrency(row.amount, workspace.currency)}</span>
-                <form
-                  action={async () => {
-                    "use server";
-                    await deleteEntryAction(workspaceSlug, "charge", row.id);
-                  }}
-                >
-                  <Button type="submit" size="sm" variant="ghost">
-                    Delete
-                  </Button>
-                </form>
-              </div>
-            </li>
-          ))
-        )}
-      </ul>
+      <MoneyList
+        emptyTitle="No charges this month"
+        items={budget.charges.map((row) => ({
+          id: row.id,
+          title: row.title,
+          meta: `${row.chargedOn.toISOString().slice(0, 10)}${row.category ? ` · ${row.category.name}` : ""} · added by ${actorLabel(row.createdBy)}`,
+          amount: formatCurrency(row.amount, workspace.currency),
+          action: (
+            <form
+              action={async () => {
+                "use server";
+                await deleteEntryAction(workspaceSlug, "charge", row.id);
+              }}
+            >
+              <Button type="submit" size="sm" variant="ghost">
+                Delete
+              </Button>
+            </form>
+          ),
+        }))}
+      />
     </div>
   );
 }
