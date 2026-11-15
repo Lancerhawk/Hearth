@@ -34,11 +34,5 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Prettier
-        run: pnpm format:check
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Format · Lint · Typecheck
+        run: pnpm ci

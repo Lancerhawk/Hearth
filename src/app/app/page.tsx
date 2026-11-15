@@ -52,7 +52,9 @@ export default async function AppHomePage() {
                   <p className="font-medium">{m.workspace.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {m.role.toLowerCase()} · {m.workspace.currency}
-                    {m.workspace.kind === "PERSONAL" ? " · just you" : " · home"}
+                    {m.workspace.kind === "PERSONAL"
+                      ? " · just you"
+                      : " · home"}
                   </p>
                 </div>
                 <span className="text-sm text-muted-foreground">Open →</span>
@@ -70,7 +72,9 @@ export default async function AppHomePage() {
           }),
         )}
       >
-        {memberships.length > 0 ? "Create another workspace" : "Create workspace"}
+        {memberships.length > 0
+          ? "Create another workspace"
+          : "Create workspace"}
       </Link>
     </div>
   );
