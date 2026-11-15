@@ -30,7 +30,7 @@ export async function markAllNotificationsReadAction(workspaceSlug?: string) {
   });
   revalidatePath("/app", "layout");
   if (workspaceSlug) {
-    revalidatePath(`/app/${workspaceSlug}/notifications`);
+    revalidatePath(`/app/${workspaceSlug}`, "layout");
   }
 }
 
