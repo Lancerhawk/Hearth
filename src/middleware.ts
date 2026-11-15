@@ -6,6 +6,9 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
+    // HTTPS (Vercel) uses __Secure-authjs.session-token; without this, login
+    // succeeds then middleware can't see the cookie and bounces to /login.
+    secureCookie: request.nextUrl.protocol === "https:",
   });
 
   const { pathname } = request.nextUrl;
