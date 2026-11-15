@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import type { BillActionState } from "@/actions/bills";
+import { FormBanner } from "@/components/design/form-banner";
+import { Surface } from "@/components/design/surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,17 +16,10 @@ export function BillForm({
   const [state, formAction, pending] = useActionState(action, {});
 
   return (
-    <form action={formAction} className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">
-      {state.error ? (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {state.error}
-        </p>
-      ) : null}
-      {state.success ? (
-        <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">
-          {state.success}
-        </p>
-      ) : null}
+    <Surface>
+    <form action={formAction} className="space-y-3">
+      {state.error ? <FormBanner tone="error">{state.error}</FormBanner> : null}
+      {state.success ? <FormBanner tone="success">{state.success}</FormBanner> : null}
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>
@@ -52,5 +47,6 @@ export function BillForm({
         {pending ? "Saving…" : "Add recurring bill"}
       </Button>
     </form>
+    </Surface>
   );
 }
