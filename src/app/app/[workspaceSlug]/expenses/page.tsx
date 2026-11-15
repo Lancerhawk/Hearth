@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import { addExpenseAction, deleteEntryAction } from "@/actions/entries";
+import {
+  addExpenseAction,
+  deleteEntryAction,
+  updateEntryAction,
+} from "@/actions/entries";
 import { MonthPicker } from "@/components/budget/month-picker";
 import { FilterChip } from "@/components/design/filter-chip";
 import { MoneyList } from "@/components/design/money-list";
 import { PageHeader } from "@/components/design/page-header";
 import { EntryForm } from "@/components/entries/entry-form";
-import { Button } from "@/components/ui/button";
+import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadMonthBudget } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
-import { formatCurrency } from "@/lib/money";
+import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Expenses" };
@@ -43,6 +47,7 @@ export default async function ExpensesPage({
 
   const action = addExpenseAction.bind(null, workspaceSlug, year, month);
   const base = `/app/${workspaceSlug}/expenses`;
+  const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
@@ -72,7 +77,7 @@ export default async function ExpensesPage({
 
       <EntryForm
         action={action}
-        categories={categories}
+        categories={categoryOptions}
         defaultDate={toIsoDate()}
         showCategory
         submitLabel="Add expense"
@@ -84,19 +89,31 @@ export default async function ExpensesPage({
         items={rows.map((row) => ({
           id: row.id,
           title: row.title,
-          meta: `${row.spentOn.toISOString().slice(0, 10)}${row.category ? ` · ${row.category.name}` : ""} · added by ${actorLabel(row.createdBy)}`,
+          meta: `${toIsoDate(row.spentOn)}${row.category ? ` · ${row.category.name}` : ""} · added by ${actorLabel(row.createdBy)}`,
           amount: formatCurrency(row.amount, workspace.currency),
           action: (
-            <form
-              action={async () => {
+            <EntryRowActions
+              type="expense"
+              showCategory
+              categories={categoryOptions}
+              defaults={{
+                title: row.title,
+                amount: String(toNumber(row.amount)),
+                date: toIsoDate(row.spentOn),
+                note: row.note ?? "",
+                categoryId: row.categoryId ?? "",
+              }}
+              updateAction={updateEntryAction.bind(
+                null,
+                workspaceSlug,
+                "expense",
+                row.id,
+              )}
+              onDelete={async () => {
                 "use server";
                 await deleteEntryAction(workspaceSlug, "expense", row.id);
               }}
-            >
-              <Button type="submit" size="sm" variant="ghost">
-                Delete
-              </Button>
-            </form>
+            />
           ),
         }))}
       />
