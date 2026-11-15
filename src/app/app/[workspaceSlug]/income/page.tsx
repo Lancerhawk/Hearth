@@ -55,7 +55,7 @@ export default async function IncomePage({
 
       <MoneyList
         emptyTitle={`No ${label.toLowerCase()} this month`}
-        emptyDescription="Add a paycheck, leftover, or one-off to start the month."
+        emptyDescription="Add a paycheck or one-off. Leftover from last month is brought forward automatically."
         items={budget.incomes.map((row) => ({
           id: row.id,
           title: row.title,
