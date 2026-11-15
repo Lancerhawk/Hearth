@@ -1,17 +1,17 @@
 /**
- * Ensures DIRECT_URL exists for Prisma migrate (local + Vercel).
- * Prefer session/direct URL; fall back to DATABASE_URL if unset.
+ * Runs prisma migrate deploy.
+ * Prefer DIRECT_URL (session pooler :5432) when present — safer for migrates
+ * than a transaction-pooler DATABASE_URL (:6543).
  */
 require("dotenv").config();
 
 const { spawnSync } = require("node:child_process");
 
 const env = { ...process.env };
-if (!env.DIRECT_URL && env.DATABASE_URL) {
-  env.DIRECT_URL = env.DATABASE_URL;
-  console.warn(
-    "[migrate-deploy] DIRECT_URL missing; falling back to DATABASE_URL",
-  );
+if (env.DIRECT_URL) {
+  // Prisma migrate uses DATABASE_URL; temporarily point it at the direct URL.
+  env.DATABASE_URL = env.DIRECT_URL;
+  console.log("[migrate-deploy] using DIRECT_URL for migrate deploy");
 }
 
 if (!env.DATABASE_URL) {
