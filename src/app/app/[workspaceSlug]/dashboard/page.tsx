@@ -3,6 +3,9 @@ import Link from "next/link";
 import { CounterStrip } from "@/components/budget/counter-strip";
 import { MonthPicker } from "@/components/budget/month-picker";
 import { CategoryChart } from "@/components/dashboard/category-chart";
+import { PageHeader } from "@/components/design/page-header";
+import { SectionTitle } from "@/components/design/section-title";
+import { Surface } from "@/components/design/surface";
 import { buttonVariants } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel } from "@/lib/budget/iso-date";
@@ -81,29 +84,30 @@ export default async function WorkspaceDashboardPage({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-heading text-4xl tracking-tight">{workspace.name}</p>
-          <p className="text-muted-foreground">Household overview</p>
-        </div>
-        <MonthPicker basePath={`${base}/dashboard`} year={year} month={month} />
-      </div>
+      <PageHeader
+        title={workspace.name}
+        description="Household overview"
+        trailing={
+          <MonthPicker basePath={`${base}/dashboard`} year={year} month={month} />
+        }
+      />
 
-      <div className="rounded-2xl border border-border/70 bg-card/70 p-6">
+      <Surface padding="lg" className="bg-[color-mix(in_srgb,var(--hearth-moss)_6%,var(--hearth-paper))]">
         <p className="text-sm text-muted-foreground">Remaining this month</p>
-        <p className="font-heading text-5xl tracking-tight">
+        <p className="mt-1 font-heading text-5xl tracking-tight text-hearth-ink">
           {formatCurrency(summary.remaining, workspace.currency)}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          of {formatCurrency(summary.totalIncome, workspace.currency)} income · {progress}% spent
+          of {formatCurrency(summary.totalIncome, workspace.currency)} income ·{" "}
+          {progress}% spent
         </p>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-primary transition-all"
+            className="h-full rounded-full bg-hearth-moss transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
-      </div>
+      </Surface>
 
       <CounterStrip
         currency={workspace.currency}
@@ -115,15 +119,15 @@ export default async function WorkspaceDashboardPage({
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-border/70 bg-card/60 p-4">
-          <h2 className="font-heading text-xl">By category</h2>
+        <Surface>
+          <SectionTitle>By category</SectionTitle>
           <div className="mt-3">
             <CategoryChart data={chartData} />
           </div>
-        </section>
+        </Surface>
 
-        <section className="rounded-xl border border-border/70 bg-card/60 p-4">
-          <h2 className="font-heading text-xl">Bills this month</h2>
+        <Surface>
+          <SectionTitle>Bills this month</SectionTitle>
           <ul className="mt-3 space-y-2">
             {budget.billInstances.length === 0 ? (
               <li className="text-sm text-muted-foreground">No recurring bills yet.</li>
@@ -132,9 +136,13 @@ export default async function WorkspaceDashboardPage({
                 <li key={b.id} className="flex justify-between text-sm">
                   <span>
                     {b.recurringBill.name}{" "}
-                    <span className="text-muted-foreground">({b.status.toLowerCase()})</span>
+                    <span className="text-muted-foreground">
+                      ({b.status.toLowerCase()})
+                    </span>
                   </span>
-                  <span>{formatCurrency(b.amount, workspace.currency)}</span>
+                  <span className="font-medium text-hearth-ink">
+                    {formatCurrency(b.amount, workspace.currency)}
+                  </span>
                 </li>
               ))
             )}
@@ -145,30 +153,37 @@ export default async function WorkspaceDashboardPage({
           >
             Manage bills
           </Link>
-        </section>
+        </Surface>
       </div>
 
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4">
-        <h2 className="font-heading text-xl">Recent activity</h2>
+      <Surface>
+        <SectionTitle>Recent activity</SectionTitle>
         <ul className="mt-3 space-y-2">
           {recent.length === 0 ? (
-            <li className="text-sm text-muted-foreground">Nothing logged yet this month.</li>
+            <li className="text-sm text-muted-foreground">
+              Nothing logged yet this month.
+            </li>
           ) : (
             recent.map((row) => (
-              <li key={row.id} className="flex flex-wrap justify-between gap-2 text-sm">
+              <li
+                key={row.id}
+                className="flex flex-wrap justify-between gap-2 text-sm"
+              >
                 <span>
-                  <span className="font-medium">{row.label}</span>
+                  <span className="font-medium text-hearth-ink">{row.label}</span>
                   <span className="text-muted-foreground">
                     {" "}
                     · {row.kind} · {row.by}
                   </span>
                 </span>
-                <span>{formatCurrency(row.amount, workspace.currency)}</span>
+                <span className="font-heading text-hearth-ink">
+                  {formatCurrency(row.amount, workspace.currency)}
+                </span>
               </li>
             ))
           )}
         </ul>
-      </section>
+      </Surface>
 
       <div className="flex flex-wrap gap-2">
         <Link href={`${base}/month`} className={cn(buttonVariants())}>
