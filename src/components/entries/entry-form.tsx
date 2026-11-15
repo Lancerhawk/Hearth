@@ -81,7 +81,7 @@ export function EntryForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="date">Date</Label>
+          <Label htmlFor="date">When</Label>
           <Input
             id="date"
             name="date"
@@ -90,6 +90,9 @@ export function EntryForm({
             required
             disabled={pending}
           />
+          <p className="text-xs text-muted-foreground">
+            Filed under the month of this date (not the month you’re viewing).
+          </p>
         </div>
         {showCategory ? (
           <div className="space-y-1.5">
