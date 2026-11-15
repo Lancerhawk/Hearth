@@ -2,26 +2,119 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LogOut, Settings } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import type { SettingsActionState } from "@/actions/settings";
 import { logoutAction } from "@/actions/auth";
 import { BrandMark } from "@/components/design/brand-mark";
+import {
+  NotificationsPanel,
+  type NotificationItem,
+} from "@/components/layout/notifications-panel";
+import { SettingsPanel } from "@/components/layout/settings-panel";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import {
+  Bell,
+  CalendarDays,
+  CreditCard,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PiggyBank,
+  Receipt,
+  ScrollText,
+  Settings,
+  Tags,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 
 const headerBtn =
   "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border/80 bg-transparent px-2.5 text-sm text-hearth-ink transition-colors duration-150 hover:border-hearth-moss/45 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/40";
+
+const SIDEBAR_KEY = "hearth-sidebar-collapsed";
+const SIDEBAR_EVENT = "hearth-sidebar";
+
+function subscribeSidebar(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(SIDEBAR_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(SIDEBAR_EVENT, onStoreChange);
+  };
+}
+
+function getSidebarCollapsed() {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setSidebarCollapsed(next: boolean) {
+  try {
+    localStorage.setItem(SIDEBAR_KEY, next ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new Event(SIDEBAR_EVENT));
+}
+
+const navIcons: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  month: CalendarDays,
+  income: Wallet,
+  expenses: Receipt,
+  savings: PiggyBank,
+  charges: CreditCard,
+  bills: FileText,
+  members: Users,
+  categories: Tags,
+  "statements/preview": ScrollText,
+};
+
+type Panel = "notifications" | "settings" | null;
 
 export function WorkspaceShell({
   workspaceSlug,
   workspaceName,
   unreadCount,
   moneyInLabel = "Funds",
+  notifications,
+  isOwner,
+  currency,
+  profileName,
+  workspaceAction,
+  profileAction,
   children,
 }: {
   workspaceSlug: string;
   workspaceName: string;
   unreadCount: number;
   moneyInLabel?: string;
+  notifications: NotificationItem[];
+  isOwner: boolean;
+  currency: string;
+  profileName: string;
+  workspaceAction: (
+    prev: SettingsActionState,
+    formData: FormData,
+  ) => Promise<SettingsActionState>;
+  profileAction: (
+    prev: SettingsActionState,
+    formData: FormData,
+  ) => Promise<SettingsActionState>;
   children: React.ReactNode;
 }) {
   const links = [
@@ -39,38 +132,101 @@ export function WorkspaceShell({
 
   const base = `/app/${workspaceSlug}`;
   const pathname = usePathname();
-  const settingsActive =
-    pathname === `${base}/settings` || pathname.startsWith(`${base}/settings/`);
-  const notificationsActive =
-    pathname === `${base}/notifications` ||
-    pathname.startsWith(`${base}/notifications/`);
+  const [panel, setPanel] = useState<Panel>(null);
+  const collapsed = useSyncExternalStore(
+    subscribeSidebar,
+    getSidebarCollapsed,
+    () => false,
+  );
+
+  function toggleCollapsed() {
+    setSidebarCollapsed(!collapsed);
+  }
 
   return (
     <div className="flex min-h-full flex-1">
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/90 p-5 md:flex">
-        <div className="shrink-0">
-          <BrandMark href={`${base}/dashboard`} size="md" />
+      <aside
+        className={cn(
+          "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/90 transition-[width,padding] duration-300 ease-in-out md:flex",
+          collapsed ? "w-[4.5rem] p-3" : "w-60 p-5",
+        )}
+      >
+        <div
+          className={cn(
+            "flex shrink-0 items-center",
+            collapsed ? "justify-center" : "justify-between gap-2",
+          )}
+        >
+          {collapsed ? (
+            <Link
+              href={`${base}/dashboard`}
+              title="Hearth"
+              aria-label="Hearth"
+              className="font-heading text-xl tracking-tight text-hearth-ink transition-opacity hover:opacity-80"
+            >
+              H
+            </Link>
+          ) : (
+            <BrandMark href={`${base}/dashboard`} size="md" />
+          )}
         </div>
-        <nav className="mt-7 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain pr-1">
+
+        <nav
+          className={cn(
+            "mt-7 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain",
+            collapsed ? "items-center pr-0" : "pr-1",
+          )}
+        >
           {links.map((link) => {
             const href = `${base}/${link.href}`;
             const active = pathname === href || pathname.startsWith(`${href}/`);
+            const Icon = navIcons[link.href] ?? LayoutDashboard;
             return (
               <Link
                 key={link.href}
                 href={href}
+                title={link.label}
+                aria-label={link.label}
                 className={cn(
-                  "rounded-md px-2.5 py-2 text-sm transition-colors duration-150",
+                  "flex items-center rounded-md text-sm transition-colors duration-150",
+                  collapsed ? "size-9 justify-center" : "gap-2.5 px-2.5 py-2",
                   active
                     ? "hearth-nav-active font-medium"
                     : "text-foreground/75 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] hover:text-hearth-ink",
                 )}
               >
-                {link.label}
+                <Icon className="size-4 shrink-0" aria-hidden />
+                <span
+                  className={cn(
+                    "truncate transition-opacity duration-200",
+                    collapsed ? "sr-only" : "opacity-100",
+                  )}
+                >
+                  {link.label}
+                </span>
               </Link>
             );
           })}
         </nav>
+
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!collapsed}
+          className={cn(
+            headerBtn,
+            "mt-3 size-8 shrink-0 self-center px-0",
+            !collapsed && "self-end",
+          )}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="size-4" />
+          ) : (
+            <PanelLeftClose className="size-4" />
+          )}
+        </button>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -93,18 +249,19 @@ export function WorkspaceShell({
             <Link href="/app" className={headerBtn}>
               Workspaces
             </Link>
-            <Link
-              href={`${base}/notifications`}
+            <button
+              type="button"
               title="Notifications"
               aria-label={
                 unreadCount > 0
                   ? `Notifications, ${unreadCount} unread`
                   : "Notifications"
               }
+              onClick={() => setPanel("notifications")}
               className={cn(
                 headerBtn,
                 "relative size-8 px-0",
-                notificationsActive &&
+                panel === "notifications" &&
                   "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
               )}
             >
@@ -114,20 +271,21 @@ export function WorkspaceShell({
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               ) : null}
-            </Link>
-            <Link
-              href={`${base}/settings`}
+            </button>
+            <button
+              type="button"
               title="Settings"
               aria-label="Settings"
+              onClick={() => setPanel("settings")}
               className={cn(
                 headerBtn,
                 "size-8 px-0",
-                settingsActive &&
+                panel === "settings" &&
                   "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
               )}
             >
               <Settings className="size-4" />
-            </Link>
+            </button>
             <form action={logoutAction}>
               <Button
                 type="submit"
@@ -170,6 +328,46 @@ export function WorkspaceShell({
           {children}
         </main>
       </div>
+
+      <Sheet
+        open={panel !== null}
+        onOpenChange={(open) => {
+          if (!open) setPanel(null);
+        }}
+      >
+        <SheetContent
+          side="right"
+          className="w-full gap-0 p-0 duration-300 ease-out sm:max-w-md"
+        >
+          <SheetHeader className="shrink-0 border-b border-border/70 px-5 py-4 pr-12">
+            <SheetTitle>
+              {panel === "settings" ? "Settings" : "Alerts"}
+            </SheetTitle>
+            <SheetDescription>
+              {panel === "settings"
+                ? "Workspace and profile preferences."
+                : "Invites, bills, and budget warnings."}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+            {panel === "settings" ? (
+              <SettingsPanel
+                isOwner={isOwner}
+                workspaceName={workspaceName}
+                currency={currency}
+                profileName={profileName}
+                workspaceAction={workspaceAction}
+                profileAction={profileAction}
+              />
+            ) : (
+              <NotificationsPanel
+                workspaceSlug={workspaceSlug}
+                notifications={notifications}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
