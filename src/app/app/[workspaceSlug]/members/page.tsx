@@ -5,6 +5,8 @@ import {
   revokeInviteAction,
   updateMemberRoleAction,
 } from "@/actions/invites";
+import { PageHeader } from "@/components/design/page-header";
+import { SectionTitle } from "@/components/design/section-title";
 import { InviteForm } from "@/components/members/invite-form";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
@@ -41,18 +43,16 @@ export default async function MembersPage({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      <div>
-        <h1 className="font-heading text-3xl tracking-tight">Members</h1>
-        <p className="text-muted-foreground">
-          Family access, roles, and Mailpit invites.
-        </p>
-      </div>
+      <PageHeader
+        title="Members"
+        description="Family access, roles, and Mailpit invites."
+      />
 
       {canAdmin ? <InviteForm action={invite} /> : null}
 
       <section className="space-y-3">
-        <h2 className="font-heading text-xl">Household</h2>
-        <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
+        <SectionTitle>Household</SectionTitle>
+        <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
           {members.map((m) => (
             <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div>
@@ -100,7 +100,7 @@ export default async function MembersPage({
 
       {canAdmin ? (
         <section className="space-y-3">
-          <h2 className="font-heading text-xl">Pending invites</h2>
+          <SectionTitle>Pending invites</SectionTitle>
           {invites.length === 0 ? (
             <p className="text-sm text-muted-foreground">No pending invites.</p>
           ) : (

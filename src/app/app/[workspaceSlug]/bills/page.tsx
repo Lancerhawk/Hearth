@@ -6,6 +6,8 @@ import {
 } from "@/actions/bills";
 import { BillForm } from "@/components/bills/bill-form";
 import { MonthPicker } from "@/components/budget/month-picker";
+import { PageHeader } from "@/components/design/page-header";
+import { SectionTitle } from "@/components/design/section-title";
 import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
 import { loadMonthBudget } from "@/lib/budget/load-month";
@@ -36,19 +38,23 @@ export default async function BillsPage({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-heading text-3xl tracking-tight">Bills</h1>
-          <p className="text-muted-foreground">Recurring templates and this month&apos;s instances.</p>
-        </div>
-        <MonthPicker basePath={`/app/${workspaceSlug}/bills`} year={year} month={month} />
-      </div>
+      <PageHeader
+        title="Bills"
+        description="Recurring templates and this month's instances."
+        trailing={
+          <MonthPicker
+            basePath={`/app/${workspaceSlug}/bills`}
+            year={year}
+            month={month}
+          />
+        }
+      />
 
       {canAdmin ? <BillForm action={create} /> : null}
 
       <section className="space-y-3">
-        <h2 className="font-heading text-xl">This month</h2>
-        <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
+        <SectionTitle>This month</SectionTitle>
+        <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
           {budget.billInstances.length === 0 ? (
             <li className="px-4 py-6 text-sm text-muted-foreground">No bill instances yet.</li>
           ) : (
@@ -87,8 +93,8 @@ export default async function BillsPage({
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-heading text-xl">Templates</h2>
-        <ul className="divide-y divide-border/70 rounded-xl border border-border/70 bg-card/50">
+        <SectionTitle>Templates</SectionTitle>
+        <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
           {templates.map((t) => (
             <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div>
