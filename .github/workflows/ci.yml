@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   checks:
-    name: Lint · Typecheck · Prettier
+    name: Prettier · Lint · Typecheck · Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -34,5 +34,37 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Format · Lint · Typecheck
+      - name: Prettier · Lint · Typecheck · Build
+        env:
+          # Build-time placeholders — real secrets live on Vercel only
+          AUTH_SECRET: ci-build-placeholder-not-for-production
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
         run: pnpm check
+
+  deploy:
+    name: Deploy production
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Deploy to Vercel (production)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::Missing VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID secrets"
+            exit 1
+          fi
+          npx vercel deploy --prod --yes --token="$VERCEL_TOKEN"
