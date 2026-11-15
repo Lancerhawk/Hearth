@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import { addSavingsAction, deleteEntryAction } from "@/actions/entries";
+import {
+  addSavingsAction,
+  deleteEntryAction,
+  updateEntryAction,
+} from "@/actions/entries";
 import { MonthPicker } from "@/components/budget/month-picker";
 import { MoneyList } from "@/components/design/money-list";
 import { PageHeader } from "@/components/design/page-header";
 import { EntryForm } from "@/components/entries/entry-form";
-import { Button } from "@/components/ui/button";
+import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadMonthBudget } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
-import { formatCurrency } from "@/lib/money";
+import { formatCurrency, toNumber } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Savings" };
 
@@ -52,19 +56,28 @@ export default async function SavingsPage({
         items={budget.savings.map((row) => ({
           id: row.id,
           title: row.title,
-          meta: `${row.savedOn.toISOString().slice(0, 10)} · added by ${actorLabel(row.createdBy)}`,
+          meta: `${toIsoDate(row.savedOn)} · added by ${actorLabel(row.createdBy)}`,
           amount: formatCurrency(row.amount, workspace.currency),
           action: (
-            <form
-              action={async () => {
+            <EntryRowActions
+              type="savings"
+              defaults={{
+                title: row.title,
+                amount: String(toNumber(row.amount)),
+                date: toIsoDate(row.savedOn),
+                note: row.note ?? "",
+              }}
+              updateAction={updateEntryAction.bind(
+                null,
+                workspaceSlug,
+                "savings",
+                row.id,
+              )}
+              onDelete={async () => {
                 "use server";
                 await deleteEntryAction(workspaceSlug, "savings", row.id);
               }}
-            >
-              <Button type="submit" size="sm" variant="ghost">
-                Delete
-              </Button>
-            </form>
+            />
           ),
         }))}
       />

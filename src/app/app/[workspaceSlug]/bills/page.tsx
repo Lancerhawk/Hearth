@@ -3,8 +3,14 @@ import {
   createRecurringBillAction,
   setBillStatusAction,
   toggleRecurringBillAction,
+  updateBillInstanceAction,
+  updateRecurringBillAction,
 } from "@/actions/bills";
 import { BillForm } from "@/components/bills/bill-form";
+import {
+  BillInstanceEditButton,
+  RecurringBillEditButton,
+} from "@/components/bills/bill-row-actions";
 import { MonthPicker } from "@/components/budget/month-picker";
 import { PageHeader } from "@/components/design/page-header";
 import { SectionTitle } from "@/components/design/section-title";
@@ -12,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
 import { loadMonthBudget } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
-import { formatCurrency } from "@/lib/money";
+import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Bills" };
@@ -74,6 +80,14 @@ export default async function BillsPage({
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span>{formatCurrency(b.amount, workspace.currency)}</span>
+                  <BillInstanceEditButton
+                    amount={String(toNumber(b.amount))}
+                    updateAction={updateBillInstanceAction.bind(
+                      null,
+                      workspaceSlug,
+                      b.id,
+                    )}
+                  />
                   {(["PENDING", "PAID", "SKIPPED"] as const).map((status) => (
                     <form
                       key={status}
@@ -115,20 +129,34 @@ export default async function BillsPage({
                 </p>
               </div>
               {canAdmin ? (
-                <form
-                  action={async () => {
-                    "use server";
-                    await toggleRecurringBillAction(
+                <div className="flex flex-wrap items-center gap-1">
+                  <RecurringBillEditButton
+                    defaults={{
+                      name: t.name,
+                      amount: String(toNumber(t.amount)),
+                      dayOfMonth: String(t.dayOfMonth),
+                    }}
+                    updateAction={updateRecurringBillAction.bind(
+                      null,
                       workspaceSlug,
                       t.id,
-                      !t.isActive,
-                    );
-                  }}
-                >
-                  <Button type="submit" size="sm" variant="outline">
-                    {t.isActive ? "Deactivate" : "Activate"}
-                  </Button>
-                </form>
+                    )}
+                  />
+                  <form
+                    action={async () => {
+                      "use server";
+                      await toggleRecurringBillAction(
+                        workspaceSlug,
+                        t.id,
+                        !t.isActive,
+                      );
+                    }}
+                  >
+                    <Button type="submit" size="sm" variant="outline">
+                      {t.isActive ? "Deactivate" : "Activate"}
+                    </Button>
+                  </form>
+                </div>
               ) : null}
             </li>
           ))}
