@@ -40,12 +40,14 @@ export function WorkspaceShell({
 
   return (
     <div className="flex min-h-full flex-1">
-      <aside className="hidden w-60 shrink-0 border-r border-sidebar-border bg-sidebar/90 p-5 md:flex md:flex-col">
-        <BrandMark href={`${base}/dashboard`} size="md" />
-        <p className="mt-1 truncate text-xs text-muted-foreground">
-          {workspaceName}
-        </p>
-        <nav className="mt-7 flex flex-1 flex-col gap-0.5">
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/90 p-5 md:flex">
+        <div className="shrink-0">
+          <BrandMark href={`${base}/dashboard`} size="md" />
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            {workspaceName}
+          </p>
+        </div>
+        <nav className="mt-7 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain pr-1">
           {links.map((link) => {
             const href = `${base}/${link.href}`;
             const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -70,7 +72,7 @@ export function WorkspaceShell({
             );
           })}
         </nav>
-        <div className="mt-4 space-y-2 border-t border-sidebar-border pt-4">
+        <div className="mt-4 shrink-0 space-y-2 border-t border-sidebar-border pt-4">
           <Link
             href="/app"
             className={cn(
