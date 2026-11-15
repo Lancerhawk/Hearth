@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "node scripts/migrate-deploy.cjs && next build",
-    "ci": "pnpm format:check && pnpm lint && pnpm typecheck",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
