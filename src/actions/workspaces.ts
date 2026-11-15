@@ -13,6 +13,7 @@ export type WorkspaceActionState = {
   values?: {
     name?: string;
     currency?: string;
+    kind?: string;
   };
 };
 
@@ -25,6 +26,7 @@ export async function createWorkspaceAction(
   const values = {
     name: String(formData.get("name") ?? ""),
     currency: String(formData.get("currency") || "INR"),
+    kind: String(formData.get("kind") || "HOME"),
   };
 
   const parsed = createWorkspaceSchema.safeParse(values);
@@ -45,6 +47,7 @@ export async function createWorkspaceAction(
         name: parsed.data.name,
         slug,
         currency: parsed.data.currency,
+        kind: parsed.data.kind,
         members: {
           create: {
             userId: user.id,

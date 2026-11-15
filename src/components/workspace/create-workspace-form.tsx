@@ -30,7 +30,8 @@ export function CreateWorkspaceForm() {
       <CardHeader>
         <CardTitle className="font-heading text-2xl">New workspace</CardTitle>
         <CardDescription>
-          Create a household space for shared budgets and bills.
+          Home spaces use Funds. Solo spaces use Income — same feature, clearer
+          naming.
         </CardDescription>
       </CardHeader>
       <form action={formAction}>
@@ -40,6 +41,48 @@ export function CreateWorkspaceForm() {
               {state.error}
             </p>
           ) : null}
+
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">Who is this for?</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="flex cursor-pointer flex-col gap-1 rounded-xl border border-border/80 bg-card/60 px-3 py-3 has-[:checked]:border-hearth-moss has-[:checked]:bg-[color-mix(in_srgb,var(--hearth-moss)_10%,var(--hearth-paper))]">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <input
+                    type="radio"
+                    name="kind"
+                    value="HOME"
+                    defaultChecked={(state.values?.kind ?? "HOME") === "HOME"}
+                    disabled={pending}
+                  />
+                  Home
+                </span>
+                <span className="pl-5 text-xs text-muted-foreground">
+                  Household — money in is labeled Funds
+                </span>
+              </label>
+              <label className="flex cursor-pointer flex-col gap-1 rounded-xl border border-border/80 bg-card/60 px-3 py-3 has-[:checked]:border-hearth-moss has-[:checked]:bg-[color-mix(in_srgb,var(--hearth-moss)_10%,var(--hearth-paper))]">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <input
+                    type="radio"
+                    name="kind"
+                    value="PERSONAL"
+                    defaultChecked={state.values?.kind === "PERSONAL"}
+                    disabled={pending}
+                  />
+                  Just you
+                </span>
+                <span className="pl-5 text-xs text-muted-foreground">
+                  Solo — money in is labeled Income
+                </span>
+              </label>
+            </div>
+            {state.fieldErrors?.kind?.[0] ? (
+              <p className="text-sm text-destructive">
+                {state.fieldErrors.kind[0]}
+              </p>
+            ) : null}
+          </fieldset>
+
           <div className="space-y-2">
             <Label htmlFor="name">Workspace name</Label>
             <Input

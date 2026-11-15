@@ -81,13 +81,19 @@ enum InviteStatus {
   EXPIRED
 }
 
+enum WorkspaceKind {
+  HOME
+  PERSONAL
+}
+
 model Workspace {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
-  slug      String   @unique
-  currency  String   @default("INR")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  slug      String        @unique
+  currency  String        @default("INR")
+  kind      WorkspaceKind @default(HOME)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   members       WorkspaceMembership[]
   invites       WorkspaceInvite[]

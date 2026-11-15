@@ -14,8 +14,9 @@ import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadMonthBudget } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
+import { moneyInDescription, moneyInLabel } from "@/lib/workspace/labels";
 
-export const metadata: Metadata = { title: "Income" };
+export const metadata: Metadata = { title: "Money in" };
 
 export default async function IncomePage({
   params,
@@ -30,12 +31,13 @@ export default async function IncomePage({
   const { year, month } = parsePeriod(sp.year, sp.month);
   const { budget } = await loadMonthBudget(workspace.id, year, month);
   const action = addIncomeAction.bind(null, workspaceSlug, year, month);
+  const label = moneyInLabel(workspace.kind);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Income"
-        description="Paychecks and other money in."
+        title={label}
+        description={moneyInDescription(workspace.kind)}
         trailing={
           <MonthPicker
             basePath={`/app/${workspaceSlug}/income`}
@@ -48,12 +50,12 @@ export default async function IncomePage({
       <EntryForm
         action={action}
         defaultDate={toIsoDate()}
-        submitLabel="Add income"
+        submitLabel={`Add ${label.toLowerCase()}`}
       />
 
       <MoneyList
-        emptyTitle="No income this month"
-        emptyDescription="Add a paycheck or transfer to start the month."
+        emptyTitle={`No ${label.toLowerCase()} this month`}
+        emptyDescription="Add a paycheck, leftover, or one-off to start the month."
         items={budget.incomes.map((row) => ({
           id: row.id,
           title: row.title,

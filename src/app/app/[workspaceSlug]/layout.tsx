@@ -3,6 +3,7 @@ import { syncBillNotifications } from "@/actions/notifications";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { requireMembership } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
+import { moneyInLabel } from "@/lib/workspace/labels";
 
 export default async function WorkspaceLayout({
   children,
@@ -32,6 +33,7 @@ export default async function WorkspaceLayout({
       workspaceSlug={workspace.slug}
       workspaceName={workspace.name}
       unreadCount={unreadCount}
+      moneyInLabel={moneyInLabel(workspace.kind)}
     >
       {children}
     </WorkspaceShell>
