@@ -1,4 +1,5 @@
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
+import { syncCarryoverFunds } from "@/lib/budget/carryover";
 import { buildDayMap } from "@/lib/budget/day-map";
 import { ensureMonthlyBudget } from "@/lib/budget/period";
 import { rebalanceEntriesToDateMonth } from "@/lib/budget/rebalance-entries";
@@ -20,6 +21,8 @@ export async function loadMonthBudget(
   await rebalanceEntriesToDateMonth(workspaceId);
 
   const budget = await ensureMonthlyBudget(workspaceId, year, month);
+  // Previous month leftover → Funds line in this month (auto-updates).
+  await syncCarryoverFunds(workspaceId, year, month);
 
   const full = await prisma.monthlyBudget.findUniqueOrThrow({
     where: { id: budget.id },

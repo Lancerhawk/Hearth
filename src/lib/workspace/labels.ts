@@ -7,8 +7,8 @@ export function moneyInLabel(kind: WorkspaceKind = "HOME") {
 
 export function moneyInDescription(kind: WorkspaceKind = "HOME") {
   return kind === "PERSONAL"
-    ? "Paychecks and other money in for this month."
-    : "Household money available this month — salary, leftovers, one-offs.";
+    ? "Paychecks and other money in. Last month’s leftover is brought forward automatically."
+    : "Household money in this month. Last month’s leftover is brought forward automatically.";
 }
 
 export function workspaceKindLabel(kind: WorkspaceKind = "HOME") {
