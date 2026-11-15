@@ -217,12 +217,132 @@ export async function addChargeAction(
   return { success: "Charge added." };
 }
 
+export type EntryKind = "expense" | "income" | "savings" | "charge";
+
+async function assertEntryInWorkspace(
+  type: EntryKind,
+  id: string,
+  workspaceId: string,
+) {
+  if (type === "expense") {
+    const row = await prisma.expenseEntry.findUnique({
+      where: { id },
+      include: { budget: { select: { workspaceId: true, id: true } } },
+    });
+    if (!row || row.budget.workspaceId !== workspaceId) return null;
+    return row.budget.id;
+  }
+  if (type === "income") {
+    const row = await prisma.incomeEntry.findUnique({
+      where: { id },
+      include: { budget: { select: { workspaceId: true, id: true } } },
+    });
+    if (!row || row.budget.workspaceId !== workspaceId) return null;
+    return row.budget.id;
+  }
+  if (type === "savings") {
+    const row = await prisma.savingsEntry.findUnique({
+      where: { id },
+      include: { budget: { select: { workspaceId: true, id: true } } },
+    });
+    if (!row || row.budget.workspaceId !== workspaceId) return null;
+    return row.budget.id;
+  }
+  const row = await prisma.chargeEntry.findUnique({
+    where: { id },
+    include: { budget: { select: { workspaceId: true, id: true } } },
+  });
+  if (!row || row.budget.workspaceId !== workspaceId) return null;
+  return row.budget.id;
+}
+
+export async function updateEntryAction(
+  workspaceSlug: string,
+  type: EntryKind,
+  id: string,
+  _prev: EntryActionState,
+  formData: FormData,
+): Promise<EntryActionState> {
+  const { workspace } = await requireMembership(workspaceSlug);
+  const parsed = moneyEntrySchema.safeParse({
+    title: formData.get("title"),
+    amount: formData.get("amount"),
+    date: formData.get("date"),
+    note: formData.get("note") || "",
+    categoryId: formData.get("categoryId") || "",
+  });
+  if (!parsed.success) {
+    return {
+      fieldErrors: parsed.error.flatten().fieldErrors,
+      error: "Please fix the highlighted fields.",
+    };
+  }
+  const onDate = parseDate(parsed.data.date);
+  if (!onDate) return { error: "Invalid date." };
+
+  const budgetId = await assertEntryInWorkspace(type, id, workspace.id);
+  if (!budgetId) return { error: "Entry not found." };
+
+  if (type === "expense") {
+    await prisma.expenseEntry.update({
+      where: { id },
+      data: {
+        title: parsed.data.title,
+        amount: parsed.data.amount,
+        spentOn: onDate,
+        note: parsed.data.note || null,
+        categoryId: parsed.data.categoryId || null,
+      },
+    });
+  } else if (type === "income") {
+    await prisma.incomeEntry.update({
+      where: { id },
+      data: {
+        title: parsed.data.title,
+        amount: parsed.data.amount,
+        earnedOn: onDate,
+        note: parsed.data.note || null,
+      },
+    });
+  } else if (type === "savings") {
+    await prisma.savingsEntry.update({
+      where: { id },
+      data: {
+        title: parsed.data.title,
+        amount: parsed.data.amount,
+        savedOn: onDate,
+        note: parsed.data.note || null,
+      },
+    });
+  } else {
+    await prisma.chargeEntry.update({
+      where: { id },
+      data: {
+        title: parsed.data.title,
+        amount: parsed.data.amount,
+        chargedOn: onDate,
+        note: parsed.data.note || null,
+        categoryId: parsed.data.categoryId || null,
+      },
+    });
+  }
+
+  if (type !== "income") {
+    await maybeBudgetLow(workspace.id, workspaceSlug, budgetId);
+  }
+  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  return { success: "Entry updated." };
+}
+
 export async function deleteEntryAction(
   workspaceSlug: string,
-  type: "expense" | "income" | "savings" | "charge",
+  type: EntryKind,
   id: string,
 ) {
-  await requireMembership(workspaceSlug);
+  const { workspace } = await requireMembership(workspaceSlug);
+  const budgetId = await assertEntryInWorkspace(type, id, workspace.id);
+  if (!budgetId) return;
+
   if (type === "expense") await prisma.expenseEntry.delete({ where: { id } });
   if (type === "income") await prisma.incomeEntry.delete({ where: { id } });
   if (type === "savings") await prisma.savingsEntry.delete({ where: { id } });
