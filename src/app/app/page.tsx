@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { logoutAction } from "@/actions/auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { listUserWorkspaces, requireUser } from "@/lib/budget/access";
@@ -9,9 +8,8 @@ export default async function AppHomePage() {
   const user = await requireUser();
   const memberships = await listUserWorkspaces(user.id);
 
-  if (memberships.length === 1) {
-    redirect(`/app/${memberships[0].workspace.slug}/dashboard`);
-  }
+  // Always show the picker — never auto-bounce into the only workspace,
+  // or "Workspaces" in the sidebar can't open create/switch UI.
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-8 px-6 py-16">
@@ -33,7 +31,7 @@ export default async function AppHomePage() {
         <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
           <p className="font-heading text-xl">No workspaces yet</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Create your first household space to start tracking this month.
+            Create your first space to start tracking this month.
           </p>
           <Link
             href="/app/workspaces/new"
@@ -54,6 +52,7 @@ export default async function AppHomePage() {
                   <p className="font-medium">{m.workspace.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {m.role.toLowerCase()} · {m.workspace.currency}
+                    {m.workspace.kind === "PERSONAL" ? " · just you" : " · home"}
                   </p>
                 </div>
                 <span className="text-sm text-muted-foreground">Open →</span>
@@ -63,14 +62,16 @@ export default async function AppHomePage() {
         </ul>
       )}
 
-      {memberships.length > 0 ? (
-        <Link
-          href="/app/workspaces/new"
-          className={cn(buttonVariants({ variant: "outline" }))}
-        >
-          Create another workspace
-        </Link>
-      ) : null}
+      <Link
+        href="/app/workspaces/new"
+        className={cn(
+          buttonVariants({
+            variant: memberships.length > 0 ? "outline" : "default",
+          }),
+        )}
+      >
+        {memberships.length > 0 ? "Create another workspace" : "Create workspace"}
+      </Link>
     </div>
   );
 }
