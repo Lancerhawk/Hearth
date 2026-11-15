@@ -1,7 +1,12 @@
 import { requireMembership } from "@/lib/budget/access";
-import { loadMonthBudget } from "@/lib/budget/load-month";
-import { parsePeriod } from "@/lib/budget/period";
-import { buildStatementRows, statementCsv } from "@/lib/statements/build-rows";
+import { statementCsv } from "@/lib/statements/build-rows";
+import {
+  parseStatementFilters,
+  statementKindLabel,
+  statementQuery,
+} from "@/lib/statements/filters";
+import { loadFilteredStatement } from "@/lib/statements/load-statement";
+import { moneyInLabel } from "@/lib/workspace/labels";
 
 export async function GET(
   request: Request,
@@ -10,25 +15,21 @@ export async function GET(
   const { workspaceSlug } = await context.params;
   const { workspace } = await requireMembership(workspaceSlug);
   const url = new URL(request.url);
-  const { year, month } = parsePeriod(
-    url.searchParams.get("year"),
-    url.searchParams.get("month"),
+  const filters = parseStatementFilters(
+    Object.fromEntries(url.searchParams.entries()),
   );
-  const { budget } = await loadMonthBudget(workspace.id, year, month);
-  const rows = buildStatementRows({
-    expenses: budget.expenses,
-    charges: budget.charges,
-    incomes: budget.incomes,
-    savings: budget.savings,
-    bills: budget.billInstances,
-  });
-  const body = statementCsv(rows, workspace.currency);
-  const filename = `hearth-${workspace.slug}-${year}-${String(month).padStart(2, "0")}.csv`;
+  const { rows, totals } = await loadFilteredStatement(workspace.id, filters);
+  const body = statementCsv(rows, workspace.currency, totals);
+  const kind = statementKindLabel(filters.kind, moneyInLabel(workspace.kind))
+    .toLowerCase()
+    .replaceAll(" ", "-");
+  const filename = `hearth-${workspace.slug}-${kind}-${filters.from}_to_${filters.to}.csv`;
 
   return new Response(body, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${filename}"`,
+      "X-Statement-Query": statementQuery(filters),
     },
   });
 }
