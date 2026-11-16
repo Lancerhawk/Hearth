@@ -51,7 +51,7 @@ export async function markNotificationReadAction(id: string) {
     where: { id, userId: user.id, readAt: null },
     data: { readAt: new Date() },
   });
-  revalidatePath("/app", "layout");
+  revalidatePath(`/app`, "layout");
 }
 
 export async function markAllNotificationsReadAction(workspaceSlug?: string) {
@@ -68,6 +68,7 @@ export async function markAllNotificationsReadAction(workspaceSlug?: string) {
     },
     data: { readAt: new Date() },
   });
+  // Unread badge lives in the workspace layout — keep the blast narrow.
   revalidatePath("/app", "layout");
   if (workspaceSlug) {
     revalidatePath(`/app/${workspaceSlug}`, "layout");
