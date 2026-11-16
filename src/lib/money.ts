@@ -21,6 +21,21 @@ export function formatCurrency(
   }).format(Number.isFinite(amount) ? amount : 0);
 }
 
+/** Compact currency for tight UI (calendar cells). */
+export function formatCurrencyCompact(
+  value: MoneyInput,
+  currency = "INR",
+  locale = "en-IN",
+): string {
+  const amount = toNumber(value);
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(Number.isFinite(amount) ? amount : 0);
+}
+
 export function parseAmount(raw: FormDataEntryValue | null): number | null {
   if (raw == null) return null;
   const n = Number(String(raw).replace(/,/g, "").trim());
