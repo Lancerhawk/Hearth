@@ -11,7 +11,7 @@ import { EntryForm } from "@/components/entries/entry-form";
 import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
-import { loadMonthBudget } from "@/lib/budget/load-month";
+import { loadSavingsForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 
@@ -28,7 +28,7 @@ export default async function SavingsPage({
   const sp = await searchParams;
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
-  const { budget } = await loadMonthBudget(workspace.id, year, month);
+  const { savings } = await loadSavingsForMonth(workspace.id, year, month);
   const action = addSavingsAction.bind(null, workspaceSlug, year, month);
 
   return (
@@ -53,7 +53,7 @@ export default async function SavingsPage({
 
       <MoneyList
         emptyTitle="No savings this month"
-        items={budget.savings.map((row) => ({
+        items={savings.map((row) => ({
           id: row.id,
           title: row.title,
           meta: `${toIsoDate(row.savedOn)} · added by ${actorLabel(row.createdBy)}`,

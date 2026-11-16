@@ -11,7 +11,7 @@ import { EntryForm } from "@/components/entries/entry-form";
 import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
-import { loadMonthBudget } from "@/lib/budget/load-month";
+import { loadChargesForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -29,7 +29,7 @@ export default async function ChargesPage({
   const sp = await searchParams;
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
-  const { budget } = await loadMonthBudget(workspace.id, year, month);
+  const { charges } = await loadChargesForMonth(workspace.id, year, month);
   const categories = await prisma.category.findMany({
     where: { workspaceId: workspace.id, type: { in: ["CHARGE", "EXPENSE"] } },
     orderBy: { name: "asc" },
@@ -61,7 +61,7 @@ export default async function ChargesPage({
 
       <MoneyList
         emptyTitle="No charges this month"
-        items={budget.charges.map((row) => ({
+        items={charges.map((row) => ({
           id: row.id,
           title: row.title,
           meta: `${toIsoDate(row.chargedOn)}${row.category ? ` · ${row.category.name}` : ""} · added by ${actorLabel(row.createdBy)}`,
