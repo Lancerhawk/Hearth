@@ -188,6 +188,8 @@ function StatementMobileCard({
           <p className="mt-0.5 text-xs text-muted-foreground">
             {row.category}
             {row.addedBy ? ` · ${row.addedBy}` : ""}
+            {" · "}
+            {row.recordedAt.slice(0, 16).replace("T", " ")}
           </p>
         </div>
         <p
