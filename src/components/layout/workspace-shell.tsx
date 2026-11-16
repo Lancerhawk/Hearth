@@ -233,6 +233,7 @@ export function WorkspaceShell({
           <div className="flex min-w-0 items-center gap-3">
             <div className="md:hidden">
               <BrandMark href={`${base}/dashboard`} size="sm" />
+              <span className="sr-only">Workspace {workspaceName}</span>
             </div>
             {/* Desktop/tablet: workspace name. Mobile already shows Hearth — avoid "Hearth home". */}
             <div className="hidden min-w-0 md:block">
