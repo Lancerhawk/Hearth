@@ -6,6 +6,7 @@ import {
   categorySelect,
   creatorSelect,
 } from "@/lib/budget/month-selects";
+import { withPerfLog } from "@/lib/budget/perf-log";
 import { prepareMonthBudget } from "@/lib/budget/prepare-month";
 import { prisma } from "@/lib/prisma";
 
@@ -190,46 +191,48 @@ export async function loadMonthBudget(
   year: number,
   month: number,
 ) {
-  const budget = await prepareMonthBudget(workspaceId, year, month);
+  return withPerfLog(`loadMonthBudget ${year}-${month}`, async () => {
+    const budget = await prepareMonthBudget(workspaceId, year, month);
 
-  const full = await prisma.monthlyBudget.findUniqueOrThrow({
-    where: { id: budget.id },
-    include: {
-      incomes: {
-        include: { createdBy: creatorSelect },
-        orderBy: { earnedOn: "desc" },
+    const full = await prisma.monthlyBudget.findUniqueOrThrow({
+      where: { id: budget.id },
+      include: {
+        incomes: {
+          include: { createdBy: creatorSelect },
+          orderBy: { earnedOn: "desc" },
+        },
+        expenses: {
+          include: { createdBy: creatorSelect, category: categorySelect },
+          orderBy: { spentOn: "desc" },
+        },
+        charges: {
+          include: { createdBy: creatorSelect, category: categorySelect },
+          orderBy: { chargedOn: "desc" },
+        },
+        savings: {
+          include: { createdBy: creatorSelect },
+          orderBy: { savedOn: "desc" },
+        },
+        billInstances: {
+          include: { recurringBill: true },
+          orderBy: { dueDate: "asc" },
+        },
       },
-      expenses: {
-        include: { createdBy: creatorSelect, category: categorySelect },
-        orderBy: { spentOn: "desc" },
-      },
-      charges: {
-        include: { createdBy: creatorSelect, category: categorySelect },
-        orderBy: { chargedOn: "desc" },
-      },
-      savings: {
-        include: { createdBy: creatorSelect },
-        orderBy: { savedOn: "desc" },
-      },
-      billInstances: {
-        include: { recurringBill: true },
-        orderBy: { dueDate: "asc" },
-      },
-    },
+    });
+
+    const summary = calculateBudgetSummary({
+      incomes: full.incomes,
+      expenses: full.expenses,
+      charges: full.charges,
+      savings: full.savings,
+      bills: full.billInstances,
+    });
+
+    const dayMap = buildDayMap({
+      expenses: full.expenses,
+      charges: full.charges,
+    });
+
+    return { budget: full, summary, dayMap };
   });
-
-  const summary = calculateBudgetSummary({
-    incomes: full.incomes,
-    expenses: full.expenses,
-    charges: full.charges,
-    savings: full.savings,
-    bills: full.billInstances,
-  });
-
-  const dayMap = buildDayMap({
-    expenses: full.expenses,
-    charges: full.charges,
-  });
-
-  return { budget: full, summary, dayMap };
 }
