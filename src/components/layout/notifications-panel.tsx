@@ -11,6 +11,7 @@ import {
 } from "@/actions/notifications";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatAlertedAt } from "@/lib/notifications/format";
 import { cn } from "@/lib/utils";
 
 export type NotificationItem = NotificationListItem;
@@ -131,7 +132,7 @@ export function NotificationsPanel({
                     <p className="text-sm text-muted-foreground">{n.body}</p>
                   ) : null}
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {n.createdAt.slice(0, 16).replace("T", " ")}
+                    {formatAlertedAt(n.createdAt)}
                   </p>
                   {n.href ? (
                     <Link
