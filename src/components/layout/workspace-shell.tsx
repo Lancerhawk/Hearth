@@ -233,20 +233,27 @@ export function WorkspaceShell({
           <div className="flex min-w-0 items-center gap-3">
             <div className="md:hidden">
               <BrandMark href={`${base}/dashboard`} size="sm" />
+              <span className="sr-only">Workspace {workspaceName}</span>
             </div>
-            <div className="min-w-0">
+            {/* Desktop/tablet: workspace name. Mobile already shows Hearth — avoid "Hearth home". */}
+            <div className="hidden min-w-0 md:block">
               <p className="truncate font-heading text-lg tracking-tight text-hearth-ink">
                 {workspaceName}
               </p>
-              <p className="hidden text-xs text-muted-foreground sm:block">
-                Current workspace
-              </p>
+              <p className="text-xs text-muted-foreground">Current workspace</p>
             </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Link href="/app" prefetch className={headerBtn}>
-              Workspaces
+            <Link
+              href="/app"
+              prefetch
+              title="Workspaces"
+              aria-label="Workspaces"
+              className={headerBtn}
+            >
+              <span className="sm:hidden">Spaces</span>
+              <span className="hidden sm:inline">Workspaces</span>
             </Link>
             <button
               type="button"

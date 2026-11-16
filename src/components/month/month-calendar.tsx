@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { DayBucket } from "@/lib/budget/day-map";
-import { formatCurrency } from "@/lib/money";
+import { formatCurrencyCompact } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export function MonthCalendar({
@@ -27,13 +27,17 @@ export function MonthCalendar({
   for (let d = 1; d <= days; d++) cells.push({ day: d, key: `d-${d}` });
 
   return (
-    <div className="grid grid-cols-7 gap-1.5 text-sm">
-      {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+    <div className="grid grid-cols-7 gap-1 text-[11px] sm:gap-1.5 sm:text-sm">
+      {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
         <div
-          key={d}
-          className="px-1 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+          key={`${d}-${i}`}
+          className="px-0.5 py-1.5 text-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:px-1 sm:py-2 sm:text-[11px]"
+          title={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]}
         >
-          {d}
+          <span className="sm:hidden">{d}</span>
+          <span className="hidden sm:inline">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]}
+          </span>
         </div>
       ))}
       {cells.map((cell) => {
@@ -41,7 +45,7 @@ export function MonthCalendar({
           return (
             <div
               key={cell.key}
-              className="min-h-20 rounded-xl bg-transparent"
+              className="min-h-14 rounded-lg bg-transparent sm:min-h-20 sm:rounded-xl"
             />
           );
         }
@@ -53,23 +57,31 @@ export function MonthCalendar({
             key={cell.key}
             href={`${basePath}?year=${year}&month=${month}&day=${cell.day}&view=calendar`}
             className={cn(
-              "min-h-20 rounded-xl border border-border/70 bg-card/50 p-2 transition-colors hover:border-hearth-moss/40 hover:bg-accent/50",
+              "flex min-h-14 min-w-0 flex-col overflow-hidden rounded-lg border border-border/70 bg-card/50 p-1 transition-colors hover:border-hearth-moss/40 hover:bg-accent/50 sm:min-h-20 sm:rounded-xl sm:p-2",
               active &&
                 "border-hearth-moss bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--hearth-moss)_35%,transparent)]",
             )}
           >
-            <p className="text-xs font-medium text-hearth-ink">{cell.day}</p>
+            <p className="text-[10px] font-medium text-hearth-ink sm:text-xs">
+              {cell.day}
+            </p>
             {bucket ? (
-              <>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {bucket.count} item(s)
+              <div className="mt-0.5 min-w-0 flex-1 sm:mt-1">
+                <p className="truncate text-[9px] leading-tight text-muted-foreground sm:text-[11px]">
+                  {bucket.count}
+                  <span className="hidden sm:inline"> item(s)</span>
                 </p>
-                <p className="text-xs font-medium text-hearth-ink">
-                  {formatCurrency(bucket.spend, currency)}
+                <p
+                  className="truncate text-[10px] font-medium leading-tight text-hearth-ink sm:text-xs"
+                  title={formatCurrencyCompact(bucket.spend, currency)}
+                >
+                  {formatCurrencyCompact(bucket.spend, currency)}
                 </p>
-              </>
+              </div>
             ) : (
-              <p className="mt-2 text-[11px] text-muted-foreground">Add</p>
+              <p className="mt-1 text-[9px] text-muted-foreground sm:mt-2 sm:text-[11px]">
+                ·
+              </p>
             )}
           </Link>
         );
