@@ -14,13 +14,19 @@ export function RouteWarmer({ workspaceSlug }: { workspaceSlug: string }) {
       router.prefetch(`${base}/month`);
     };
 
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(warm);
-      return () => window.cancelIdleCallback(id);
+    const w = window as Window &
+      typeof globalThis & {
+        requestIdleCallback?: (cb: () => void) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(warm);
+      return () => w.cancelIdleCallback?.(id);
     }
 
-    const t = window.setTimeout(warm, 200);
-    return () => window.clearTimeout(t);
+    const t = globalThis.setTimeout(warm, 200);
+    return () => globalThis.clearTimeout(t);
   }, [router, workspaceSlug]);
 
   return null;
