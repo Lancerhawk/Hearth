@@ -6,6 +6,7 @@ import { useState, useSyncExternalStore } from "react";
 import type { SettingsActionState } from "@/actions/settings";
 import { logoutAction } from "@/actions/auth";
 import { BrandMark } from "@/components/design/brand-mark";
+import { NavLink } from "@/components/layout/nav-link";
 import {
   NotificationsPanel,
   type NotificationItem,
@@ -182,9 +183,10 @@ export function WorkspaceShell({
             const active = pathname === href || pathname.startsWith(`${href}/`);
             const Icon = navIcons[link.href] ?? LayoutDashboard;
             return (
-              <Link
+              <NavLink
                 key={link.href}
                 href={href}
+                prefetch
                 title={link.label}
                 aria-label={link.label}
                 className={cn(
@@ -204,7 +206,7 @@ export function WorkspaceShell({
                 >
                   {link.label}
                 </span>
-              </Link>
+              </NavLink>
             );
           })}
         </nav>
@@ -308,9 +310,10 @@ export function WorkspaceShell({
             const href = `${base}/${link.href}`;
             const active = pathname === href || pathname.startsWith(`${href}/`);
             return (
-              <Link
+              <NavLink
                 key={link.href}
                 href={href}
+                prefetch
                 className={cn(
                   "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors duration-150",
                   active
@@ -319,7 +322,7 @@ export function WorkspaceShell({
                 )}
               >
                 {link.label}
-              </Link>
+              </NavLink>
             );
           })}
         </div>
