@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { differenceInCalendarDays, startOfDay } from "date-fns";
 import { requireMembership, requireUser } from "@/lib/budget/access";
+import { billDueBody } from "@/lib/notifications/format";
 import { prisma } from "@/lib/prisma";
 
 export type NotificationListItem = {
@@ -127,10 +128,7 @@ export async function syncBillNotifications(
       type === "BILL_OVERDUE"
         ? `${instance.recurringBill.name} is overdue`
         : `${instance.recurringBill.name} due soon`;
-    const body =
-      type === "BILL_OVERDUE"
-        ? `Was due ${Math.abs(days)} day(s) ago.`
-        : `Due in ${days} day(s).`;
+    const body = billDueBody(days, due);
 
     for (const member of members) {
       const key = `${member.userId}|${type}|${title}`;
