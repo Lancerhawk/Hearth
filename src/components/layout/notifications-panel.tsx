@@ -28,11 +28,12 @@ export function NotificationsPanel({
   const [loading, startLoading] = useTransition();
   const [marking, startMarking] = useTransition();
 
-  function reload() {
+  function reload(soft = true) {
     startLoading(async () => {
       const rows = await listNotificationsAction(workspaceSlug);
       setNotifications(rows);
       setLoaded(true);
+      void soft;
     });
   }
 
