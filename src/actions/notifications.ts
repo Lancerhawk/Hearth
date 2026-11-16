@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { differenceInCalendarDays, startOfDay } from "date-fns";
 import { requireMembership, requireUser } from "@/lib/budget/access";
+import { billDueBody } from "@/lib/notifications/format";
+import { billAlertSourceKey } from "@/lib/notifications/source-key";
 import { prisma } from "@/lib/prisma";
 
 export type NotificationListItem = {
@@ -23,19 +25,43 @@ export async function listNotificationsAction(
       userId: user.id,
       OR: [{ workspaceId: workspace.id }, { workspaceId: null }],
     },
-    orderBy: { createdAt: "desc" },
-    take: 50,
+    orderBy: [{ createdAt: "desc" }],
+    take: 80,
     select: {
       id: true,
+      type: true,
       title: true,
       body: true,
       href: true,
       readAt: true,
       createdAt: true,
+      sourceKey: true,
     },
   });
 
-  return rows.map((n) => ({
+  // Unread first, then newest. Collapse legacy bill dupes (same type+title).
+  rows.sort((a, b) => {
+    const ar = a.readAt ? 1 : 0;
+    const br = b.readAt ? 1 : 0;
+    if (ar !== br) return ar - br;
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
+
+  const seen = new Set<string>();
+  const collapsed = [];
+  for (const n of rows) {
+    const key =
+      n.sourceKey ??
+      (n.type === "BILL_DUE_SOON" || n.type === "BILL_OVERDUE"
+        ? `${n.type}|${n.title}`
+        : n.id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    collapsed.push(n);
+    if (collapsed.length >= 50) break;
+  }
+
+  return collapsed.map((n) => ({
     id: n.id,
     title: n.title,
     body: n.body,
@@ -68,7 +94,6 @@ export async function markAllNotificationsReadAction(workspaceSlug?: string) {
     },
     data: { readAt: new Date() },
   });
-  // Unread badge lives in the workspace layout — keep the blast narrow.
   revalidatePath("/app", "layout");
   if (workspaceSlug) {
     revalidatePath(`/app/${workspaceSlug}`, "layout");
@@ -80,7 +105,7 @@ export async function syncBillNotifications(
   workspaceSlug: string,
 ) {
   const today = startOfDay(new Date());
-  const [instances, members, existingToday] = await Promise.all([
+  const [instances, members] = await Promise.all([
     prisma.billInstance.findMany({
       where: {
         status: "PENDING",
@@ -92,28 +117,7 @@ export async function syncBillNotifications(
       where: { workspaceId },
       select: { userId: true },
     }),
-    prisma.notification.findMany({
-      where: {
-        workspaceId,
-        type: { in: ["BILL_DUE_SOON", "BILL_OVERDUE"] },
-        createdAt: { gte: today },
-      },
-      select: { userId: true, type: true, title: true },
-    }),
   ]);
-
-  const seen = new Set(
-    existingToday.map((n) => `${n.userId}|${n.type}|${n.title}`),
-  );
-
-  const toCreate: Array<{
-    userId: string;
-    workspaceId: string;
-    type: "BILL_DUE_SOON" | "BILL_OVERDUE";
-    title: string;
-    body: string;
-    href: string;
-  }> = [];
 
   for (const instance of instances) {
     const due = startOfDay(instance.dueDate);
@@ -127,27 +131,47 @@ export async function syncBillNotifications(
       type === "BILL_OVERDUE"
         ? `${instance.recurringBill.name} is overdue`
         : `${instance.recurringBill.name} due soon`;
-    const body =
-      type === "BILL_OVERDUE"
-        ? `Was due ${Math.abs(days)} day(s) ago.`
-        : `Due in ${days} day(s).`;
+    const body = billDueBody(days, due);
+    const sourceKey = billAlertSourceKey(instance.id, type);
+    const href = `/app/${workspaceSlug}/bills`;
 
     for (const member of members) {
-      const key = `${member.userId}|${type}|${title}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      toCreate.push({
-        userId: member.userId,
-        workspaceId,
-        type,
-        title,
-        body,
-        href: `/app/${workspaceSlug}/bills`,
+      await prisma.notification.upsert({
+        where: {
+          userId_sourceKey: {
+            userId: member.userId,
+            sourceKey,
+          },
+        },
+        create: {
+          userId: member.userId,
+          workspaceId,
+          type,
+          title,
+          body,
+          href,
+          sourceKey,
+        },
+        update: {
+          type,
+          title,
+          body,
+          href,
+          workspaceId,
+        },
       });
-    }
-  }
 
-  if (toCreate.length > 0) {
-    await prisma.notification.createMany({ data: toCreate });
+      // If this bill flipped to overdue, retire the due-soon twin.
+      if (type === "BILL_OVERDUE") {
+        await prisma.notification.updateMany({
+          where: {
+            userId: member.userId,
+            sourceKey: billAlertSourceKey(instance.id, "BILL_DUE_SOON"),
+            readAt: null,
+          },
+          data: { readAt: new Date() },
+        });
+      }
+    }
   }
 }

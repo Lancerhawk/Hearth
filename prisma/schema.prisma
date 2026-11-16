@@ -294,6 +294,8 @@ model Notification {
   title       String
   body        String
   href        String?
+  /// Stable key for upserts, e.g. bill:{instanceId}:BILL_OVERDUE
+  sourceKey   String?
   readAt      DateTime?
   userId      String
   workspaceId String?
@@ -302,5 +304,6 @@ model Notification {
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, sourceKey])
   @@index([userId, readAt])
 }
