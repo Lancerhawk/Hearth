@@ -7,10 +7,7 @@ import type { SettingsActionState } from "@/actions/settings";
 import { logoutAction } from "@/actions/auth";
 import { BrandMark } from "@/components/design/brand-mark";
 import { NavLink } from "@/components/layout/nav-link";
-import {
-  NotificationsPanel,
-  type NotificationItem,
-} from "@/components/layout/notifications-panel";
+import { NotificationsPanel } from "@/components/layout/notifications-panel";
 import { SettingsPanel } from "@/components/layout/settings-panel";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,7 +89,6 @@ export function WorkspaceShell({
   workspaceName,
   unreadCount,
   moneyInLabel = "Funds",
-  notifications,
   isOwner,
   currency,
   profileName,
@@ -104,7 +100,6 @@ export function WorkspaceShell({
   workspaceName: string;
   unreadCount: number;
   moneyInLabel?: string;
-  notifications: NotificationItem[];
   isOwner: boolean;
   currency: string;
   profileName: string;
@@ -365,7 +360,7 @@ export function WorkspaceShell({
             ) : (
               <NotificationsPanel
                 workspaceSlug={workspaceSlug}
-                notifications={notifications}
+                open={panel === "notifications"}
               />
             )}
           </div>

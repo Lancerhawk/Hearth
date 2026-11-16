@@ -1,5 +1,6 @@
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
 import { ensureMonthlyBudget } from "@/lib/budget/period";
+import { toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 export const CARRYOVER_NOTE_PREFIX = "__hearth_carryover__:";
@@ -23,7 +24,8 @@ function monthLabel(year: number, month: number) {
 /**
  * Keep a single Funds/Income row in this month equal to the previous
  * month’s remaining (income − spent). Updates or removes as needed.
- * Walks prior months that already exist so the chain stays correct.
+ * Only heals one prior hop per call so page loads stay cheap; older
+ * months settle when they are opened.
  */
 export async function syncCarryoverFunds(
   workspaceId: string,
@@ -31,10 +33,9 @@ export async function syncCarryoverFunds(
   month: number,
   depth = 0,
 ) {
-  if (depth > 36)
-    return { amount: 0 as number, fromMonth: previousPeriod(year, month) };
-
   const prev = previousPeriod(year, month);
+  if (depth > 1) return { amount: 0 as number, fromMonth: prev };
+
   const prevBudgetMeta = await prisma.monthlyBudget.findUnique({
     where: {
       workspaceId_year_month: {
@@ -46,7 +47,7 @@ export async function syncCarryoverFunds(
     select: { id: true },
   });
 
-  if (prevBudgetMeta) {
+  if (prevBudgetMeta && depth === 0) {
     await syncCarryoverFunds(workspaceId, prev.year, prev.month, depth + 1);
   }
 
@@ -91,6 +92,11 @@ export async function syncCarryoverFunds(
       await prisma.incomeEntry.delete({ where: { id: existing.id } });
     }
     return { amount: 0, fromMonth: prev };
+  }
+
+  // Already settled for this month — skip the write.
+  if (existing && Math.abs(toNumber(existing.amount) - amount) < 0.001) {
+    return { amount, fromMonth: prev };
   }
 
   const owner = await prisma.workspaceMembership.findFirst({

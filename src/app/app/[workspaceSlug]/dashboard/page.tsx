@@ -9,7 +9,7 @@ import { Surface } from "@/components/design/surface";
 import { buttonVariants } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel } from "@/lib/budget/iso-date";
-import { loadMonthBudget } from "@/lib/budget/load-month";
+import { loadDashboardMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -28,7 +28,11 @@ export default async function WorkspaceDashboardPage({
   const sp = await searchParams;
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
-  const { budget, summary } = await loadMonthBudget(workspace.id, year, month);
+  const { budget, summary } = await loadDashboardMonth(
+    workspace.id,
+    year,
+    month,
+  );
   const base = `/app/${workspaceSlug}`;
   const inLabel = moneyInLabel(workspace.kind);
 
