@@ -1,6 +1,6 @@
 import { formatDistanceToNowStrict, format } from "date-fns";
 
-/** Human bill-due copy for notification bodies. */
+/** Human bill-due copy for notification bodies (includes calendar due date). */
 export function billDueBody(daysUntilDue: number, dueDate?: Date) {
   const dueBit = dueDate != null ? `Due ${format(dueDate, "d MMM")}` : null;
 
