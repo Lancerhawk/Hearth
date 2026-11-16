@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import {
   listNotificationsAction,
@@ -21,14 +22,24 @@ export function NotificationsPanel({
   workspaceSlug: string;
   open: boolean;
 }) {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [pending, startTransition] = useTransition();
+  const [loading, startLoading] = useTransition();
+  const [marking, startMarking] = useTransition();
+
+  function reload() {
+    startLoading(async () => {
+      const rows = await listNotificationsAction(workspaceSlug);
+      setNotifications(rows);
+      setLoaded(true);
+    });
+  }
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    startTransition(async () => {
+    startLoading(async () => {
       const rows = await listNotificationsAction(workspaceSlug);
       if (!cancelled) {
         setNotifications(rows);
@@ -40,17 +51,56 @@ export function NotificationsPanel({
     };
   }, [open, workspaceSlug]);
 
+  function markOne(id: string) {
+    const prev = notifications;
+    setNotifications((rows) =>
+      rows.map((n) =>
+        n.id === id ? { ...n, readAt: new Date().toISOString() } : n,
+      ),
+    );
+    startMarking(async () => {
+      try {
+        await markNotificationReadAction(id);
+        router.refresh();
+        reload();
+      } catch {
+        setNotifications(prev);
+      }
+    });
+  }
+
+  function markAll() {
+    const prev = notifications;
+    const now = new Date().toISOString();
+    setNotifications((rows) =>
+      rows.map((n) => ({ ...n, readAt: n.readAt ?? now })),
+    );
+    startMarking(async () => {
+      try {
+        await markAllNotificationsReadAction(workspaceSlug);
+        router.refresh();
+        reload();
+      } catch {
+        setNotifications(prev);
+      }
+    });
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex items-center justify-end">
-        <form action={markAllNotificationsReadAction.bind(null, workspaceSlug)}>
-          <Button type="submit" variant="outline" size="sm">
-            Mark all read
-          </Button>
-        </form>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={marking || !notifications.some((n) => !n.readAt)}
+          onClick={markAll}
+        >
+          Mark all read
+        </Button>
       </div>
 
-      {!loaded || pending ? (
+      {!loaded || loading ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton
@@ -95,11 +145,15 @@ export function NotificationsPanel({
                   ) : null}
                 </div>
                 {!n.readAt ? (
-                  <form action={markNotificationReadAction.bind(null, n.id)}>
-                    <Button type="submit" size="sm" variant="ghost">
-                      Mark read
-                    </Button>
-                  </form>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={marking}
+                    onClick={() => markOne(n.id)}
+                  >
+                    Mark read
+                  </Button>
                 ) : null}
               </li>
             ))
