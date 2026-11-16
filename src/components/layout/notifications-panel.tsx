@@ -96,7 +96,7 @@ export function NotificationsPanel({
           disabled={marking || !notifications.some((n) => !n.readAt)}
           onClick={markAll}
         >
-          Mark all read
+          {marking ? "Updating…" : "Mark all read"}
         </Button>
       </div>
 
