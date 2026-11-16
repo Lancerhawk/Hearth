@@ -2,6 +2,7 @@ import { Surface } from "@/components/design/surface";
 import { formatCurrency } from "@/lib/money";
 import {
   formatSignedAmount,
+  type StatementRow,
   type StatementTotals,
 } from "@/lib/statements/build-rows";
 import {
@@ -10,6 +11,7 @@ import {
   type StatementFilters,
 } from "@/lib/statements/filters";
 import { loadFilteredStatement } from "@/lib/statements/load-statement";
+import { cn } from "@/lib/utils";
 
 export async function StatementDocument({
   workspaceId,
@@ -61,7 +63,26 @@ export async function StatementDocument({
 
       <SummaryStrip totals={totals} currency={currency} />
 
-      <table className="mt-6 w-full text-left text-sm">
+      {/* Mobile: stacked cards. Desktop/print: full table. */}
+      <div className="mt-6 space-y-3 md:hidden print:hidden">
+        {rows.length === 0 ? (
+          <p className="py-6 text-sm text-muted-foreground">
+            Nothing matches these filters.
+          </p>
+        ) : (
+          rows.map((row, i) => (
+            <StatementMobileCard
+              key={`${row.type}-${row.recordedAt}-${i}`}
+              index={i + 1}
+              row={row}
+              currency={currency}
+            />
+          ))
+        )}
+        <MobileTotals totals={totals} currency={currency} />
+      </div>
+
+      <table className="mt-6 hidden w-full text-left text-sm md:table print:table">
         <thead>
           <tr className="border-b border-border text-muted-foreground">
             <th className="py-2 pr-2">#</th>
@@ -145,6 +166,78 @@ export async function StatementDocument({
   );
 }
 
+function StatementMobileCard({
+  index,
+  row,
+  currency,
+}: {
+  index: number;
+  row: StatementRow;
+  currency: string;
+}) {
+  return (
+    <article className="rounded-xl border border-border/70 bg-card/60 px-3 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] text-muted-foreground">
+            #{index} · {row.date} · {row.type}
+          </p>
+          <p className="mt-0.5 truncate font-medium text-hearth-ink">
+            {row.title}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {row.category}
+            {row.addedBy ? ` · ${row.addedBy}` : ""}
+            {" · "}
+            {row.recordedAt.slice(0, 16).replace("T", " ")}
+          </p>
+        </div>
+        <p
+          className={cn(
+            "shrink-0 font-heading text-base tabular-nums",
+            row.sign > 0 ? "text-hearth-moss" : "text-hearth-ink",
+          )}
+        >
+          {formatSignedAmount(row, currency)}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function MobileTotals({
+  totals,
+  currency,
+}: {
+  totals: StatementTotals;
+  currency: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border/80 bg-[color-mix(in_srgb,var(--hearth-moss)_6%,var(--hearth-paper))] px-3 py-3">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="font-medium text-hearth-ink">Net (in − out)</span>
+        <span className="font-heading tabular-nums text-hearth-ink">
+          {formatSignedAmount(
+            {
+              amount: Math.abs(totals.net),
+              sign: totals.net >= 0 ? 1 : -1,
+            },
+            currency,
+          )}
+        </span>
+      </div>
+      {totals.pendingOutflow > 0 ? (
+        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span>Pending bills</span>
+          <span className="tabular-nums">
+            {formatCurrency(totals.pendingOutflow, currency)}
+          </span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function SummaryStrip({
   totals,
   currency,
@@ -153,7 +246,7 @@ function SummaryStrip({
   currency: string;
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <SummaryCell label="In" value={formatCurrency(totals.inflow, currency)} />
       <SummaryCell
         label="Out"
@@ -178,7 +271,7 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border/60 px-3 py-2">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="font-heading text-lg tabular-nums text-hearth-ink">
+      <p className="truncate font-heading text-lg tabular-nums text-hearth-ink">
         {value}
       </p>
     </div>
