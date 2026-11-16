@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireMembership } from "@/lib/budget/access";
 import { ensureMonthlyBudget } from "@/lib/budget/period";
 import { revalidateMoneyPaths } from "@/lib/budget/revalidate-money";
+import { billAlertSourceKeys } from "@/lib/notifications/source-key";
 import { prisma } from "@/lib/prisma";
 import { recurringBillSchema } from "@/lib/validators/entries";
 
@@ -71,8 +72,13 @@ export async function setBillStatusAction(
       where: {
         workspaceId: workspace.id,
         readAt: null,
-        type: { in: ["BILL_DUE_SOON", "BILL_OVERDUE"] },
-        title: { contains: instance.recurringBill.name },
+        OR: [
+          { sourceKey: { in: [...billAlertSourceKeys(instanceId)] } },
+          {
+            type: { in: ["BILL_DUE_SOON", "BILL_OVERDUE"] },
+            title: { contains: instance.recurringBill.name },
+          },
+        ],
       },
       data: { readAt: new Date() },
     });
