@@ -16,7 +16,7 @@ import { PageHeader } from "@/components/design/page-header";
 import { SectionTitle } from "@/components/design/section-title";
 import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
-import { loadMonthBudget } from "@/lib/budget/load-month";
+import { loadBillsForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -35,7 +35,7 @@ export default async function BillsPage({
   const { workspace, membership } = await requireMembership(workspaceSlug);
   const canAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
   const { year, month } = parsePeriod(sp.year, sp.month);
-  const { budget } = await loadMonthBudget(workspace.id, year, month);
+  const { billInstances } = await loadBillsForMonth(workspace.id, year, month);
   const templates = await prisma.recurringBill.findMany({
     where: { workspaceId: workspace.id },
     orderBy: { dayOfMonth: "asc" },
@@ -61,12 +61,12 @@ export default async function BillsPage({
       <section className="space-y-3">
         <SectionTitle>This month</SectionTitle>
         <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
-          {budget.billInstances.length === 0 ? (
+          {billInstances.length === 0 ? (
             <li className="px-4 py-6 text-sm text-muted-foreground">
               No bill instances yet.
             </li>
           ) : (
-            budget.billInstances.map((b) => (
+            billInstances.map((b) => (
               <li
                 key={b.id}
                 className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"

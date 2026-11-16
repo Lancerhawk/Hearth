@@ -39,6 +39,7 @@ export async function updateWorkspaceSettingsAction(
     },
   });
 
+  // Shell shows workspace name/currency — layout revalidate is required here.
   revalidatePath(`/app/${workspaceSlug}`, "layout");
   return { success: "Workspace updated." };
 }

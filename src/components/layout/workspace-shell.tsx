@@ -6,10 +6,9 @@ import { useState, useSyncExternalStore } from "react";
 import type { SettingsActionState } from "@/actions/settings";
 import { logoutAction } from "@/actions/auth";
 import { BrandMark } from "@/components/design/brand-mark";
-import {
-  NotificationsPanel,
-  type NotificationItem,
-} from "@/components/layout/notifications-panel";
+import { NavLink } from "@/components/layout/nav-link";
+import { NotificationsPanel } from "@/components/layout/notifications-panel";
+import { RouteWarmer } from "@/components/layout/route-warmer";
 import { SettingsPanel } from "@/components/layout/settings-panel";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,7 +90,6 @@ export function WorkspaceShell({
   workspaceName,
   unreadCount,
   moneyInLabel = "Funds",
-  notifications,
   isOwner,
   currency,
   profileName,
@@ -103,7 +101,6 @@ export function WorkspaceShell({
   workspaceName: string;
   unreadCount: number;
   moneyInLabel?: string;
-  notifications: NotificationItem[];
   isOwner: boolean;
   currency: string;
   profileName: string;
@@ -145,6 +142,7 @@ export function WorkspaceShell({
 
   return (
     <div className="flex min-h-full flex-1">
+      <RouteWarmer workspaceSlug={workspaceSlug} />
       <aside
         className={cn(
           "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/90 transition-[width,padding] duration-300 ease-in-out md:flex",
@@ -182,9 +180,10 @@ export function WorkspaceShell({
             const active = pathname === href || pathname.startsWith(`${href}/`);
             const Icon = navIcons[link.href] ?? LayoutDashboard;
             return (
-              <Link
+              <NavLink
                 key={link.href}
                 href={href}
+                prefetch
                 title={link.label}
                 aria-label={link.label}
                 className={cn(
@@ -204,7 +203,7 @@ export function WorkspaceShell({
                 >
                   {link.label}
                 </span>
-              </Link>
+              </NavLink>
             );
           })}
         </nav>
@@ -246,7 +245,7 @@ export function WorkspaceShell({
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Link href="/app" className={headerBtn}>
+            <Link href="/app" prefetch className={headerBtn}>
               Workspaces
             </Link>
             <button
@@ -308,9 +307,10 @@ export function WorkspaceShell({
             const href = `${base}/${link.href}`;
             const active = pathname === href || pathname.startsWith(`${href}/`);
             return (
-              <Link
+              <NavLink
                 key={link.href}
                 href={href}
+                prefetch
                 className={cn(
                   "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors duration-150",
                   active
@@ -319,7 +319,7 @@ export function WorkspaceShell({
                 )}
               >
                 {link.label}
-              </Link>
+              </NavLink>
             );
           })}
         </div>
@@ -362,7 +362,7 @@ export function WorkspaceShell({
             ) : (
               <NotificationsPanel
                 workspaceSlug={workspaceSlug}
-                notifications={notifications}
+                open={panel === "notifications"}
               />
             )}
           </div>

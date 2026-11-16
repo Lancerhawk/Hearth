@@ -11,7 +11,7 @@ import { EntryForm } from "@/components/entries/entry-form";
 import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
-import { loadMonthBudget } from "@/lib/budget/load-month";
+import { loadIncomesForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { moneyInDescription, moneyInLabel } from "@/lib/workspace/labels";
@@ -29,7 +29,7 @@ export default async function IncomePage({
   const sp = await searchParams;
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
-  const { budget } = await loadMonthBudget(workspace.id, year, month);
+  const { incomes } = await loadIncomesForMonth(workspace.id, year, month);
   const action = addIncomeAction.bind(null, workspaceSlug, year, month);
   const label = moneyInLabel(workspace.kind);
 
@@ -56,7 +56,7 @@ export default async function IncomePage({
       <MoneyList
         emptyTitle={`No ${label.toLowerCase()} this month`}
         emptyDescription="Add a paycheck or one-off. Leftover from last month is brought forward automatically."
-        items={budget.incomes.map((row) => ({
+        items={incomes.map((row) => ({
           id: row.id,
           title: row.title,
           meta: `${toIsoDate(row.earnedOn)} · added by ${actorLabel(row.createdBy)}`,

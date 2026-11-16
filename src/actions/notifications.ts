@@ -2,8 +2,48 @@
 
 import { revalidatePath } from "next/cache";
 import { differenceInCalendarDays, startOfDay } from "date-fns";
-import { requireUser } from "@/lib/budget/access";
+import { requireMembership, requireUser } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
+
+export type NotificationListItem = {
+  id: string;
+  title: string;
+  body: string | null;
+  href: string | null;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export async function listNotificationsAction(
+  workspaceSlug: string,
+): Promise<NotificationListItem[]> {
+  const { workspace, user } = await requireMembership(workspaceSlug);
+  const rows = await prisma.notification.findMany({
+    where: {
+      userId: user.id,
+      OR: [{ workspaceId: workspace.id }, { workspaceId: null }],
+    },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      title: true,
+      body: true,
+      href: true,
+      readAt: true,
+      createdAt: true,
+    },
+  });
+
+  return rows.map((n) => ({
+    id: n.id,
+    title: n.title,
+    body: n.body,
+    href: n.href,
+    readAt: n.readAt?.toISOString() ?? null,
+    createdAt: n.createdAt.toISOString(),
+  }));
+}
 
 export async function markNotificationReadAction(id: string) {
   const user = await requireUser();
@@ -11,7 +51,7 @@ export async function markNotificationReadAction(id: string) {
     where: { id, userId: user.id, readAt: null },
     data: { readAt: new Date() },
   });
-  revalidatePath("/app", "layout");
+  revalidatePath(`/app`, "layout");
 }
 
 export async function markAllNotificationsReadAction(workspaceSlug?: string) {
@@ -28,6 +68,7 @@ export async function markAllNotificationsReadAction(workspaceSlug?: string) {
     },
     data: { readAt: new Date() },
   });
+  // Unread badge lives in the workspace layout — keep the blast narrow.
   revalidatePath("/app", "layout");
   if (workspaceSlug) {
     revalidatePath(`/app/${workspaceSlug}`, "layout");

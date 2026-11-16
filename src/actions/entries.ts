@@ -1,12 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { requireMembership, requireUser } from "@/lib/budget/access";
 import {
   ensureMonthlyBudget,
   parsePeriod,
   periodFromDate,
 } from "@/lib/budget/period";
+import { revalidateMoneyPaths } from "@/lib/budget/revalidate-money";
 import { createNotification } from "@/lib/notifications/create";
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
 import { prisma } from "@/lib/prisma";
@@ -127,7 +127,7 @@ export async function addExpenseAction(
     },
   });
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  revalidateMoneyPaths(workspaceSlug, "expense");
   return {
     success: savedMessage("Expense", year, month, spentOn),
   };
@@ -171,7 +171,7 @@ export async function addIncomeAction(
       createdById: user.id,
     },
   });
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  revalidateMoneyPaths(workspaceSlug, "income");
   return {
     success: savedMessage("Entry", year, month, earnedOn),
   };
@@ -216,7 +216,7 @@ export async function addSavingsAction(
     },
   });
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  revalidateMoneyPaths(workspaceSlug, "savings");
   return {
     success: savedMessage("Savings", year, month, savedOn),
   };
@@ -263,7 +263,7 @@ export async function addChargeAction(
     },
   });
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  revalidateMoneyPaths(workspaceSlug, "charge");
   return {
     success: savedMessage("Charge", year, month, chargedOn),
   };
@@ -393,7 +393,15 @@ export async function updateEntryAction(
   if (type !== "income") {
     await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   }
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  const kind =
+    type === "expense"
+      ? "expense"
+      : type === "income"
+        ? "income"
+        : type === "savings"
+          ? "savings"
+          : "charge";
+  revalidateMoneyPaths(workspaceSlug, kind);
   return { success: "Entry updated." };
 }
 
@@ -410,7 +418,15 @@ export async function deleteEntryAction(
   if (type === "income") await prisma.incomeEntry.delete({ where: { id } });
   if (type === "savings") await prisma.savingsEntry.delete({ where: { id } });
   if (type === "charge") await prisma.chargeEntry.delete({ where: { id } });
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  const kind =
+    type === "expense"
+      ? "expense"
+      : type === "income"
+        ? "income"
+        : type === "savings"
+          ? "savings"
+          : "charge";
+  revalidateMoneyPaths(workspaceSlug, kind);
 }
 
 export async function getPeriodFromSearch(searchParams: {

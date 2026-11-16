@@ -12,7 +12,7 @@ import { EntryForm } from "@/components/entries/entry-form";
 import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
-import { loadMonthBudget } from "@/lib/budget/load-month";
+import { loadExpensesForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -30,7 +30,7 @@ export default async function ExpensesPage({
   const sp = await searchParams;
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
-  const { budget } = await loadMonthBudget(workspace.id, year, month);
+  const { expenses } = await loadExpensesForMonth(workspace.id, year, month);
   const categories = await prisma.category.findMany({
     where: { workspaceId: workspace.id, type: "EXPENSE" },
     orderBy: { name: "asc" },
@@ -42,8 +42,8 @@ export default async function ExpensesPage({
 
   const memberFilter = sp.member?.trim() || "";
   const rows = memberFilter
-    ? budget.expenses.filter((e) => e.createdById === memberFilter)
-    : budget.expenses;
+    ? expenses.filter((e) => e.createdById === memberFilter)
+    : expenses;
 
   const action = addExpenseAction.bind(null, workspaceSlug, year, month);
   const base = `/app/${workspaceSlug}/expenses`;
