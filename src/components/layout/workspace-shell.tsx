@@ -8,6 +8,7 @@ import { logoutAction } from "@/actions/auth";
 import { BrandMark } from "@/components/design/brand-mark";
 import { NavLink } from "@/components/layout/nav-link";
 import { NotificationsPanel } from "@/components/layout/notifications-panel";
+import { RouteWarmer } from "@/components/layout/route-warmer";
 import { SettingsPanel } from "@/components/layout/settings-panel";
 import { Button } from "@/components/ui/button";
 import {
@@ -141,6 +142,7 @@ export function WorkspaceShell({
 
   return (
     <div className="flex min-h-full flex-1">
+      <RouteWarmer workspaceSlug={workspaceSlug} />
       <aside
         className={cn(
           "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/90 transition-[width,padding] duration-300 ease-in-out md:flex",
@@ -243,7 +245,7 @@ export function WorkspaceShell({
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Link href="/app" className={headerBtn}>
+            <Link href="/app" prefetch className={headerBtn}>
               Workspaces
             </Link>
             <button
