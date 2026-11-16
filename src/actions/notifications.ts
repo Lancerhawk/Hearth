@@ -25,19 +25,21 @@ export async function listNotificationsAction(
       userId: user.id,
       OR: [{ workspaceId: workspace.id }, { workspaceId: null }],
     },
-    orderBy: [{ readAt: "asc" }, { createdAt: "desc" }],
-    take: 50,
+    orderBy: [{ createdAt: "desc" }],
+    take: 80,
     select: {
       id: true,
+      type: true,
       title: true,
       body: true,
       href: true,
       readAt: true,
       createdAt: true,
+      sourceKey: true,
     },
   });
 
-  // Unread first (null readAt), then newest.
+  // Unread first, then newest. Collapse legacy bill dupes (same type+title).
   rows.sort((a, b) => {
     const ar = a.readAt ? 1 : 0;
     const br = b.readAt ? 1 : 0;
@@ -45,7 +47,21 @@ export async function listNotificationsAction(
     return b.createdAt.getTime() - a.createdAt.getTime();
   });
 
-  return rows.map((n) => ({
+  const seen = new Set<string>();
+  const collapsed = [];
+  for (const n of rows) {
+    const key =
+      n.sourceKey ??
+      (n.type === "BILL_DUE_SOON" || n.type === "BILL_OVERDUE"
+        ? `${n.type}|${n.title}`
+        : n.id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    collapsed.push(n);
+    if (collapsed.length >= 50) break;
+  }
+
+  return collapsed.map((n) => ({
     id: n.id,
     title: n.title,
     body: n.body,
