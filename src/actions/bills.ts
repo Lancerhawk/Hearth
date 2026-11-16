@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireMembership } from "@/lib/budget/access";
 import { ensureMonthlyBudget } from "@/lib/budget/period";
+import { revalidateMoneyPaths } from "@/lib/budget/revalidate-money";
 import { prisma } from "@/lib/prisma";
 import { recurringBillSchema } from "@/lib/validators/entries";
 
@@ -46,7 +47,7 @@ export async function createRecurringBillAction(
     now.getMonth() + 1,
   );
 
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  revalidateMoneyPaths(workspaceSlug, "bill");
   return { success: "Recurring bill added." };
 }
 
@@ -77,6 +78,7 @@ export async function setBillStatusAction(
     });
   }
 
+  revalidateMoneyPaths(workspaceSlug, "bill");
   revalidatePath(`/app/${workspaceSlug}`, "layout");
 }
 
@@ -90,7 +92,7 @@ export async function toggleRecurringBillAction(
     where: { id: billId },
     data: { isActive },
   });
-  revalidatePath(`/app/${workspaceSlug}/bills`);
+  revalidateMoneyPaths(workspaceSlug, "bill");
 }
 
 export async function updateRecurringBillAction(
@@ -126,7 +128,7 @@ export async function updateRecurringBillAction(
     },
   });
 
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  revalidateMoneyPaths(workspaceSlug, "bill");
   return { success: "Bill template updated." };
 }
 
@@ -155,6 +157,6 @@ export async function updateBillInstanceAction(
     data: { amount },
   });
 
-  revalidatePath(`/app/${workspaceSlug}`, "layout");
+  revalidateMoneyPaths(workspaceSlug, "bill");
   return { success: "Bill amount updated." };
 }
