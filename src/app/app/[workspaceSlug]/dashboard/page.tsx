@@ -25,8 +25,8 @@ export default async function WorkspaceDashboardPage({
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
       <PageHeader
-        title={workspace.name}
-        description="Household overview"
+        title="Dashboard"
+        description={`${workspace.name} — this month at a glance.`}
         trailing={
           <MonthPicker
             basePath={`${base}/dashboard`}

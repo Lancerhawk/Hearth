@@ -32,10 +32,10 @@ export function FilterChip({
       replace={replace}
       scroll={scroll}
       className={cn(
-        "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors",
+        "shrink-0 rounded-full border px-3.5 py-1.5 text-xs transition-colors",
         active
-          ? "border-hearth-moss bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] text-hearth-ink"
-          : "border-border text-muted-foreground hover:border-hearth-moss/40 hover:text-hearth-ink",
+          ? "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] text-hearth-ink"
+          : "border-border/80 text-muted-foreground hover:border-hearth-moss/35 hover:text-hearth-ink",
       )}
     >
       <ChipLabel>{children}</ChipLabel>
