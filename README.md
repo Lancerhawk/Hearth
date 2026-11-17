@@ -191,18 +191,17 @@ Preview and CSV share the same filter parser and row builder so exports always m
 
 ### CI → production
 
-GitHub is **not** wired to auto-deploy on push. Production only ships after **code** checks pass on `main`:
+GitHub Actions only runs **code** checks. Production deploys come from the **Vercel ↔ GitHub** integration (no personal `VERCEL_TOKEN` in Actions — those expire and cannot auto-refresh).
 
 ```mermaid
 flowchart LR
-  Push[Push / merge to main] --> CI[GitHub Actions]
+  Push[Push / merge to main] --> CI[GitHub Actions checks]
+  Push --> VercelGit[Vercel Git integration]
   CI --> Checks["Prettier · Lint · Typecheck · Build"]
-  Checks -->|fail| Stop[No deploy]
-  Checks -->|pass| Deploy[Deploy production job<br/>vercel deploy --prod]
-  Deploy --> Vercel[Vercel production]
+  VercelGit --> Prod[Vercel production]
 ```
 
-PRs only run the code checks. They are **not** gated on `VERCEL_TOKEN` (personal tokens expire and Vercel cannot auto-refresh them for Actions today). If deploy fails after merge, refresh the `VERCEL_TOKEN` GitHub secret from https://vercel.com/account/tokens.
+Connect the repo once in the Vercel project **Settings → Git**. After that, every merge to `main` ships without Actions tokens.
 
 Locally / in PRs: `pnpm check` runs format, lint, typecheck, and `build:verify` (Prisma generate + `next build`, no migrate).
 
