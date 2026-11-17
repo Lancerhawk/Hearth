@@ -7,6 +7,7 @@ import {
   type EntryFormDefaults,
 } from "@/components/entries/entry-form";
 import { Button } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import {
   Dialog,
   DialogContent,
@@ -73,9 +74,13 @@ export function EntryRowActions({
         </DialogContent>
       </Dialog>
       <form action={onDelete}>
-        <Button type="submit" size="sm" variant="ghost">
+        <PendingSubmitButton
+          size="sm"
+          variant="ghost"
+          pendingLabel="Deleting…"
+        >
           Delete
-        </Button>
+        </PendingSubmitButton>
       </form>
     </div>
   );

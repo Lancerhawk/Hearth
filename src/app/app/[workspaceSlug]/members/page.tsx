@@ -8,10 +8,9 @@ import {
 import { PageHeader } from "@/components/design/page-header";
 import { SectionTitle } from "@/components/design/section-title";
 import { InviteForm } from "@/components/members/invite-form";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { requireMembership } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Members" };
 
@@ -74,9 +73,13 @@ export default async function MembersPage({
                       );
                     }}
                   >
-                    <Button type="submit" size="sm" variant="outline">
+                    <PendingSubmitButton
+                      size="sm"
+                      variant="outline"
+                      pendingLabel="Updating…"
+                    >
                       Make {m.role === "ADMIN" ? "member" : "admin"}
-                    </Button>
+                    </PendingSubmitButton>
                   </form>
                 ) : (
                   <span className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -90,9 +93,13 @@ export default async function MembersPage({
                       await removeMemberAction(workspaceSlug, m.id);
                     }}
                   >
-                    <Button type="submit" size="sm" variant="ghost">
+                    <PendingSubmitButton
+                      size="sm"
+                      variant="ghost"
+                      pendingLabel="Removing…"
+                    >
                       Remove
-                    </Button>
+                    </PendingSubmitButton>
                   </form>
                 ) : null}
               </div>
@@ -122,14 +129,13 @@ export default async function MembersPage({
                       await revokeInviteAction(workspaceSlug, inv.id);
                     }}
                   >
-                    <button
-                      type="submit"
-                      className={cn(
-                        buttonVariants({ variant: "outline", size: "sm" }),
-                      )}
+                    <PendingSubmitButton
+                      size="sm"
+                      variant="outline"
+                      pendingLabel="Revoking…"
                     >
                       Revoke
-                    </button>
+                    </PendingSubmitButton>
                   </form>
                 </li>
               ))}
