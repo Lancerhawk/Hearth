@@ -361,13 +361,13 @@ export function WorkspaceShell({
       >
         <SheetContent
           side="right"
-          className="w-full gap-0 p-0 duration-300 ease-out sm:max-w-md"
+          className="w-full gap-0 border-l border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_72%,white)] p-0 duration-300 ease-out sm:max-w-md"
         >
-          <SheetHeader className="shrink-0 border-b border-border/70 px-5 py-4 pr-12">
-            <SheetTitle>
+          <SheetHeader className="shrink-0 border-b border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_55%,white)] px-5 py-4 pr-12">
+            <SheetTitle className="font-heading text-xl tracking-tight text-hearth-ink">
               {panel === "settings" ? "Settings" : "Alerts"}
             </SheetTitle>
-            <SheetDescription>
+            <SheetDescription className="text-hearth-ink/55">
               {panel === "settings"
                 ? "Workspace and profile preferences."
                 : "Invites, bills, and budget warnings."}
