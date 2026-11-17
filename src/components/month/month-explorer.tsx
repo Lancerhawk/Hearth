@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useState } from "react";
 import { MoneyList } from "@/components/design/money-list";
 import { SectionTitle } from "@/components/design/section-title";
 import { Surface } from "@/components/design/surface";
@@ -41,6 +40,13 @@ function buildQuery(
   if (view === "calendar" && selectedDay) p.set("day", String(selectedDay));
   if (memberFilter) p.set("member", memberFilter);
   return `?${p.toString()}`;
+}
+
+/** Update the address bar without a Next.js navigation / RSC refetch. */
+function replaceUrl(href: string) {
+  if (typeof window === "undefined") return;
+  if (`${window.location.pathname}${window.location.search}` === href) return;
+  window.history.replaceState(window.history.state, "", href);
 }
 
 function Chip({
@@ -93,8 +99,6 @@ export function MonthExplorer({
   initialDay?: number;
   initialMember: string;
 }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
   const [view, setView] = useState<"calendar" | "list">(initialView);
   const [selectedDay, setSelectedDay] = useState<number | undefined>(
     initialDay,
@@ -103,12 +107,11 @@ export function MonthExplorer({
 
   const syncUrl = useCallback(
     (next: { view: "calendar" | "list"; day?: number; member: string }) => {
-      const href = `${base}${buildQuery(year, month, next.view, next.day, next.member)}`;
-      startTransition(() => {
-        router.replace(href, { scroll: false });
-      });
+      replaceUrl(
+        `${base}${buildQuery(year, month, next.view, next.day, next.member)}`,
+      );
     },
-    [base, month, router, year],
+    [base, month, year],
   );
 
   const filtered = activity
