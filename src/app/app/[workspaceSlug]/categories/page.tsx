@@ -5,6 +5,7 @@ import {
 } from "@/actions/categories";
 import { CategoryForm } from "@/components/categories/category-form";
 import { PageHeader } from "@/components/design/page-header";
+import { QuietList, QuietListItem } from "@/components/design/quiet-list";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { requireMembership } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
@@ -29,25 +30,22 @@ export default async function CategoriesPage({
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
         title="Categories"
-        description="Organize expenses and charges."
+        description="Organize expenses and charges across the household."
       />
 
       {canAdmin ? <CategoryForm action={create} /> : null}
 
-      <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
+      <QuietList>
         {categories.map((c) => (
-          <li
-            key={c.id}
-            className="flex items-center justify-between gap-3 px-4 py-3"
-          >
+          <QuietListItem key={c.id}>
             <div className="flex items-center gap-3">
               <span
-                className="h-3 w-3 rounded-full"
-                style={{ background: c.color ?? "#8a9a7b" }}
+                className="size-3 shrink-0 rounded-full"
+                style={{ background: c.color ?? "var(--hearth-moss)" }}
               />
               <div>
-                <p className="font-medium">{c.name}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-medium text-hearth-ink">{c.name}</p>
+                <p className="text-xs text-hearth-ink/55">
                   {c.type.toLowerCase()}
                 </p>
               </div>
@@ -68,9 +66,9 @@ export default async function CategoriesPage({
                 </PendingSubmitButton>
               </form>
             ) : null}
-          </li>
+          </QuietListItem>
         ))}
-      </ul>
+      </QuietList>
     </div>
   );
 }
