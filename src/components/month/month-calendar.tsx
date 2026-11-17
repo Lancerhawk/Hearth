@@ -1,4 +1,5 @@
-import Link from "next/link";
+"use client";
+
 import type { DayBucket } from "@/lib/budget/day-map";
 import { formatCurrencyCompact } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -8,15 +9,15 @@ export function MonthCalendar({
   month,
   dayMap,
   currency,
-  basePath,
   selectedDay,
+  onSelectDay,
 }: {
   year: number;
   month: number;
   dayMap: Record<string, DayBucket>;
   currency: string;
-  basePath: string;
   selectedDay?: number;
+  onSelectDay: (day: number) => void;
 }) {
   const first = new Date(year, month - 1, 1);
   const startPad = first.getDay();
@@ -53,11 +54,12 @@ export function MonthCalendar({
         const bucket = dayMap[key];
         const active = selectedDay === cell.day;
         return (
-          <Link
+          <button
             key={cell.key}
-            href={`${basePath}?year=${year}&month=${month}&day=${cell.day}&view=calendar`}
+            type="button"
+            onClick={() => onSelectDay(cell.day!)}
             className={cn(
-              "flex min-h-14 min-w-0 flex-col overflow-hidden rounded-lg border border-border/70 bg-card/50 p-1 transition-colors hover:border-hearth-moss/40 hover:bg-accent/50 sm:min-h-20 sm:rounded-xl sm:p-2",
+              "flex min-h-14 min-w-0 flex-col overflow-hidden rounded-lg border border-border/70 bg-card/50 p-1 text-left transition-colors hover:border-hearth-moss/40 hover:bg-accent/50 sm:min-h-20 sm:rounded-xl sm:p-2",
               active &&
                 "border-hearth-moss bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--hearth-moss)_35%,transparent)]",
             )}
@@ -83,7 +85,7 @@ export function MonthCalendar({
                 ·
               </p>
             )}
-          </Link>
+          </button>
         );
       })}
     </div>
