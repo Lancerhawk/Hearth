@@ -10,10 +10,11 @@ export function FormBanner({
   return (
     <p
       className={cn(
-        "rounded-lg px-3 py-2 text-sm",
-        tone === "error" && "bg-destructive/10 text-destructive",
+        "rounded-xl border px-3.5 py-2.5 text-sm leading-relaxed",
+        tone === "error" &&
+          "border-destructive/25 bg-destructive/10 text-destructive",
         tone === "success" &&
-          "bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] text-hearth-moss",
+          "border-hearth-moss/25 bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] text-hearth-moss",
       )}
     >
       {children}
