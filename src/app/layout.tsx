@@ -7,6 +7,7 @@ const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
 const sourceSans = Source_Sans_3({
