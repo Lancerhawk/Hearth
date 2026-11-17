@@ -27,10 +27,10 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
 
   return (
     <div className="w-full">
-      <h1 className="font-heading text-3xl tracking-tight text-hearth-ink">
+      <h1 className="font-heading text-[2rem] tracking-tight text-hearth-ink md:text-3xl">
         Create account
       </h1>
-      <p className="mt-2 text-[0.95rem] leading-relaxed text-muted-foreground">
+      <p className="mt-2 text-base leading-relaxed text-hearth-ink/60">
         Start a household workspace on Hearth.
       </p>
       <form action={formAction} className="mt-8 space-y-4">
@@ -93,12 +93,12 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
         <Button
           type="submit"
           size="lg"
-          className="mt-2 w-full"
+          className="mt-3 w-full shadow-none"
           disabled={pending}
         >
           {pending ? "Creating…" : "Create account"}
         </Button>
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="pt-1 text-center text-sm text-hearth-ink/55">
           Already have an account?{" "}
           <Link
             href={
@@ -106,7 +106,7 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
                 ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
                 : "/login"
             }
-            className="text-hearth-moss underline-offset-4 hover:underline"
+            className="font-medium text-hearth-moss underline-offset-4 hover:underline"
           >
             Sign in
           </Link>
@@ -124,10 +124,10 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
 
   return (
     <div className="w-full">
-      <h1 className="font-heading text-3xl tracking-tight text-hearth-ink">
+      <h1 className="font-heading text-[2rem] tracking-tight text-hearth-ink md:text-3xl">
         Welcome back
       </h1>
-      <p className="mt-2 text-[0.95rem] leading-relaxed text-muted-foreground">
+      <p className="mt-2 text-base leading-relaxed text-hearth-ink/60">
         Sign in to your Hearth workspace.
       </p>
       <form action={formAction} className="mt-8 space-y-4">
@@ -172,12 +172,12 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         <Button
           type="submit"
           size="lg"
-          className="mt-2 w-full"
+          className="mt-3 w-full shadow-none"
           disabled={pending}
         >
           {pending ? "Signing in…" : "Sign in"}
         </Button>
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="pt-1 text-center text-sm text-hearth-ink/55">
           New here?{" "}
           <Link
             href={
@@ -185,7 +185,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
                 ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`
                 : "/register"
             }
-            className="text-hearth-moss underline-offset-4 hover:underline"
+            className="font-medium text-hearth-moss underline-offset-4 hover:underline"
           >
             Create an account
           </Link>
