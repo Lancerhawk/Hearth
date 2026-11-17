@@ -36,7 +36,7 @@ export function SettingsPanel({
           currency={currency}
         />
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="rounded-2xl border border-dashed border-border/80 bg-[color-mix(in_srgb,var(--hearth-paper)_45%,white)] px-4 py-5 text-sm text-hearth-ink/55">
           Only the owner can change workspace name and currency.
         </p>
       )}
