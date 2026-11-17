@@ -40,39 +40,3 @@ jobs:
           AUTH_SECRET: ci-build-placeholder-not-for-production
           DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
         run: pnpm check
-
-  # Production deploy only after code checks on main.
-  # Do NOT gate PRs on VERCEL_TOKEN — personal tokens expire/revoke and
-  # Vercel has no auto-refresh for Actions deploy auth today. A bad token
-  # must never turn a green code PR red.
-  deploy:
-    name: Deploy production
-    needs: [checks]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Deploy to Vercel (production)
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-            echo "::error::Missing VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID secrets"
-            exit 1
-          fi
-          if ! npx vercel@65.16.0 whoami --token="$VERCEL_TOKEN" >/dev/null; then
-            echo "::error::VERCEL_TOKEN is invalid or expired. Create a new token at https://vercel.com/account/tokens and update the GitHub Actions secret VERCEL_TOKEN (PRs are not blocked by this)."
-            exit 1
-          fi
-          npx vercel@65.16.0 deploy --prod --yes --token="$VERCEL_TOKEN"
