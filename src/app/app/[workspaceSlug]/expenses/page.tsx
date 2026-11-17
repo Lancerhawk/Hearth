@@ -5,11 +5,10 @@ import {
   updateEntryAction,
 } from "@/actions/entries";
 import { MonthPicker } from "@/components/budget/month-picker";
-import { FilterChip } from "@/components/design/filter-chip";
-import { MoneyList } from "@/components/design/money-list";
 import { PageHeader } from "@/components/design/page-header";
 import { EntryForm } from "@/components/entries/entry-form";
 import { EntryRowActions } from "@/components/entries/entry-row-actions";
+import { ExpensesExplorer } from "@/components/expenses/expenses-explorer";
 import { requireMembership } from "@/lib/budget/access";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadExpensesForMonth } from "@/lib/budget/load-month";
@@ -41,10 +40,6 @@ export default async function ExpensesPage({
   });
 
   const memberFilter = sp.member?.trim() || "";
-  const rows = memberFilter
-    ? expenses.filter((e) => e.createdById === memberFilter)
-    : expenses;
-
   const action = addExpenseAction.bind(null, workspaceSlug, year, month);
   const base = `/app/${workspaceSlug}/expenses`;
   const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
@@ -57,24 +52,6 @@ export default async function ExpensesPage({
         trailing={<MonthPicker basePath={base} year={year} month={month} />}
       />
 
-      <div className="flex flex-wrap gap-2">
-        <FilterChip
-          href={`${base}?year=${year}&month=${month}`}
-          active={!memberFilter}
-        >
-          Everyone
-        </FilterChip>
-        {members.map((m) => (
-          <FilterChip
-            key={m.userId}
-            href={`${base}?year=${year}&month=${month}&member=${m.userId}`}
-            active={memberFilter === m.userId}
-          >
-            {m.user.name ?? m.user.email}
-          </FilterChip>
-        ))}
-      </div>
-
       <EntryForm
         action={action}
         categories={categoryOptions}
@@ -83,14 +60,22 @@ export default async function ExpensesPage({
         submitLabel="Add expense"
       />
 
-      <MoneyList
-        emptyTitle="No expenses this month"
-        emptyDescription="Log a purchase to see it here with who added it."
-        items={rows.map((row) => ({
+      <ExpensesExplorer
+        key={`${year}-${month}`}
+        base={base}
+        year={year}
+        month={month}
+        initialMember={memberFilter}
+        members={members.map((m) => ({
+          userId: m.userId,
+          label: m.user.name ?? m.user.email,
+        }))}
+        items={expenses.map((row) => ({
           id: row.id,
           title: row.title,
           meta: `${toIsoDate(row.spentOn)}${row.category ? ` · ${row.category.name}` : ""} · added by ${actorLabel(row.createdBy)}`,
           amount: formatCurrency(row.amount, workspace.currency),
+          createdById: row.createdById,
           action: (
             <EntryRowActions
               type="expense"
