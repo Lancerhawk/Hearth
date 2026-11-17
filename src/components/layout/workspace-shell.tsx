@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 const topbarIcon =
-  "inline-flex size-9 items-center justify-center rounded-lg text-hearth-ink/70 transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,transparent)] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
+  "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-hearth-ink/70 transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,transparent)] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
 
 const topbarIconActive =
   "bg-[color-mix(in_srgb,var(--hearth-moss)_14%,transparent)] text-hearth-ink";
@@ -235,86 +235,94 @@ export function WorkspaceShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-hearth-ink/8 bg-[color-mix(in_srgb,var(--hearth-paper)_82%,white)]/90 px-4 backdrop-blur-md md:h-16 md:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="md:hidden">
-              <BrandMark href="/" size="sm" />
-              <span className="sr-only">Workspace {workspaceName}</span>
-            </div>
-            <div className="hidden min-w-0 items-center gap-3 md:flex">
-              <span
-                aria-hidden
-                className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--hearth-moss)_14%,white)] font-heading text-sm tracking-tight text-hearth-moss"
-              >
-                {workspaceName.trim().charAt(0).toUpperCase() || "H"}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-[11px] font-medium uppercase tracking-[0.12em] text-hearth-ink/45">
-                  Workspace
-                </p>
-                <p className="truncate text-[0.95rem] font-medium leading-tight text-hearth-ink">
-                  {workspaceName}
-                </p>
+        <header className="sticky top-0 z-20 border-b border-hearth-ink/8 bg-[color-mix(in_srgb,var(--hearth-paper)_82%,white)]/90 backdrop-blur-md">
+          <div className="flex h-14 items-center justify-between gap-4 px-4 md:h-16 md:px-8">
+            <div className="flex h-9 min-w-0 items-center">
+              <div className="flex h-9 items-center md:hidden">
+                <BrandMark href="/" size="sm" />
+                <span className="sr-only">Workspace {workspaceName}</span>
+              </div>
+              <div className="hidden h-9 min-w-0 items-center gap-3 md:flex">
+                <span
+                  aria-hidden
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--hearth-moss)_14%,white)] font-heading text-sm leading-none text-hearth-moss"
+                >
+                  {workspaceName.trim().charAt(0).toUpperCase() || "H"}
+                </span>
+                <div className="flex h-9 min-w-0 flex-col justify-center gap-1">
+                  <p className="truncate text-[10px] font-medium leading-none uppercase tracking-[0.14em] text-hearth-ink/45">
+                    Workspace
+                  </p>
+                  <p className="truncate text-sm font-medium leading-none text-hearth-ink">
+                    {workspaceName}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex shrink-0 items-center gap-1 rounded-xl border border-hearth-ink/8 bg-[color-mix(in_srgb,var(--hearth-paper)_35%,white)]/80 p-1">
-            <Link
-              href="/app"
-              prefetch
-              title="Workspaces"
-              aria-label="Workspaces"
-              className={cn(topbarIcon, "gap-1.5 px-2.5 sm:w-auto sm:px-3")}
+            <nav
+              aria-label="Workspace actions"
+              className="flex h-9 shrink-0 items-center gap-1"
             >
-              <LayoutGrid className="size-4 shrink-0" />
-              <span className="hidden text-xs font-medium sm:inline">
-                Spaces
-              </span>
-            </Link>
-            <button
-              type="button"
-              title="Notifications"
-              aria-label={
-                unreadCount > 0
-                  ? `Notifications, ${unreadCount} unread`
-                  : "Notifications"
-              }
-              onClick={() => setPanel("notifications")}
-              className={cn(
-                topbarIcon,
-                "relative",
-                panel === "notifications" && topbarIconActive,
-              )}
-            >
-              <Bell className="size-4" />
-              {unreadCount > 0 ? (
-                <span className="absolute top-1 right-1 size-1.5 rounded-full bg-hearth-moss" />
-              ) : null}
-            </button>
-            <button
-              type="button"
-              title="Settings"
-              aria-label="Settings"
-              onClick={() => setPanel("settings")}
-              className={cn(
-                topbarIcon,
-                panel === "settings" && topbarIconActive,
-              )}
-            >
-              <Settings className="size-4" />
-            </button>
-            <span aria-hidden className="mx-0.5 h-5 w-px bg-hearth-ink/10" />
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                title="Sign out"
-                aria-label="Sign out"
-                className={topbarIcon}
+              <Link
+                href="/app"
+                prefetch
+                title="Workspaces"
+                aria-label="Workspaces"
+                className={cn(topbarIcon, "w-auto min-w-8 gap-1.5 px-2.5")}
               >
-                <LogOut className="size-4" />
+                <LayoutGrid className="size-3.5 shrink-0" aria-hidden />
+                <span className="hidden text-xs font-medium leading-none sm:inline">
+                  Spaces
+                </span>
+              </Link>
+              <button
+                type="button"
+                title="Notifications"
+                aria-label={
+                  unreadCount > 0
+                    ? `Notifications, ${unreadCount} unread`
+                    : "Notifications"
+                }
+                onClick={() => setPanel("notifications")}
+                className={cn(
+                  topbarIcon,
+                  "relative",
+                  panel === "notifications" && topbarIconActive,
+                )}
+              >
+                <Bell className="size-3.5" aria-hidden />
+                {unreadCount > 0 ? (
+                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-hearth-moss" />
+                ) : null}
               </button>
-            </form>
+              <button
+                type="button"
+                title="Settings"
+                aria-label="Settings"
+                onClick={() => setPanel("settings")}
+                className={cn(
+                  topbarIcon,
+                  panel === "settings" && topbarIconActive,
+                )}
+              >
+                <Settings className="size-3.5" aria-hidden />
+              </button>
+              <span
+                aria-hidden
+                className="mx-1 h-4 w-px shrink-0 bg-hearth-ink/12"
+              />
+              <form action={logoutAction} className="contents">
+                <button
+                  type="submit"
+                  title="Sign out"
+                  aria-label="Sign out"
+                  className={topbarIcon}
+                >
+                  <LogOut className="size-3.5" aria-hidden />
+                </button>
+              </form>
+            </nav>
           </div>
         </header>
 
