@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
 import { buildDayMap } from "@/lib/budget/day-map";
 import {
@@ -10,7 +11,10 @@ import { withPerfLog } from "@/lib/budget/perf-log";
 import { prepareMonthBudget } from "@/lib/budget/prepare-month";
 import { prisma } from "@/lib/prisma";
 
-async function loadSummaryParts(budgetId: string) {
+/** Shared per-request so parallel loaders do not re-query summary parts. */
+const loadSummaryParts = cache(async function loadSummaryParts(
+  budgetId: string,
+) {
   const [incomes, expenses, charges, savings, bills] = await Promise.all([
     prisma.incomeEntry.findMany({
       where: { budgetId },
@@ -41,7 +45,7 @@ async function loadSummaryParts(budgetId: string) {
     savings,
     bills,
   });
-}
+});
 
 /** Counters only — no full entry graphs. */
 export async function loadMonthSummary(
