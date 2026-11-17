@@ -59,9 +59,9 @@ export function MonthCalendar({
             type="button"
             onClick={() => onSelectDay(cell.day!)}
             className={cn(
-              "flex min-h-14 min-w-0 flex-col overflow-hidden rounded-lg border border-border/70 bg-card/50 p-1 text-left transition-colors hover:border-hearth-moss/40 hover:bg-accent/50 sm:min-h-20 sm:rounded-xl sm:p-2",
+              "flex min-h-14 min-w-0 flex-col overflow-hidden rounded-xl border border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] p-1 text-left transition-colors hover:border-hearth-moss/40 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_8%,white)] sm:min-h-20 sm:p-2",
               active &&
-                "border-hearth-moss bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--hearth-moss)_35%,transparent)]",
+                "border-hearth-moss/60 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,white)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--hearth-moss)_40%,transparent)]",
             )}
           >
             <p className="text-[10px] font-medium text-hearth-ink sm:text-xs">
