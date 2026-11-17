@@ -31,10 +31,7 @@ export function BillStatusButtons({
   }
 
   return (
-    <div
-      className="flex flex-wrap items-center gap-2"
-      aria-busy={isPending}
-    >
+    <div className="flex flex-wrap items-center gap-2" aria-busy={isPending}>
       {STATUSES.map((s) => (
         <Button
           key={s}
@@ -81,11 +78,7 @@ export function BillActiveToggle({
       disabled={isPending}
       onClick={toggle}
     >
-      {isPending
-        ? "Updating…"
-        : optimisticActive
-          ? "Deactivate"
-          : "Activate"}
+      {isPending ? "Updating…" : optimisticActive ? "Deactivate" : "Activate"}
     </Button>
   );
 }

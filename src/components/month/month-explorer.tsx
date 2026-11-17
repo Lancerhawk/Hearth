@@ -102,11 +102,7 @@ export function MonthExplorer({
   const [memberFilter, setMemberFilter] = useState(initialMember);
 
   const syncUrl = useCallback(
-    (next: {
-      view: "calendar" | "list";
-      day?: number;
-      member: string;
-    }) => {
+    (next: { view: "calendar" | "list"; day?: number; member: string }) => {
       const href = `${base}${buildQuery(year, month, next.view, next.day, next.member)}`;
       startTransition(() => {
         router.replace(href, { scroll: false });

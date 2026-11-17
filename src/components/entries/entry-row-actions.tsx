@@ -74,11 +74,7 @@ export function EntryRowActions({
         </DialogContent>
       </Dialog>
       <form action={onDelete}>
-        <PendingSubmitButton
-          size="sm"
-          variant="ghost"
-          pendingLabel="Deleting…"
-        >
+        <PendingSubmitButton size="sm" variant="ghost" pendingLabel="Deleting…">
           Delete
         </PendingSubmitButton>
       </form>
