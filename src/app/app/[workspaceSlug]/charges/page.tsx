@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/design/page-header";
 import { EntryForm } from "@/components/entries/entry-form";
 import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { requireMembership } from "@/lib/budget/access";
+import { isUpcomingDate } from "@/lib/budget/calculations";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadChargesForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
@@ -65,7 +66,7 @@ export default async function ChargesPage({
         items={charges.map((row) => ({
           id: row.id,
           title: row.title,
-          meta: `${toIsoDate(row.chargedOn)}${row.category ? ` · ${row.category.name}` : ""} · added by ${actorLabel(row.createdBy)}`,
+          meta: `${toIsoDate(row.chargedOn)}${row.category ? ` · ${row.category.name}` : ""}${isUpcomingDate(row.chargedOn) ? " · Upcoming" : ""} · added by ${actorLabel(row.createdBy)}`,
           amount: formatCurrency(row.amount, workspace.currency),
           action: (
             <EntryRowActions

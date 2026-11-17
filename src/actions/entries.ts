@@ -5,6 +5,7 @@ import {
   ensureMonthlyBudget,
   parsePeriod,
   periodFromDate,
+  summaryAsOf,
 } from "@/lib/budget/period";
 import { revalidateMoneyPaths } from "@/lib/budget/revalidate-money";
 import { createNotification } from "@/lib/notifications/create";
@@ -61,10 +62,20 @@ async function maybeBudgetLow(
   if (!budget) return;
   const summary = calculateBudgetSummary({
     incomes: budget.incomes,
-    expenses: budget.expenses,
-    charges: budget.charges,
-    savings: budget.savings,
+    expenses: budget.expenses.map((e) => ({
+      amount: e.amount,
+      on: e.spentOn,
+    })),
+    charges: budget.charges.map((c) => ({
+      amount: c.amount,
+      on: c.chargedOn,
+    })),
+    savings: budget.savings.map((s) => ({
+      amount: s.amount,
+      on: s.savedOn,
+    })),
     bills: budget.billInstances,
+    asOf: summaryAsOf(budget.year, budget.month),
   });
   if (summary.totalIncome <= 0) return;
   if (summary.remaining >= summary.totalIncome * 0.15) return;

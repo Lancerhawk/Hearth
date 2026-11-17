@@ -91,7 +91,8 @@ export function EntryForm({
             disabled={pending}
           />
           <p className="text-xs text-muted-foreground">
-            Filed under the month of this date (not the month you’re viewing).
+            Filed under this date’s month. Dates after today stay Upcoming and
+            don’t cut remaining until that day.
           </p>
         </div>
         {showCategory ? (

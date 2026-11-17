@@ -1,5 +1,5 @@
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
-import { ensureMonthlyBudget } from "@/lib/budget/period";
+import { ensureMonthlyBudget, summaryAsOf } from "@/lib/budget/period";
 import { toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
@@ -70,13 +70,26 @@ export async function syncCarryoverFunds(
     },
   });
 
+  // Use the same committed/upcoming split as the live month: past months
+  // are fully committed; the in-progress month excludes dates after today
+  // so early open of next month doesn’t pull unspent future rows forward.
   const remaining = prevBudget
     ? calculateBudgetSummary({
         incomes: prevBudget.incomes,
-        expenses: prevBudget.expenses,
-        charges: prevBudget.charges,
-        savings: prevBudget.savings,
+        expenses: prevBudget.expenses.map((e) => ({
+          amount: e.amount,
+          on: e.spentOn,
+        })),
+        charges: prevBudget.charges.map((c) => ({
+          amount: c.amount,
+          on: c.chargedOn,
+        })),
+        savings: prevBudget.savings.map((s) => ({
+          amount: s.amount,
+          on: s.savedOn,
+        })),
         bills: prevBudget.billInstances,
+        asOf: summaryAsOf(prev.year, prev.month),
       }).remaining
     : 0;
 

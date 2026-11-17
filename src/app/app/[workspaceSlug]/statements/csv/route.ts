@@ -18,12 +18,15 @@ export async function GET(
   const filters = parseStatementFilters(
     Object.fromEntries(url.searchParams.entries()),
   );
-  const { rows, totals } = await loadFilteredStatement(workspace.id, filters);
+  const { rows, totals, range } = await loadFilteredStatement(
+    workspace.id,
+    filters,
+  );
   const body = statementCsv(rows, workspace.currency, totals);
   const kind = statementKindLabel(filters.kind, moneyInLabel(workspace.kind))
     .toLowerCase()
     .replaceAll(" ", "-");
-  const filename = `hearth-${workspace.slug}-${kind}-${filters.from}_to_${filters.to}.csv`;
+  const filename = `hearth-${workspace.slug}-${kind}-${range.from}_to_${range.to}.csv`;
 
   return new Response(body, {
     headers: {

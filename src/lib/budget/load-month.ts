@@ -2,35 +2,40 @@ import { cache } from "react";
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
 import { buildDayMap } from "@/lib/budget/day-map";
 import {
-  amountOnly,
   billAmountStatus,
   categorySelect,
+  chargeAmountDate,
   creatorSelect,
+  expenseAmountDate,
+  savingsAmountDate,
 } from "@/lib/budget/month-selects";
 import { withPerfLog } from "@/lib/budget/perf-log";
+import { summaryAsOf } from "@/lib/budget/period";
 import { prepareMonthBudget } from "@/lib/budget/prepare-month";
 import { prisma } from "@/lib/prisma";
 
 /** Shared per-request so parallel loaders do not re-query summary parts. */
 const loadSummaryParts = cache(async function loadSummaryParts(
   budgetId: string,
+  year: number,
+  month: number,
 ) {
   const [incomes, expenses, charges, savings, bills] = await Promise.all([
     prisma.incomeEntry.findMany({
       where: { budgetId },
-      ...amountOnly,
+      select: { amount: true },
     }),
     prisma.expenseEntry.findMany({
       where: { budgetId },
-      ...amountOnly,
+      ...expenseAmountDate,
     }),
     prisma.chargeEntry.findMany({
       where: { budgetId },
-      ...amountOnly,
+      ...chargeAmountDate,
     }),
     prisma.savingsEntry.findMany({
       where: { budgetId },
-      ...amountOnly,
+      ...savingsAmountDate,
     }),
     prisma.billInstance.findMany({
       where: { budgetId },
@@ -40,10 +45,11 @@ const loadSummaryParts = cache(async function loadSummaryParts(
 
   return calculateBudgetSummary({
     incomes,
-    expenses,
-    charges,
-    savings,
+    expenses: expenses.map((e) => ({ amount: e.amount, on: e.spentOn })),
+    charges: charges.map((c) => ({ amount: c.amount, on: c.chargedOn })),
+    savings: savings.map((s) => ({ amount: s.amount, on: s.savedOn })),
     bills,
+    asOf: summaryAsOf(year, month),
   });
 });
 
@@ -54,7 +60,7 @@ export async function loadMonthSummary(
   month: number,
 ) {
   const budget = await prepareMonthBudget(workspaceId, year, month);
-  const summary = await loadSummaryParts(budget.id);
+  const summary = await loadSummaryParts(budget.id, year, month);
   return {
     budgetId: budget.id,
     year: budget.year,
@@ -133,7 +139,7 @@ export async function loadBillsForMonth(
   return { budgetId: budget.id, billInstances };
 }
 
-/** Dashboard: summary + chart expenses + bills + recent activity fields. */
+/** Dashboard: summary + ranking rows + upcoming + recent activity. */
 export async function loadDashboardMonth(
   workspaceId: string,
   year: number,
@@ -141,38 +147,49 @@ export async function loadDashboardMonth(
 ) {
   const budget = await prepareMonthBudget(workspaceId, year, month);
 
-  const [summary, incomes, expenses, charges, savings, billInstances] =
-    await Promise.all([
-      loadSummaryParts(budget.id),
-      prisma.incomeEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect },
-        orderBy: { earnedOn: "desc" },
-        take: 12,
-      }),
-      prisma.expenseEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect, category: categorySelect },
-        orderBy: { spentOn: "desc" },
-      }),
-      prisma.chargeEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect },
-        orderBy: { chargedOn: "desc" },
-        take: 12,
-      }),
-      prisma.savingsEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect },
-        orderBy: { savedOn: "desc" },
-        take: 12,
-      }),
-      prisma.billInstance.findMany({
-        where: { budgetId: budget.id },
-        include: { recurringBill: true },
-        orderBy: { dueDate: "asc" },
-      }),
-    ]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [
+    summary,
+    incomes,
+    expenses,
+    charges,
+    savings,
+    billInstances,
+    upcoming,
+  ] = await Promise.all([
+    loadSummaryParts(budget.id, year, month),
+    prisma.incomeEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect },
+      orderBy: { earnedOn: "desc" },
+      take: 12,
+    }),
+    prisma.expenseEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect, category: categorySelect },
+      orderBy: { spentOn: "desc" },
+    }),
+    prisma.chargeEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect },
+      orderBy: { chargedOn: "desc" },
+      take: 12,
+    }),
+    prisma.savingsEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect },
+      orderBy: { savedOn: "desc" },
+      take: 12,
+    }),
+    prisma.billInstance.findMany({
+      where: { budgetId: budget.id },
+      include: { recurringBill: true },
+      orderBy: { dueDate: "asc" },
+    }),
+    loadUpcomingOutflows(workspaceId, today, 10),
+  ]);
 
   return {
     budget: {
@@ -186,7 +203,91 @@ export async function loadDashboardMonth(
       billInstances,
     },
     summary,
+    upcoming,
   };
+}
+
+/** Future-dated outflows (any month) after today — for Upcoming on dashboard. */
+export async function loadUpcomingOutflows(
+  workspaceId: string,
+  after: Date,
+  take = 10,
+) {
+  const [expenses, charges, savings, bills] = await Promise.all([
+    prisma.expenseEntry.findMany({
+      where: {
+        spentOn: { gt: after },
+        budget: { workspaceId },
+      },
+      include: { category: categorySelect },
+      orderBy: { spentOn: "asc" },
+      take,
+    }),
+    prisma.chargeEntry.findMany({
+      where: {
+        chargedOn: { gt: after },
+        budget: { workspaceId },
+      },
+      include: { category: categorySelect },
+      orderBy: { chargedOn: "asc" },
+      take,
+    }),
+    prisma.savingsEntry.findMany({
+      where: {
+        savedOn: { gt: after },
+        budget: { workspaceId },
+      },
+      orderBy: { savedOn: "asc" },
+      take,
+    }),
+    prisma.billInstance.findMany({
+      where: {
+        status: "PENDING",
+        dueDate: { gt: after },
+        budget: { workspaceId },
+      },
+      include: { recurringBill: { select: { name: true } } },
+      orderBy: { dueDate: "asc" },
+      take,
+    }),
+  ]);
+
+  return [
+    ...expenses.map((e) => ({
+      id: e.id,
+      title: e.title,
+      kind: "Expense" as const,
+      amount: e.amount,
+      on: e.spentOn,
+      meta: e.category?.name ?? null,
+    })),
+    ...charges.map((c) => ({
+      id: c.id,
+      title: c.title,
+      kind: "Charge" as const,
+      amount: c.amount,
+      on: c.chargedOn,
+      meta: c.category?.name ?? null,
+    })),
+    ...savings.map((s) => ({
+      id: s.id,
+      title: s.title,
+      kind: "Savings" as const,
+      amount: s.amount,
+      on: s.savedOn,
+      meta: null as string | null,
+    })),
+    ...bills.map((b) => ({
+      id: b.id,
+      title: b.recurringBill.name,
+      kind: "Bill" as const,
+      amount: b.amount,
+      on: b.dueDate,
+      meta: "pending",
+    })),
+  ]
+    .sort((a, b) => a.on.getTime() - b.on.getTime())
+    .slice(0, take);
 }
 
 /** Full month graph for calendar / day map. */
@@ -226,10 +327,20 @@ export async function loadMonthBudget(
 
     const summary = calculateBudgetSummary({
       incomes: full.incomes,
-      expenses: full.expenses,
-      charges: full.charges,
-      savings: full.savings,
+      expenses: full.expenses.map((e) => ({
+        amount: e.amount,
+        on: e.spentOn,
+      })),
+      charges: full.charges.map((c) => ({
+        amount: c.amount,
+        on: c.chargedOn,
+      })),
+      savings: full.savings.map((s) => ({
+        amount: s.amount,
+        on: s.savedOn,
+      })),
       bills: full.billInstances,
+      asOf: summaryAsOf(year, month),
     });
 
     const dayMap = buildDayMap({

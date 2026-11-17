@@ -59,7 +59,7 @@ export default async function StatementPreviewPage({
       <div className="no-print">
         <PageHeader
           title="Statement"
-          description="Filter by type and dates, then print or download CSV."
+          description="Committed activity through today — future-dated rows stay Upcoming."
           trailing={<PrintButton />}
         />
         <StatementFiltersForm
