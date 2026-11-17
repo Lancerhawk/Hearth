@@ -166,7 +166,7 @@ export async function DashboardBody({
         <Surface tone="quiet">
           <SectionTitle>Upcoming</SectionTitle>
           <p className="mt-1 text-xs text-hearth-ink/50">
-            Dated after today — not cut from remaining yet.
+            After today only — today’s entries are already spent.
           </p>
           <ul className="mt-4 space-y-3">
             {upcoming.length === 0 ? (
