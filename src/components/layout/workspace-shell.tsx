@@ -10,7 +10,6 @@ import { NavLink } from "@/components/layout/nav-link";
 import { NotificationsPanel } from "@/components/layout/notifications-panel";
 import { RouteWarmer } from "@/components/layout/route-warmer";
 import { SettingsPanel } from "@/components/layout/settings-panel";
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -25,6 +24,7 @@ import {
   CreditCard,
   FileText,
   LayoutDashboard,
+  LayoutGrid,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -38,8 +38,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-const headerBtn =
-  "inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_25%,transparent)] px-3 text-sm text-hearth-ink transition-colors duration-150 hover:border-hearth-moss/40 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
+const topbarIcon =
+  "inline-flex size-9 items-center justify-center rounded-lg text-hearth-ink/70 transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,transparent)] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
+
+const topbarIconActive =
+  "bg-[color-mix(in_srgb,var(--hearth-moss)_14%,transparent)] text-hearth-ink";
+
+const sidebarToggle =
+  "inline-flex size-8 items-center justify-center rounded-lg border border-sidebar-border/80 bg-transparent text-hearth-ink/70 transition-colors hover:border-hearth-moss/35 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
 
 const SIDEBAR_KEY = "hearth-sidebar-collapsed";
 const SIDEBAR_EVENT = "hearth-sidebar";
@@ -215,8 +221,8 @@ export function WorkspaceShell({
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
           className={cn(
-            headerBtn,
-            "mt-3 size-8 shrink-0 self-center px-0",
+            sidebarToggle,
+            "mt-3 shrink-0 self-center",
             !collapsed && "self-end",
           )}
         >
@@ -229,31 +235,42 @@ export function WorkspaceShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_78%,white)]/85 px-4 py-3.5 backdrop-blur-md md:px-8">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-hearth-ink/8 bg-[color-mix(in_srgb,var(--hearth-paper)_82%,white)]/90 px-4 backdrop-blur-md md:h-16 md:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <div className="md:hidden">
               <BrandMark href={`${base}/dashboard`} size="sm" />
               <span className="sr-only">Workspace {workspaceName}</span>
             </div>
-            {/* Desktop/tablet: workspace name. Mobile already shows Hearth — avoid "Hearth home". */}
-            <div className="hidden min-w-0 md:block">
-              <p className="truncate font-heading text-lg tracking-tight text-hearth-ink">
-                {workspaceName}
-              </p>
-              <p className="text-xs text-muted-foreground">Current workspace</p>
+            <div className="hidden min-w-0 items-center gap-3 md:flex">
+              <span
+                aria-hidden
+                className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--hearth-moss)_14%,white)] font-heading text-sm tracking-tight text-hearth-moss"
+              >
+                {workspaceName.trim().charAt(0).toUpperCase() || "H"}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-medium uppercase tracking-[0.12em] text-hearth-ink/45">
+                  Workspace
+                </p>
+                <p className="truncate text-[0.95rem] font-medium leading-tight text-hearth-ink">
+                  {workspaceName}
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 rounded-xl border border-hearth-ink/8 bg-[color-mix(in_srgb,var(--hearth-paper)_35%,white)]/80 p-1">
             <Link
               href="/app"
               prefetch
               title="Workspaces"
               aria-label="Workspaces"
-              className={headerBtn}
+              className={cn(topbarIcon, "gap-1.5 px-2.5 sm:w-auto sm:px-3")}
             >
-              <span className="sm:hidden">Spaces</span>
-              <span className="hidden sm:inline">Workspaces</span>
+              <LayoutGrid className="size-4 shrink-0" />
+              <span className="hidden text-xs font-medium sm:inline">
+                Spaces
+              </span>
             </Link>
             <button
               type="button"
@@ -265,17 +282,14 @@ export function WorkspaceShell({
               }
               onClick={() => setPanel("notifications")}
               className={cn(
-                headerBtn,
-                "relative size-8 px-0",
-                panel === "notifications" &&
-                  "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
+                topbarIcon,
+                "relative",
+                panel === "notifications" && topbarIconActive,
               )}
             >
               <Bell className="size-4" />
               {unreadCount > 0 ? (
-                <span className="absolute -top-1.5 -right-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-hearth-moss px-1 py-0.5 text-[10px] leading-none text-primary-foreground">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
+                <span className="absolute top-1 right-1 size-1.5 rounded-full bg-hearth-moss" />
               ) : null}
             </button>
             <button
@@ -284,27 +298,22 @@ export function WorkspaceShell({
               aria-label="Settings"
               onClick={() => setPanel("settings")}
               className={cn(
-                headerBtn,
-                "size-8 px-0",
-                panel === "settings" &&
-                  "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
+                topbarIcon,
+                panel === "settings" && topbarIconActive,
               )}
             >
               <Settings className="size-4" />
             </button>
+            <span aria-hidden className="mx-0.5 h-5 w-px bg-hearth-ink/10" />
             <form action={logoutAction}>
-              <Button
+              <button
                 type="submit"
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  headerBtn,
-                  "border-transparent hover:border-hearth-moss/45",
-                )}
+                title="Sign out"
+                aria-label="Sign out"
+                className={topbarIcon}
               >
                 <LogOut className="size-4" />
-                <span className="hidden sm:inline">Sign out</span>
-              </Button>
+              </button>
             </form>
           </div>
         </header>
