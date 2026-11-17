@@ -194,11 +194,11 @@ Preview and CSV share the same filter parser and row builder so exports always m
 GitHub Actions owns the pipeline end-to-end (Vercel Git auto-deploy is off).
 
 **On every PR / push to `main`:**
+
 1. **Prettier · Lint · Typecheck**
 2. **Build** (`build:verify` — generate + `next build`, no migrate)
 
-**On push to `main` only (after both pass):**
-3. **Deploy production** via `vercel deploy --prod` using `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` repo secrets.
+**On push to `main` only (after both pass):** 3. **Deploy production** via `vercel deploy --prod` using `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` repo secrets.
 
 ```mermaid
 flowchart LR
