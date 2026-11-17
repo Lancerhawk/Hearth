@@ -191,21 +191,31 @@ Preview and CSV share the same filter parser and row builder so exports always m
 
 ### CI → production
 
-GitHub Actions only runs **code** checks. Production deploys come from the **Vercel ↔ GitHub** integration (no personal `VERCEL_TOKEN` in Actions — those expire and cannot auto-refresh).
+GitHub Actions owns the pipeline end-to-end (Vercel Git auto-deploy is off).
+
+**On every PR / push to `main`:**
+1. **Prettier · Lint · Typecheck**
+2. **Build** (`build:verify` — generate + `next build`, no migrate)
+
+**On push to `main` only (after both pass):**
+3. **Deploy production** via `vercel deploy --prod` using `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` repo secrets.
 
 ```mermaid
 flowchart LR
-  Push[Push / merge to main] --> CI[GitHub Actions checks]
-  Push --> VercelGit[Vercel Git integration]
-  CI --> Checks["Prettier · Lint · Typecheck · Build"]
-  VercelGit --> Prod[Vercel production]
+  PR[PR / push] --> Q[Prettier · Lint · Typecheck]
+  PR --> B[Build]
+  Main[Merge to main] --> Q
+  Main --> B
+  Q --> D[Deploy production]
+  B --> D
+  D --> Prod[Vercel production]
 ```
 
-Connect the repo once in the Vercel project **Settings → Git**. After that, every merge to `main` ships without Actions tokens.
+If deploy fails with an auth error, rotate the personal token at [vercel.com/account/tokens](https://vercel.com/account/tokens) and update the `VERCEL_TOKEN` secret.
 
-Locally / in PRs: `pnpm check` runs format, lint, typecheck, and `build:verify` (Prisma generate + `next build`, no migrate).
+Locally: `pnpm check` runs format, lint, typecheck, and `build:verify`.
 
-On Vercel build: `pnpm build` regenerates the Prisma client, runs `migrate deploy` (prefers `DIRECT_URL` / session `:5432`), then `next build`.
+On Vercel build (from Actions deploy): `pnpm build` regenerates the Prisma client, runs `migrate deploy` (prefers `DIRECT_URL` / session `:5432`), then `next build`.
 
 ---
 

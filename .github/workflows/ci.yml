@@ -11,8 +11,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
-    name: Prettier · Lint · Typecheck · Build
+  quality:
+    name: Prettier · Lint · Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier · Lint · Typecheck
+        run: pnpm format:check && pnpm lint && pnpm typecheck
+
+  build:
+    name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -34,9 +60,44 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Prettier · Lint · Typecheck · Build
+      - name: Build verify
         env:
           # Build-time placeholders — real secrets live on Vercel only
           AUTH_SECRET: ci-build-placeholder-not-for-production
           DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
-        run: pnpm check
+        run: pnpm build:verify
+
+  # Production deploy only after both PR gates pass on main.
+  # Deploy from Actions (not Vercel Git). Keep VERCEL_TOKEN fresh in
+  # repo secrets — personal tokens can expire and must be rotated.
+  deploy:
+    name: Deploy production
+    needs: [quality, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Deploy to Vercel (production)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::Missing VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID secrets"
+            exit 1
+          fi
+          if ! npx vercel@65.16.0 whoami --token="$VERCEL_TOKEN" >/dev/null; then
+            echo "::error::VERCEL_TOKEN is invalid or expired. Create a new token at https://vercel.com/account/tokens and update the GitHub Actions secret VERCEL_TOKEN."
+            exit 1
+          fi
+          npx vercel@65.16.0 deploy --prod --yes --token="$VERCEL_TOKEN"
