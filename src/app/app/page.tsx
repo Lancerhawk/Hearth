@@ -13,8 +13,8 @@ export default async function AppHomePage() {
 
   return (
     <Atmosphere className="flex flex-1 flex-col">
-      <div className="hearth-enter mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-6 py-14 md:py-20">
-        <div className="flex items-start justify-between gap-4">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-6 py-14 md:py-20">
+        <div className="hearth-enter flex items-start justify-between gap-4">
           <div>
             <BrandMark href="/" size="lg" />
             <p className="mt-4 text-[0.95rem] leading-relaxed text-muted-foreground">
@@ -29,7 +29,11 @@ export default async function AppHomePage() {
         </div>
 
         {memberships.length === 0 ? (
-          <Surface tone="quiet" padding="lg" className="text-center">
+          <Surface
+            tone="quiet"
+            padding="lg"
+            className="hearth-enter hearth-enter-delay-1 text-center"
+          >
             <p className="font-heading text-2xl tracking-tight">
               No workspaces yet
             </p>
@@ -44,7 +48,7 @@ export default async function AppHomePage() {
             </Link>
           </Surface>
         ) : (
-          <ul className="space-y-3">
+          <ul className="hearth-enter hearth-enter-delay-1 space-y-3">
             {memberships.map((m) => (
               <li key={m.id}>
                 <Link
