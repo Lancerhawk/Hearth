@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Atmosphere } from "@/components/design/atmosphere";
 import { buttonVariants } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const monthFlow = [
@@ -37,7 +38,10 @@ const pillars = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  const signedIn = Boolean(session?.user);
+
   return (
     <Atmosphere className="relative flex min-h-dvh flex-1 flex-col">
       <header className="relative z-30 flex items-center justify-between px-6 py-5 md:px-10">
@@ -48,24 +52,38 @@ export default function Home() {
           Hearth
         </Link>
         <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "text-hearth-ink/80",
-            )}
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/register"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "border-hearth-ink/15 bg-white/45",
-            )}
-          >
-            Get started
-          </Link>
+          {signedIn ? (
+            <Link
+              href="/app"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "bg-hearth-moss shadow-none hover:bg-[color-mix(in_srgb,var(--hearth-moss)_86%,black)]",
+              )}
+            >
+              Go to workspaces
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "text-hearth-ink/80",
+                )}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "border-hearth-ink/15 bg-white/45",
+                )}
+              >
+                Get started
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -92,24 +110,38 @@ export default function Home() {
               clear attribution for everyone at home.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3 sm:justify-start">
-              <Link
-                href="/register"
-                className={cn(
-                  buttonVariants({ size: "lg" }),
-                  "bg-hearth-moss px-7 shadow-none hover:bg-[color-mix(in_srgb,var(--hearth-moss)_86%,black)]",
-                )}
-              >
-                Create your workspace
-              </Link>
-              <Link
-                href="/login"
-                className={cn(
-                  buttonVariants({ size: "lg", variant: "outline" }),
-                  "border-hearth-ink/15 bg-white/50 px-7 backdrop-blur-sm",
-                )}
-              >
-                I already have an account
-              </Link>
+              {signedIn ? (
+                <Link
+                  href="/app"
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "bg-hearth-moss px-7 shadow-none hover:bg-[color-mix(in_srgb,var(--hearth-moss)_86%,black)]",
+                  )}
+                >
+                  Go to workspaces
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    className={cn(
+                      buttonVariants({ size: "lg" }),
+                      "bg-hearth-moss px-7 shadow-none hover:bg-[color-mix(in_srgb,var(--hearth-moss)_86%,black)]",
+                    )}
+                  >
+                    Create your workspace
+                  </Link>
+                  <Link
+                    href="/login"
+                    className={cn(
+                      buttonVariants({ size: "lg", variant: "outline" }),
+                      "border-hearth-ink/15 bg-white/50 px-7 backdrop-blur-sm",
+                    )}
+                  >
+                    I already have an account
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -233,32 +265,49 @@ export default function Home() {
         <div className="relative z-[1] mx-auto flex w-full max-w-5xl flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <h2 className="font-heading text-3xl tracking-tight md:text-4xl">
-              Start your household ledger tonight.
+              {signedIn
+                ? "Back to your household ledger."
+                : "Start your household ledger tonight."}
             </h2>
             <p className="mt-4 text-base leading-relaxed text-[color-mix(in_srgb,var(--hearth-paper)_72%,transparent)]">
-              Create a workspace, invite the people you live with, and keep this
-              month’s money in one quiet place.
+              {signedIn
+                ? "Open your workspaces to pick up this month’s funds, bills, and day-by-day spend."
+                : "Create a workspace, invite the people you live with, and keep this month’s money in one quiet place."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link
-              href="/register"
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "bg-[color-mix(in_srgb,var(--hearth-paper)_96%,white)] px-6 text-hearth-ink shadow-none hover:bg-white",
-              )}
-            >
-              Create your workspace
-            </Link>
-            <Link
-              href="/login"
-              className={cn(
-                buttonVariants({ size: "lg", variant: "outline" }),
-                "border-[color-mix(in_srgb,var(--hearth-paper)_35%,transparent)] bg-transparent px-6 text-[color-mix(in_srgb,var(--hearth-paper)_96%,white)] hover:bg-white/10 hover:text-white",
-              )}
-            >
-              Sign in
-            </Link>
+            {signedIn ? (
+              <Link
+                href="/app"
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "bg-[color-mix(in_srgb,var(--hearth-paper)_96%,white)] px-6 text-hearth-ink shadow-none hover:bg-white",
+                )}
+              >
+                Go to workspaces
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "bg-[color-mix(in_srgb,var(--hearth-paper)_96%,white)] px-6 text-hearth-ink shadow-none hover:bg-white",
+                  )}
+                >
+                  Create your workspace
+                </Link>
+                <Link
+                  href="/login"
+                  className={cn(
+                    buttonVariants({ size: "lg", variant: "outline" }),
+                    "border-[color-mix(in_srgb,var(--hearth-paper)_35%,transparent)] bg-transparent px-6 text-[color-mix(in_srgb,var(--hearth-paper)_96%,white)] hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  Sign in
+                </Link>
+              </>
+            )}
           </div>
         </div>
         <div
