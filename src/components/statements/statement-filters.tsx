@@ -58,7 +58,7 @@ export function StatementFiltersForm({
       <form
         method="get"
         action={basePath}
-        className="grid gap-3 rounded-xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_88%,white)] p-4 sm:grid-cols-2 lg:grid-cols-6"
+        className="grid gap-3 rounded-2xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_55%,white)] p-4 hearth-elevate-soft sm:grid-cols-2 lg:grid-cols-6"
       >
         <input type="hidden" name="year" value={filters.year} />
         <input type="hidden" name="month" value={filters.month} />
@@ -88,7 +88,7 @@ export function StatementFiltersForm({
             id="statement-category"
             name="categoryId"
             defaultValue={filters.categoryId}
-            className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
+            className="h-9 w-full rounded-lg border border-input bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-3 text-sm text-hearth-ink"
           >
             <option value="">All categories</option>
             {categories.map((c) => (
@@ -104,7 +104,7 @@ export function StatementFiltersForm({
             id="statement-member"
             name="member"
             defaultValue={filters.member}
-            className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
+            className="h-9 w-full rounded-lg border border-input bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-3 text-sm text-hearth-ink"
           >
             <option value="">Everyone</option>
             {members.map((m) => (
@@ -120,7 +120,7 @@ export function StatementFiltersForm({
             id="statement-bill-status"
             name="billStatus"
             defaultValue={filters.billStatus}
-            className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
+            className="h-9 w-full rounded-lg border border-input bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-3 text-sm text-hearth-ink"
           >
             <option value="all">All bill statuses</option>
             <option value="paid">Paid only</option>

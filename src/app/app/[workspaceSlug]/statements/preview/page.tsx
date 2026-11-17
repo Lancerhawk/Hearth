@@ -59,7 +59,7 @@ export default async function StatementPreviewPage({
       <div className="no-print">
         <PageHeader
           title="Statement"
-          description="Filter by type and dates, then print or download CSV. Totals use credits minus debits."
+          description="Filter by type and dates, then print or download CSV."
           trailing={<PrintButton />}
         />
         <StatementFiltersForm
