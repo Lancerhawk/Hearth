@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CounterStrip } from "@/components/budget/counter-strip";
-import { TopSpendRanking } from "@/components/dashboard/top-spend-ranking";
+import { AfterUpcoming } from "@/components/dashboard/after-upcoming";
+import { TopSpendPanel } from "@/components/dashboard/top-spend-panel";
 import { SectionTitle } from "@/components/design/section-title";
 import { Surface } from "@/components/design/surface";
 import { buttonVariants } from "@/components/ui/button";
@@ -144,29 +145,25 @@ export async function DashboardBody({
         remaining={summary.remaining}
         entryCount={summary.monthEntryCount}
         pendingBills={summary.pendingBillsCount}
+        skippedBills={summary.skippedBillsCount}
         upcoming={summary.upcomingOutflow}
         moneyInLabel={inLabel}
+        showRemaining={false}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Surface tone="quiet">
-          <SectionTitle>Top spend this month</SectionTitle>
-          <p className="mt-1 text-xs text-hearth-ink/50">
-            Committed so far — future-dated rows stay under Upcoming.
-          </p>
-          <div className="mt-4">
-            <TopSpendRanking
-              rows={ranking}
-              currency={currency}
-              totalSpent={summary.totalSpent}
-            />
-          </div>
+          <TopSpendPanel
+            rows={ranking}
+            currency={currency}
+            totalSpent={summary.totalSpent}
+          />
         </Surface>
 
         <Surface tone="quiet">
           <SectionTitle>Upcoming</SectionTitle>
           <p className="mt-1 text-xs text-hearth-ink/50">
-            Dated after today — not cut from remaining yet.
+            After today only — today’s entries are already spent.
           </p>
           <ul className="mt-4 space-y-3">
             {upcoming.length === 0 ? (
@@ -201,40 +198,13 @@ export async function DashboardBody({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Surface tone="quiet">
-          <SectionTitle>Bills this month</SectionTitle>
-          <ul className="mt-4 space-y-3">
-            {budget.billInstances.length === 0 ? (
-              <li className="text-sm text-hearth-ink/55">
-                No recurring bills yet.
-              </li>
-            ) : (
-              budget.billInstances.slice(0, 6).map((b) => (
-                <li key={b.id} className="flex justify-between gap-3 text-sm">
-                  <span className="min-w-0">
-                    <span className="font-medium text-hearth-ink">
-                      {b.recurringBill.name}
-                    </span>
-                    <span className="text-hearth-ink/50">
-                      {" "}
-                      · {b.status.toLowerCase()}
-                    </span>
-                  </span>
-                  <span className="shrink-0 font-heading tabular-money text-hearth-ink">
-                    {formatCurrency(b.amount, currency)}
-                  </span>
-                </li>
-              ))
-            )}
-          </ul>
-          <Link
-            href={`${base}/bills`}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "mt-5",
-            )}
-          >
-            Manage bills
-          </Link>
+          <AfterUpcoming
+            currency={currency}
+            remaining={summary.remaining}
+            stillAhead={summary.pendingBillsTotal + summary.upcomingOutflow}
+            projectedRemaining={summary.projectedRemaining}
+            billsHref={`${base}/bills`}
+          />
         </Surface>
 
         <Surface tone="quiet">

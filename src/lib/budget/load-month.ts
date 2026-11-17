@@ -1,5 +1,8 @@
 import { cache } from "react";
-import { calculateBudgetSummary } from "@/lib/budget/calculations";
+import {
+  calculateBudgetSummary,
+  isUpcomingDate,
+} from "@/lib/budget/calculations";
 import { buildDayMap } from "@/lib/budget/day-map";
 import {
   billAmountStatus,
@@ -150,46 +153,34 @@ export async function loadDashboardMonth(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [
-    summary,
-    incomes,
-    expenses,
-    charges,
-    savings,
-    billInstances,
-    upcoming,
-  ] = await Promise.all([
-    loadSummaryParts(budget.id, year, month),
-    prisma.incomeEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { earnedOn: "desc" },
-      take: 12,
-    }),
-    prisma.expenseEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect, category: categorySelect },
-      orderBy: { spentOn: "desc" },
-    }),
-    prisma.chargeEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { chargedOn: "desc" },
-      take: 12,
-    }),
-    prisma.savingsEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { savedOn: "desc" },
-      take: 12,
-    }),
-    prisma.billInstance.findMany({
-      where: { budgetId: budget.id },
-      include: { recurringBill: true },
-      orderBy: { dueDate: "asc" },
-    }),
-    loadUpcomingOutflows(workspaceId, today, 10),
-  ]);
+  const [summary, incomes, expenses, charges, savings, upcoming] =
+    await Promise.all([
+      loadSummaryParts(budget.id, year, month),
+      prisma.incomeEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect },
+        orderBy: { earnedOn: "desc" },
+        take: 12,
+      }),
+      prisma.expenseEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect, category: categorySelect },
+        orderBy: { spentOn: "desc" },
+      }),
+      prisma.chargeEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect },
+        orderBy: { chargedOn: "desc" },
+        take: 12,
+      }),
+      prisma.savingsEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect },
+        orderBy: { savedOn: "desc" },
+        take: 12,
+      }),
+      loadUpcomingOutflows(workspaceId, today, 10),
+    ]);
 
   return {
     budget: {
@@ -200,23 +191,30 @@ export async function loadDashboardMonth(
       expenses,
       charges,
       savings,
-      billInstances,
     },
     summary,
     upcoming,
   };
 }
 
-/** Future-dated outflows (any month) after today — for Upcoming on dashboard. */
+/**
+ * Future-dated outflows (any month) for Upcoming on the dashboard.
+ * Calendar rule: date > today is upcoming; today is already committed/done.
+ * Query from start of tomorrow so noon-stamped “today” rows never slip in.
+ */
 export async function loadUpcomingOutflows(
   workspaceId: string,
-  after: Date,
+  today: Date,
   take = 10,
 ) {
+  const startOfTomorrow = new Date(today);
+  startOfTomorrow.setHours(0, 0, 0, 0);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
   const [expenses, charges, savings, bills] = await Promise.all([
     prisma.expenseEntry.findMany({
       where: {
-        spentOn: { gt: after },
+        spentOn: { gte: startOfTomorrow },
         budget: { workspaceId },
       },
       include: { category: categorySelect },
@@ -225,7 +223,7 @@ export async function loadUpcomingOutflows(
     }),
     prisma.chargeEntry.findMany({
       where: {
-        chargedOn: { gt: after },
+        chargedOn: { gte: startOfTomorrow },
         budget: { workspaceId },
       },
       include: { category: categorySelect },
@@ -234,7 +232,7 @@ export async function loadUpcomingOutflows(
     }),
     prisma.savingsEntry.findMany({
       where: {
-        savedOn: { gt: after },
+        savedOn: { gte: startOfTomorrow },
         budget: { workspaceId },
       },
       orderBy: { savedOn: "asc" },
@@ -243,7 +241,7 @@ export async function loadUpcomingOutflows(
     prisma.billInstance.findMany({
       where: {
         status: "PENDING",
-        dueDate: { gt: after },
+        dueDate: { gte: startOfTomorrow },
         budget: { workspaceId },
       },
       include: { recurringBill: { select: { name: true } } },
@@ -286,6 +284,7 @@ export async function loadUpcomingOutflows(
       meta: "pending",
     })),
   ]
+    .filter((row) => isUpcomingDate(row.on, today))
     .sort((a, b) => a.on.getTime() - b.on.getTime())
     .slice(0, take);
 }
