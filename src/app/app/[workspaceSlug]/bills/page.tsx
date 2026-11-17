@@ -61,26 +61,30 @@ export default async function BillsPage({
 
       <section className="space-y-3">
         <SectionTitle>This month</SectionTitle>
-        <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
+        <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_32%,white)] hearth-elevate">
           {billInstances.length === 0 ? (
-            <li className="px-4 py-6 text-sm text-muted-foreground">
+            <li className="px-5 py-8 text-sm text-muted-foreground">
               No bill instances yet.
             </li>
           ) : (
             billInstances.map((b) => (
               <li
                 key={b.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
               >
                 <div>
-                  <p className="font-medium">{b.recurringBill.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-medium text-hearth-ink">
+                    {b.recurringBill.name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     Due {b.dueDate.toISOString().slice(0, 10)} ·{" "}
                     {b.status.toLowerCase()}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span>{formatCurrency(b.amount, workspace.currency)}</span>
+                  <span className="font-heading text-lg tabular-money">
+                    {formatCurrency(b.amount, workspace.currency)}
+                  </span>
                   <BillInstanceEditButton
                     amount={String(toNumber(b.amount))}
                     updateAction={updateBillInstanceAction.bind(
@@ -103,17 +107,19 @@ export default async function BillsPage({
 
       <section className="space-y-3">
         <SectionTitle>Templates</SectionTitle>
-        <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 bg-card/70">
+        <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_32%,white)] hearth-elevate">
           {templates.map((t) => (
             <li
               key={t.id}
-              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
             >
               <div>
-                <p className="font-medium">{t.name}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-medium text-hearth-ink">{t.name}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   Day {t.dayOfMonth} ·{" "}
-                  {formatCurrency(t.amount, workspace.currency)}
+                  <span className="tabular-money">
+                    {formatCurrency(t.amount, workspace.currency)}
+                  </span>
                   {t.isActive ? "" : " · inactive"}
                 </p>
               </div>

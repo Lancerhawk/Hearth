@@ -124,12 +124,12 @@ export function EntryForm({
           defaultValue={defaults?.note ?? ""}
         />
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" size="lg" disabled={pending}>
         {pending ? "Saving…" : submitLabel}
       </Button>
     </form>
   );
 
   if (bare) return form;
-  return <Surface>{form}</Surface>;
+  return <Surface tone="quiet">{form}</Surface>;
 }
