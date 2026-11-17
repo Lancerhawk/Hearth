@@ -19,7 +19,7 @@ export function InviteForm({
   const [state, formAction, pending] = useActionState(action, {});
 
   return (
-    <Surface>
+    <Surface tone="quiet">
       <form action={formAction} className="space-y-3">
         {state.error ? (
           <FormBanner tone="error">{state.error}</FormBanner>
@@ -36,6 +36,7 @@ export function InviteForm({
               type="email"
               required
               disabled={pending}
+              placeholder="family@example.com"
             />
           </div>
           <div className="space-y-1.5">
@@ -43,7 +44,7 @@ export function InviteForm({
             <select
               id="role"
               name="role"
-              className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+              className="h-8 rounded-lg border border-input bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-2 text-sm text-hearth-ink"
               defaultValue="MEMBER"
               disabled={pending}
             >

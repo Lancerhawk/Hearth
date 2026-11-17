@@ -14,7 +14,9 @@ import {
   BillStatusButtons,
 } from "@/components/bills/bill-status-buttons";
 import { MonthPicker } from "@/components/budget/month-picker";
+import { EmptyHint } from "@/components/design/empty-hint";
 import { PageHeader } from "@/components/design/page-header";
+import { QuietList, QuietListItem } from "@/components/design/quiet-list";
 import { SectionTitle } from "@/components/design/section-title";
 import { requireMembership } from "@/lib/budget/access";
 import { loadBillsForMonth } from "@/lib/budget/load-month";
@@ -47,7 +49,7 @@ export default async function BillsPage({
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
         title="Bills"
-        description="Recurring templates and this month's instances."
+        description="Recurring templates and this month’s instances."
         trailing={
           <MonthPicker
             basePath={`/app/${workspaceSlug}/bills`}
@@ -61,28 +63,26 @@ export default async function BillsPage({
 
       <section className="space-y-3">
         <SectionTitle>This month</SectionTitle>
-        <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_32%,white)] hearth-elevate">
-          {billInstances.length === 0 ? (
-            <li className="px-5 py-8 text-sm text-muted-foreground">
-              No bill instances yet.
-            </li>
-          ) : (
-            billInstances.map((b) => (
-              <li
-                key={b.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
-              >
+        {billInstances.length === 0 ? (
+          <EmptyHint
+            title="No bills this month"
+            description="Active templates create instances when the month opens."
+          />
+        ) : (
+          <QuietList>
+            {billInstances.map((b) => (
+              <QuietListItem key={b.id}>
                 <div>
                   <p className="font-medium text-hearth-ink">
                     {b.recurringBill.name}
                   </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-hearth-ink/55">
                     Due {b.dueDate.toISOString().slice(0, 10)} ·{" "}
                     {b.status.toLowerCase()}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-heading text-lg tabular-money">
+                  <span className="font-heading text-lg tabular-money text-hearth-ink">
                     {formatCurrency(b.amount, workspace.currency)}
                   </span>
                   <BillInstanceEditButton
@@ -99,54 +99,58 @@ export default async function BillsPage({
                     status={b.status}
                   />
                 </div>
-              </li>
-            ))
-          )}
-        </ul>
+              </QuietListItem>
+            ))}
+          </QuietList>
+        )}
       </section>
 
       <section className="space-y-3">
         <SectionTitle>Templates</SectionTitle>
-        <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_32%,white)] hearth-elevate">
-          {templates.map((t) => (
-            <li
-              key={t.id}
-              className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
-            >
-              <div>
-                <p className="font-medium text-hearth-ink">{t.name}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Day {t.dayOfMonth} ·{" "}
-                  <span className="tabular-money">
-                    {formatCurrency(t.amount, workspace.currency)}
-                  </span>
-                  {t.isActive ? "" : " · inactive"}
-                </p>
-              </div>
-              {canAdmin ? (
-                <div className="flex flex-wrap items-center gap-1">
-                  <RecurringBillEditButton
-                    defaults={{
-                      name: t.name,
-                      amount: String(toNumber(t.amount)),
-                      dayOfMonth: String(t.dayOfMonth),
-                    }}
-                    updateAction={updateRecurringBillAction.bind(
-                      null,
-                      workspaceSlug,
-                      t.id,
-                    )}
-                  />
-                  <BillActiveToggle
-                    workspaceSlug={workspaceSlug}
-                    billId={t.id}
-                    isActive={t.isActive}
-                  />
+        {templates.length === 0 ? (
+          <EmptyHint
+            title="No recurring templates"
+            description="Add rent, utilities, or subscriptions once — Hearth remakes them each month."
+          />
+        ) : (
+          <QuietList>
+            {templates.map((t) => (
+              <QuietListItem key={t.id}>
+                <div>
+                  <p className="font-medium text-hearth-ink">{t.name}</p>
+                  <p className="mt-0.5 text-xs text-hearth-ink/55">
+                    Day {t.dayOfMonth} ·{" "}
+                    <span className="tabular-money">
+                      {formatCurrency(t.amount, workspace.currency)}
+                    </span>
+                    {t.isActive ? "" : " · inactive"}
+                  </p>
                 </div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+                {canAdmin ? (
+                  <div className="flex flex-wrap items-center gap-1">
+                    <RecurringBillEditButton
+                      defaults={{
+                        name: t.name,
+                        amount: String(toNumber(t.amount)),
+                        dayOfMonth: String(t.dayOfMonth),
+                      }}
+                      updateAction={updateRecurringBillAction.bind(
+                        null,
+                        workspaceSlug,
+                        t.id,
+                      )}
+                    />
+                    <BillActiveToggle
+                      workspaceSlug={workspaceSlug}
+                      billId={t.id}
+                      isActive={t.isActive}
+                    />
+                  </div>
+                ) : null}
+              </QuietListItem>
+            ))}
+          </QuietList>
+        )}
       </section>
     </div>
   );
