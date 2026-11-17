@@ -92,12 +92,26 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
+          # Trim accidental whitespace/newlines from pasted secrets
+          VERCEL_TOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')
+          VERCEL_ORG_ID=$(printf '%s' "$VERCEL_ORG_ID" | tr -d '[:space:]')
+          VERCEL_PROJECT_ID=$(printf '%s' "$VERCEL_PROJECT_ID" | tr -d '[:space:]')
+          export VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID
+
           if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
             echo "::error::Missing VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID secrets"
             exit 1
           fi
-          if ! npx vercel@65.16.0 whoami --token="$VERCEL_TOKEN" >/dev/null; then
-            echo "::error::VERCEL_TOKEN is invalid or expired. Create a new token at https://vercel.com/account/tokens and update the GitHub Actions secret VERCEL_TOKEN."
-            exit 1
-          fi
-          npx vercel@65.16.0 deploy --prod --yes --token="$VERCEL_TOKEN"
+
+          echo "Token length: ${#VERCEL_TOKEN}"
+          echo "Org id prefix: ${VERCEL_ORG_ID:0:6}…"
+          echo "Project id prefix: ${VERCEL_PROJECT_ID:0:6}…"
+
+          # Do NOT run `vercel whoami` first — team/project-scoped tokens
+          # fail /v2/user with "User not found" even when deploy works.
+          mkdir -p .vercel
+          cat > .vercel/project.json <<EOF
+          {"orgId":"$VERCEL_ORG_ID","projectId":"$VERCEL_PROJECT_ID"}
+          EOF
+
+          npx vercel@65.16.0 deploy --prod --yes --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID"
