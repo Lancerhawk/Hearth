@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 const headerBtn =
-  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border/80 bg-transparent px-2.5 text-sm text-hearth-ink transition-colors duration-150 hover:border-hearth-moss/45 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/40";
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_25%,transparent)] px-3 text-sm text-hearth-ink transition-colors duration-150 hover:border-hearth-moss/40 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
 
 const SIDEBAR_KEY = "hearth-sidebar-collapsed";
 const SIDEBAR_EVENT = "hearth-sidebar";
