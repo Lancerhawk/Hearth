@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import {
   createRecurringBillAction,
-  setBillStatusAction,
-  toggleRecurringBillAction,
   updateBillInstanceAction,
   updateRecurringBillAction,
 } from "@/actions/bills";
@@ -11,10 +9,13 @@ import {
   BillInstanceEditButton,
   RecurringBillEditButton,
 } from "@/components/bills/bill-row-actions";
+import {
+  BillActiveToggle,
+  BillStatusButtons,
+} from "@/components/bills/bill-status-buttons";
 import { MonthPicker } from "@/components/budget/month-picker";
 import { PageHeader } from "@/components/design/page-header";
 import { SectionTitle } from "@/components/design/section-title";
-import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/budget/access";
 import { loadBillsForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
@@ -88,23 +89,11 @@ export default async function BillsPage({
                       b.id,
                     )}
                   />
-                  {(["PENDING", "PAID", "SKIPPED"] as const).map((status) => (
-                    <form
-                      key={status}
-                      action={async () => {
-                        "use server";
-                        await setBillStatusAction(workspaceSlug, b.id, status);
-                      }}
-                    >
-                      <Button
-                        type="submit"
-                        size="sm"
-                        variant={b.status === status ? "default" : "outline"}
-                      >
-                        {status.toLowerCase()}
-                      </Button>
-                    </form>
-                  ))}
+                  <BillStatusButtons
+                    workspaceSlug={workspaceSlug}
+                    instanceId={b.id}
+                    status={b.status}
+                  />
                 </div>
               </li>
             ))
@@ -142,20 +131,11 @@ export default async function BillsPage({
                       t.id,
                     )}
                   />
-                  <form
-                    action={async () => {
-                      "use server";
-                      await toggleRecurringBillAction(
-                        workspaceSlug,
-                        t.id,
-                        !t.isActive,
-                      );
-                    }}
-                  >
-                    <Button type="submit" size="sm" variant="outline">
-                      {t.isActive ? "Deactivate" : "Activate"}
-                    </Button>
-                  </form>
+                  <BillActiveToggle
+                    workspaceSlug={workspaceSlug}
+                    billId={t.id}
+                    isActive={t.isActive}
+                  />
                 </div>
               ) : null}
             </li>
