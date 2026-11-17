@@ -28,8 +28,16 @@ export async function StatementDocument({
   filters: StatementFilters;
   chips: string[];
 }) {
-  const { rows, totals } = await loadFilteredStatement(workspaceId, filters);
+  const { rows, totals, range } = await loadFilteredStatement(
+    workspaceId,
+    filters,
+  );
   const title = statementKindLabel(filters.kind, fundsLabel);
+  const rangeLabel =
+    range.from === range.to ? range.from : `${range.from} → ${range.to}`;
+  const displayChips = range.clampedToToday
+    ? [...chips, `Through today (${range.through})`]
+    : chips;
 
   return (
     <Surface
@@ -44,13 +52,14 @@ export async function StatementDocument({
         <p className="text-sm text-hearth-ink/55">
           {title} · {currency}
         </p>
-        <p className="mt-1 text-sm text-hearth-ink/55">
-          {filters.from === filters.to
-            ? filters.from
-            : `${filters.from} → ${filters.to}`}
-        </p>
+        <p className="mt-1 text-sm text-hearth-ink/55">{rangeLabel}</p>
+        {range.clampedToToday ? (
+          <p className="mt-1 text-xs text-hearth-ink/50">
+            Future-dated rows stay Upcoming and are left out of this statement.
+          </p>
+        ) : null}
         <div className="mt-3 flex flex-wrap gap-2">
-          {chips.map((chip) => (
+          {displayChips.map((chip) => (
             <span
               key={chip}
               className="rounded-lg border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_50%,white)] px-2.5 py-0.5 text-[11px] text-hearth-ink/60"

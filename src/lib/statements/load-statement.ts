@@ -1,3 +1,4 @@
+import { toDateKey } from "@/lib/budget/calculations";
 import { prisma } from "@/lib/prisma";
 import {
   applyStatementFilters,
@@ -23,12 +24,45 @@ function dayEnd(iso: string) {
   return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999));
 }
 
+/**
+ * Statements only include committed rows (date ≤ today).
+ * Future-dated entries stay Upcoming on the live month — not statement totals.
+ */
+export function committedStatementRange(
+  filters: Pick<StatementFilters, "from" | "to">,
+  today = new Date(),
+) {
+  const through = toDateKey(today);
+  const effectiveTo = filters.to > through ? through : filters.to;
+  return {
+    from: filters.from,
+    to: effectiveTo,
+    through,
+    clampedToToday: filters.to > through,
+    empty: filters.from > effectiveTo,
+  };
+}
+
 export async function loadFilteredStatement(
   workspaceId: string,
   filters: StatementFilters,
+  today = new Date(),
 ) {
-  const from = dayStart(filters.from);
-  const to = dayEnd(filters.to);
+  const range = committedStatementRange(filters, today);
+  if (range.empty) {
+    return {
+      rows: [],
+      totals: computeStatementTotals([]),
+      range,
+    };
+  }
+
+  const from = dayStart(range.from);
+  const to = dayEnd(range.to);
+  const committedFilters: StatementFilters = {
+    ...filters,
+    to: range.to,
+  };
 
   const [expenses, charges, incomes, savings, bills] = await Promise.all([
     prisma.expenseEntry.findMany({
@@ -81,8 +115,8 @@ export async function loadFilteredStatement(
     savings,
     bills,
   });
-  const rows = applyStatementFilters(raw, filters);
+  const rows = applyStatementFilters(raw, committedFilters);
   const totals = computeStatementTotals(rows);
 
-  return { rows, totals };
+  return { rows, totals, range };
 }
