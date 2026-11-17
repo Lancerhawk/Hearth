@@ -5,10 +5,12 @@ export function BrandMark({
   href = "/",
   className,
   size = "md",
+  tone = "ink",
 }: {
   href?: string;
   className?: string;
   size?: "sm" | "md" | "lg" | "hero";
+  tone?: "ink" | "paper";
 }) {
   const sizes = {
     sm: "text-xl",
@@ -21,7 +23,10 @@ export function BrandMark({
     <Link
       href={href}
       className={cn(
-        "font-heading tracking-[-0.03em] text-hearth-ink transition-opacity hover:opacity-75",
+        "font-heading tracking-[-0.03em] transition-opacity hover:opacity-80",
+        tone === "ink"
+          ? "text-hearth-ink"
+          : "text-[color-mix(in_srgb,var(--hearth-paper)_96%,white)]",
         sizes[size],
         className,
       )}
