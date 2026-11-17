@@ -64,15 +64,11 @@ export function CounterStrip({
       value: String(pendingBills),
       tone: "default" as const,
     },
-    ...(skippedBills != null && skippedBills > 0
-      ? [
-          {
-            label: "Bills skipped this month",
-            value: String(skippedBills),
-            tone: "default" as const,
-          },
-        ]
-      : []),
+    {
+      label: "Bills skipped this month",
+      value: String(skippedBills ?? 0),
+      tone: "default" as const,
+    },
   ];
 
   const cols =
