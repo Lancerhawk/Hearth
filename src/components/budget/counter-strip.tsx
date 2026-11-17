@@ -8,6 +8,7 @@ export function CounterStrip({
   remaining,
   entryCount,
   pendingBills,
+  upcoming,
   moneyInLabel = "Funds",
 }: {
   currency: string;
@@ -16,6 +17,7 @@ export function CounterStrip({
   remaining: number;
   entryCount: number;
   pendingBills: number;
+  upcoming?: number;
   moneyInLabel?: string;
 }) {
   const items = [
@@ -34,6 +36,15 @@ export function CounterStrip({
       value: formatCurrency(remaining, currency),
       tone: "moss" as const,
     },
+    ...(upcoming != null && upcoming > 0
+      ? [
+          {
+            label: "Upcoming",
+            value: formatCurrency(upcoming, currency),
+            tone: "default" as const,
+          },
+        ]
+      : []),
     {
       label: "Entries",
       value: String(entryCount),
@@ -46,8 +57,13 @@ export function CounterStrip({
     },
   ];
 
+  const cols =
+    upcoming != null && upcoming > 0
+      ? "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6"
+      : "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5";
+
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <div className={`grid ${cols}`}>
       {items.map((item) => (
         <StatTile
           key={item.label}

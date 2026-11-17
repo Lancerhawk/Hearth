@@ -185,7 +185,7 @@ export function MonthExplorer({
           items={filtered.map((row) => ({
             id: row.id,
             title: row.title,
-            meta: `${row.date} · ${row.kind}${row.category ? ` · ${row.category}` : ""} · added by ${row.addedBy}`,
+            meta: `${row.date} · ${row.kind}${row.category ? ` · ${row.category}` : ""}${row.date > new Date().toISOString().slice(0, 10) ? " · Upcoming" : ""} · added by ${row.addedBy}`,
             amount: formatCurrency(row.amount, currency),
           }))}
         />

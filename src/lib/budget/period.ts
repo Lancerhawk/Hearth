@@ -48,6 +48,26 @@ export function periodFromDate(date: Date) {
   };
 }
 
+/**
+ * As-of date for committed vs upcoming totals.
+ * - Past month → null (everything committed)
+ * - Current month → today
+ * - Future month → day before month starts (everything upcoming)
+ */
+export function summaryAsOf(
+  year: number,
+  month: number,
+  today = new Date(),
+): Date | null {
+  const cy = today.getFullYear();
+  const cm = today.getMonth() + 1;
+  if (year < cy || (year === cy && month < cm)) return null;
+  if (year > cy || (year === cy && month > cm)) {
+    return new Date(year, month - 1, 0, 12, 0, 0);
+  }
+  return today;
+}
+
 export async function ensureMonthlyBudget(
   workspaceId: string,
   year: number,

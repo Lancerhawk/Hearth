@@ -10,6 +10,7 @@ import { EntryForm } from "@/components/entries/entry-form";
 import { EntryRowActions } from "@/components/entries/entry-row-actions";
 import { ExpensesExplorer } from "@/components/expenses/expenses-explorer";
 import { requireMembership } from "@/lib/budget/access";
+import { isUpcomingDate } from "@/lib/budget/calculations";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadExpensesForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
@@ -73,7 +74,7 @@ export default async function ExpensesPage({
         items={expenses.map((row) => ({
           id: row.id,
           title: row.title,
-          meta: `${toIsoDate(row.spentOn)}${row.category ? ` · ${row.category.name}` : ""} · added by ${actorLabel(row.createdBy)}`,
+          meta: `${toIsoDate(row.spentOn)}${row.category ? ` · ${row.category.name}` : ""}${isUpcomingDate(row.spentOn) ? " · Upcoming" : ""} · added by ${actorLabel(row.createdBy)}`,
           amount: formatCurrency(row.amount, workspace.currency),
           createdById: row.createdById,
           action: (
