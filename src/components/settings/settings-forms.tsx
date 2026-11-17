@@ -23,7 +23,7 @@ export function WorkspaceSettingsForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
-    <Surface>
+    <Surface tone="quiet">
       <form action={formAction} className="space-y-3">
         <SectionTitle>Workspace</SectionTitle>
         {state.error ? (
@@ -75,7 +75,7 @@ export function ProfileSettingsForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
-    <Surface>
+    <Surface tone="quiet">
       <form action={formAction} className="space-y-3">
         <SectionTitle>Profile</SectionTitle>
         {state.error ? (
