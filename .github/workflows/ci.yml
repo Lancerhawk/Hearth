@@ -67,18 +67,17 @@ jobs:
           DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
         run: pnpm build:verify
 
-  # Production deploy after both gates on main.
-  # Uses a Vercel Deploy Hook (no personal access token).
-  # Vercel PATs currently return "User not found" for this account/CLI.
+  # Always runs after quality + build (PR and main) so the check is never skipped.
+  # PRs: verify deploy config only. main push: trigger the real production deploy.
   deploy:
     name: Deploy production
     needs: [quality, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Trigger Vercel deploy hook
+      - name: Verify deploy hook is configured
+        id: verify
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
@@ -87,6 +86,29 @@ jobs:
             echo "::error::Missing VERCEL_DEPLOY_HOOK secret. In Vercel → Hearth → Settings → Git → Deploy Hooks, create a hook for branch main, then paste the URL into GitHub Actions secrets as VERCEL_DEPLOY_HOOK."
             exit 1
           fi
+          case "$HOOK" in
+            https://api.vercel.com/v1/integrations/deploy/*) ;;
+            https://*)
+              echo "::warning::Hook URL does not look like a Vercel Deploy Hook, continuing anyway."
+              ;;
+            *)
+              echo "::error::VERCEL_DEPLOY_HOOK must be an https URL from Vercel Deploy Hooks."
+              exit 1
+              ;;
+          esac
+          echo "Deploy hook is configured."
+          echo "hook<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$HOOK" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "PR check only — production deploy runs after merge to main."
+          fi
+
+      - name: Deploy to Vercel (production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          HOOK: ${{ steps.verify.outputs.hook }}
+        run: |
           echo "Triggering production deploy hook…"
           curl -fsS -X POST "$HOOK"
           echo

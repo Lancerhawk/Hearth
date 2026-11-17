@@ -197,20 +197,18 @@ GitHub Actions owns the pipeline end-to-end (Vercel Git auto-deploy is off).
 
 1. **Prettier · Lint · Typecheck**
 2. **Build** (`build:verify` — generate + `next build`, no migrate)
-
-**On push to `main` only (after both pass):**
-
-3. **Deploy production** — Actions POSTs `VERCEL_DEPLOY_HOOK` (Vercel Deploy Hook for `main`). No personal access token.
+3. **Deploy production** — always runs after 1+2 (never skipped)
+   - **PR:** verifies `VERCEL_DEPLOY_HOOK` is set and looks valid (no live deploy)
+   - **Merge to `main`:** POSTs the hook and ships production
 
 ```mermaid
 flowchart LR
   PR[PR / push] --> Q[Prettier · Lint · Typecheck]
   PR --> B[Build]
-  Main[Merge to main] --> Q
-  Main --> B
-  Q --> D[Deploy hook]
+  Q --> D[Deploy production]
   B --> D
-  D --> Prod[Vercel production]
+  D -->|PR| Verify[Verify hook config]
+  D -->|main| Prod[Vercel production]
 ```
 
 **One-time setup:** Vercel → Hearth → **Settings → Git → Deploy Hooks** → create hook for branch `main` → paste the URL into GitHub → **Settings → Secrets → Actions** as `VERCEL_DEPLOY_HOOK`.
