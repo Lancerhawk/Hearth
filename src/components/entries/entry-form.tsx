@@ -100,7 +100,7 @@ export function EntryForm({
             <select
               id="categoryId"
               name="categoryId"
-              className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm"
+              className="h-8 w-full rounded-lg border border-input bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-2 text-sm text-hearth-ink"
               disabled={pending}
               defaultValue={defaults?.categoryId ?? ""}
             >
