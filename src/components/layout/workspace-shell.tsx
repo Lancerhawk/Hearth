@@ -348,7 +348,7 @@ export function WorkspaceShell({
           })}
         </div>
 
-        <main className="hearth-enter flex-1 px-4 py-8 md:px-10 md:py-10">
+        <main className="hearth-enter hearth-enter-delay-1 flex-1 px-4 py-8 md:px-10 md:py-10">
           {children}
         </main>
       </div>
@@ -361,7 +361,7 @@ export function WorkspaceShell({
       >
         <SheetContent
           side="right"
-          className="w-full gap-0 border-l border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_72%,white)] p-0 duration-300 ease-out sm:max-w-md"
+          className="w-full gap-0 border-l border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_72%,white)] p-0 duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:max-w-md"
         >
           <SheetHeader className="shrink-0 border-b border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_55%,white)] px-5 py-4 pr-12">
             <SheetTitle className="font-heading text-xl tracking-tight text-hearth-ink">
