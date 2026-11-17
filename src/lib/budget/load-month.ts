@@ -153,46 +153,34 @@ export async function loadDashboardMonth(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [
-    summary,
-    incomes,
-    expenses,
-    charges,
-    savings,
-    billInstances,
-    upcoming,
-  ] = await Promise.all([
-    loadSummaryParts(budget.id, year, month),
-    prisma.incomeEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { earnedOn: "desc" },
-      take: 12,
-    }),
-    prisma.expenseEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect, category: categorySelect },
-      orderBy: { spentOn: "desc" },
-    }),
-    prisma.chargeEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { chargedOn: "desc" },
-      take: 12,
-    }),
-    prisma.savingsEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { savedOn: "desc" },
-      take: 12,
-    }),
-    prisma.billInstance.findMany({
-      where: { budgetId: budget.id },
-      include: { recurringBill: true },
-      orderBy: { dueDate: "asc" },
-    }),
-    loadUpcomingOutflows(workspaceId, today, 10),
-  ]);
+  const [summary, incomes, expenses, charges, savings, upcoming] =
+    await Promise.all([
+      loadSummaryParts(budget.id, year, month),
+      prisma.incomeEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect },
+        orderBy: { earnedOn: "desc" },
+        take: 12,
+      }),
+      prisma.expenseEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect, category: categorySelect },
+        orderBy: { spentOn: "desc" },
+      }),
+      prisma.chargeEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect },
+        orderBy: { chargedOn: "desc" },
+        take: 12,
+      }),
+      prisma.savingsEntry.findMany({
+        where: { budgetId: budget.id },
+        include: { createdBy: creatorSelect },
+        orderBy: { savedOn: "desc" },
+        take: 12,
+      }),
+      loadUpcomingOutflows(workspaceId, today, 10),
+    ]);
 
   return {
     budget: {
@@ -203,7 +191,6 @@ export async function loadDashboardMonth(
       expenses,
       charges,
       savings,
-      billInstances,
     },
     summary,
     upcoming,
