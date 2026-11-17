@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { MoneyList } from "@/components/design/money-list";
 import { cn } from "@/lib/utils";
 
@@ -54,8 +53,6 @@ export function ExpensesExplorer({
   items: ExpenseListItem[];
   initialMember: string;
 }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
   const [memberFilter, setMemberFilter] = useState(initialMember);
 
   function selectMember(member: string) {
@@ -64,9 +61,13 @@ export function ExpensesExplorer({
     p.set("year", String(year));
     p.set("month", String(month));
     if (member) p.set("member", member);
-    startTransition(() => {
-      router.replace(`${base}?${p.toString()}`, { scroll: false });
-    });
+    const href = `${base}?${p.toString()}`;
+    if (typeof window !== "undefined") {
+      const current = `${window.location.pathname}${window.location.search}`;
+      if (current !== href) {
+        window.history.replaceState(window.history.state, "", href);
+      }
+    }
   }
 
   const rows = memberFilter
