@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FilterChip } from "@/components/design/filter-chip";
 import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -127,12 +128,9 @@ export function StatementFiltersForm({
           </select>
         </div>
         <div className="flex items-end gap-2">
-          <button
-            type="submit"
-            className={cn(buttonVariants({ variant: "default" }), "w-full")}
-          >
+          <PendingSubmitButton className="w-full" pendingLabel="Applying…">
             Apply filters
-          </button>
+          </PendingSubmitButton>
         </div>
       </form>
 
