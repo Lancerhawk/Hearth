@@ -31,7 +31,10 @@ export function BillStatusButtons({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div
+      className="flex flex-wrap items-center gap-2"
+      aria-busy={isPending}
+    >
       {STATUSES.map((s) => (
         <Button
           key={s}
@@ -39,6 +42,7 @@ export function BillStatusButtons({
           size="sm"
           variant={optimisticStatus === s ? "default" : "outline"}
           disabled={isPending}
+          aria-pressed={optimisticStatus === s}
           onClick={() => setStatus(s)}
         >
           {s.toLowerCase()}
