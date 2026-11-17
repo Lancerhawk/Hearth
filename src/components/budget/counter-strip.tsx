@@ -10,6 +10,7 @@ export function CounterStrip({
   pendingBills,
   upcoming,
   moneyInLabel = "Funds",
+  showRemaining = true,
 }: {
   currency: string;
   income: number;
@@ -19,6 +20,8 @@ export function CounterStrip({
   pendingBills: number;
   upcoming?: number;
   moneyInLabel?: string;
+  /** Set false when Remaining is already shown in a hero above. */
+  showRemaining?: boolean;
 }) {
   const items = [
     {
@@ -31,11 +34,15 @@ export function CounterStrip({
       value: formatCurrency(spent, currency),
       tone: "default" as const,
     },
-    {
-      label: "Remaining",
-      value: formatCurrency(remaining, currency),
-      tone: "moss" as const,
-    },
+    ...(showRemaining
+      ? [
+          {
+            label: "Remaining",
+            value: formatCurrency(remaining, currency),
+            tone: "moss" as const,
+          },
+        ]
+      : []),
     ...(upcoming != null && upcoming > 0
       ? [
           {
@@ -58,9 +65,11 @@ export function CounterStrip({
   ];
 
   const cols =
-    upcoming != null && upcoming > 0
+    items.length >= 6
       ? "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6"
-      : "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5";
+      : items.length === 5
+        ? "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+        : "grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4";
 
   return (
     <div className={`grid ${cols}`}>

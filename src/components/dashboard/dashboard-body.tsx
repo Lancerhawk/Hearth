@@ -147,6 +147,7 @@ export async function DashboardBody({
         pendingBills={summary.pendingBillsCount}
         upcoming={summary.upcomingOutflow}
         moneyInLabel={inLabel}
+        showRemaining={false}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
