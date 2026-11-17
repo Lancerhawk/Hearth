@@ -79,7 +79,7 @@ export function CounterStrip({
         : "grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4";
 
   return (
-    <div className={`grid ${cols}`}>
+    <div className={`grid items-stretch ${cols}`}>
       {items.map((item) => (
         <StatTile
           key={item.label}
