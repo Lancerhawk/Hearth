@@ -145,8 +145,8 @@ export function WorkspaceShell({
       <RouteWarmer workspaceSlug={workspaceSlug} />
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/90 transition-[width,padding] duration-300 ease-in-out md:flex",
-          collapsed ? "w-[4.5rem] p-3" : "w-60 p-5",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-[color-mix(in_srgb,var(--hearth-mist)_70%,white)]/95 transition-[width,padding] duration-300 ease-in-out md:flex",
+          collapsed ? "w-[4.5rem] p-3" : "w-64 p-5",
         )}
       >
         <div
@@ -229,7 +229,7 @@ export function WorkspaceShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_92%,white)] px-4 py-3 backdrop-blur-sm md:px-8">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_78%,white)]/85 px-4 py-3.5 backdrop-blur-md md:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <div className="md:hidden">
               <BrandMark href={`${base}/dashboard`} size="sm" />
@@ -331,7 +331,7 @@ export function WorkspaceShell({
           })}
         </div>
 
-        <main className="hearth-enter flex-1 px-4 py-6 md:px-8">
+        <main className="hearth-enter flex-1 px-4 py-8 md:px-10 md:py-10">
           {children}
         </main>
       </div>
