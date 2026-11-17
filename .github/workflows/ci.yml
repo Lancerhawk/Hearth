@@ -67,51 +67,49 @@ jobs:
           DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
         run: pnpm build:verify
 
-  # Production deploy only after both PR gates pass on main.
-  # Deploy from Actions (not Vercel Git). Keep VERCEL_TOKEN fresh in
-  # repo secrets — personal tokens can expire and must be rotated.
+  # Always runs after quality + build (PR and main) so the check is never skipped.
+  # PRs: verify deploy config only. main push: trigger the real production deploy.
   deploy:
     name: Deploy production
     needs: [quality, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Deploy to Vercel (production)
+      - name: Verify deploy hook is configured
+        id: verify
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          # Trim accidental whitespace/newlines from pasted secrets
-          VERCEL_TOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')
-          VERCEL_ORG_ID=$(printf '%s' "$VERCEL_ORG_ID" | tr -d '[:space:]')
-          VERCEL_PROJECT_ID=$(printf '%s' "$VERCEL_PROJECT_ID" | tr -d '[:space:]')
-          export VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID
-
-          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-            echo "::error::Missing VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID secrets"
+          HOOK=$(printf '%s' "$VERCEL_DEPLOY_HOOK" | tr -d '[:space:]')
+          if [ -z "$HOOK" ]; then
+            echo "::error::Missing VERCEL_DEPLOY_HOOK secret. In Vercel → Hearth → Settings → Git → Deploy Hooks, create a hook for branch main, then paste the URL into GitHub Actions secrets as VERCEL_DEPLOY_HOOK."
             exit 1
           fi
+          case "$HOOK" in
+            https://api.vercel.com/v1/integrations/deploy/*) ;;
+            https://*)
+              echo "::warning::Hook URL does not look like a Vercel Deploy Hook, continuing anyway."
+              ;;
+            *)
+              echo "::error::VERCEL_DEPLOY_HOOK must be an https URL from Vercel Deploy Hooks."
+              exit 1
+              ;;
+          esac
+          echo "Deploy hook is configured."
+          echo "hook<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$HOOK" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "PR check only — production deploy runs after merge to main."
+          fi
 
-          echo "Token length: ${#VERCEL_TOKEN}"
-          echo "Org id prefix: ${VERCEL_ORG_ID:0:6}…"
-          echo "Project id prefix: ${VERCEL_PROJECT_ID:0:6}…"
-
-          # Do NOT run `vercel whoami` first — team/project-scoped tokens
-          # fail /v2/user with "User not found" even when deploy works.
-          mkdir -p .vercel
-          cat > .vercel/project.json <<EOF
-          {"orgId":"$VERCEL_ORG_ID","projectId":"$VERCEL_PROJECT_ID"}
-          EOF
-
-          npx vercel@65.16.0 deploy --prod --yes --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID"
+      - name: Deploy to Vercel (production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          HOOK: ${{ steps.verify.outputs.hook }}
+        run: |
+          echo "Triggering production deploy hook…"
+          curl -fsS -X POST "$HOOK"
+          echo
+          echo "Deploy hook accepted. Watch the deployment in the Vercel dashboard."
