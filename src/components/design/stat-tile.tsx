@@ -14,7 +14,7 @@ export function StatTile({
   return (
     <div
       className={cn(
-        "rounded-2xl border px-4 py-4 hearth-elevate",
+        "flex h-full min-h-[7rem] flex-col rounded-2xl border px-4 py-4 hearth-elevate",
         tone === "default" &&
           "border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_35%,white)]",
         tone === "ember" &&
@@ -24,10 +24,10 @@ export function StatTile({
         className,
       )}
     >
-      <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+      <p className="min-h-[2.75rem] text-[11px] font-medium uppercase leading-snug tracking-[0.1em] text-muted-foreground">
         {label}
       </p>
-      <p className="mt-2 font-heading text-2xl tracking-tight text-hearth-ink tabular-money">
+      <p className="mt-auto pt-2 font-heading text-2xl leading-none tracking-tight text-hearth-ink tabular-money">
         {value}
       </p>
     </div>
