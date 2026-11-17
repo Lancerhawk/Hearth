@@ -27,13 +27,13 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
 
   return (
     <div className="w-full">
-      <h1 className="font-heading text-2xl tracking-tight text-hearth-ink">
+      <h1 className="font-heading text-3xl tracking-tight text-hearth-ink">
         Create account
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-2 text-[0.95rem] leading-relaxed text-muted-foreground">
         Start a household workspace on Hearth.
       </p>
-      <form action={formAction} className="mt-6 space-y-4">
+      <form action={formAction} className="mt-8 space-y-4">
         <CallbackField callbackUrl={callbackUrl} />
         {state.error ? (
           <FormBanner tone="error">{state.error}</FormBanner>
@@ -90,7 +90,12 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
             </p>
           ) : null}
         </div>
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-2 w-full"
+          disabled={pending}
+        >
           {pending ? "Creating…" : "Create account"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
@@ -119,13 +124,13 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
 
   return (
     <div className="w-full">
-      <h1 className="font-heading text-2xl tracking-tight text-hearth-ink">
+      <h1 className="font-heading text-3xl tracking-tight text-hearth-ink">
         Welcome back
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-2 text-[0.95rem] leading-relaxed text-muted-foreground">
         Sign in to your Hearth workspace.
       </p>
-      <form action={formAction} className="mt-6 space-y-4">
+      <form action={formAction} className="mt-8 space-y-4">
         <CallbackField callbackUrl={callbackUrl} />
         {state.error ? (
           <FormBanner tone="error">{state.error}</FormBanner>
@@ -164,7 +169,12 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
             </p>
           ) : null}
         </div>
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-2 w-full"
+          disabled={pending}
+        >
           {pending ? "Signing in…" : "Sign in"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
