@@ -52,7 +52,7 @@ export default async function MonthPage({
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
       <PageHeader
         title="Month"
-        description="Calendar and list of spending activity."
+        description="See the month as a calendar or a quiet list."
         trailing={<MonthPicker basePath={base} year={year} month={month} />}
       />
 

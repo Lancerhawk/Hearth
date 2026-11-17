@@ -10,7 +10,6 @@ import { NavLink } from "@/components/layout/nav-link";
 import { NotificationsPanel } from "@/components/layout/notifications-panel";
 import { RouteWarmer } from "@/components/layout/route-warmer";
 import { SettingsPanel } from "@/components/layout/settings-panel";
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -25,6 +24,7 @@ import {
   CreditCard,
   FileText,
   LayoutDashboard,
+  LayoutGrid,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -38,8 +38,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-const headerBtn =
-  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border/80 bg-transparent px-2.5 text-sm text-hearth-ink transition-colors duration-150 hover:border-hearth-moss/45 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/40";
+const topbarIcon =
+  "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-hearth-ink/70 transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,transparent)] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
+
+const topbarIconActive =
+  "bg-[color-mix(in_srgb,var(--hearth-moss)_14%,transparent)] text-hearth-ink";
+
+const sidebarToggle =
+  "inline-flex size-8 items-center justify-center rounded-lg border border-sidebar-border/80 bg-transparent text-hearth-ink/70 transition-colors hover:border-hearth-moss/35 hover:bg-[color-mix(in_srgb,var(--hearth-moss)_12%,var(--hearth-paper))] hover:text-hearth-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-moss/35";
 
 const SIDEBAR_KEY = "hearth-sidebar-collapsed";
 const SIDEBAR_EVENT = "hearth-sidebar";
@@ -145,8 +151,8 @@ export function WorkspaceShell({
       <RouteWarmer workspaceSlug={workspaceSlug} />
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/90 transition-[width,padding] duration-300 ease-in-out md:flex",
-          collapsed ? "w-[4.5rem] p-3" : "w-60 p-5",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-[color-mix(in_srgb,var(--hearth-mist)_70%,white)]/95 transition-[width,padding] duration-300 ease-in-out md:flex",
+          collapsed ? "w-[4.5rem] p-3" : "w-64 p-5",
         )}
       >
         <div
@@ -157,15 +163,15 @@ export function WorkspaceShell({
         >
           {collapsed ? (
             <Link
-              href={`${base}/dashboard`}
-              title="Hearth"
-              aria-label="Hearth"
+              href="/"
+              title="Hearth home"
+              aria-label="Hearth home"
               className="font-heading text-xl tracking-tight text-hearth-ink transition-opacity hover:opacity-80"
             >
               H
             </Link>
           ) : (
-            <BrandMark href={`${base}/dashboard`} size="md" />
+            <BrandMark href="/" size="md" />
           )}
         </div>
 
@@ -215,8 +221,8 @@ export function WorkspaceShell({
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
           className={cn(
-            headerBtn,
-            "mt-3 size-8 shrink-0 self-center px-0",
+            sidebarToggle,
+            "mt-3 shrink-0 self-center",
             !collapsed && "self-end",
           )}
         >
@@ -229,83 +235,94 @@ export function WorkspaceShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_92%,white)] px-4 py-3 backdrop-blur-sm md:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="md:hidden">
-              <BrandMark href={`${base}/dashboard`} size="sm" />
-              <span className="sr-only">Workspace {workspaceName}</span>
-            </div>
-            {/* Desktop/tablet: workspace name. Mobile already shows Hearth — avoid "Hearth home". */}
-            <div className="hidden min-w-0 md:block">
-              <p className="truncate font-heading text-lg tracking-tight text-hearth-ink">
-                {workspaceName}
-              </p>
-              <p className="text-xs text-muted-foreground">Current workspace</p>
-            </div>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            <Link
-              href="/app"
-              prefetch
-              title="Workspaces"
-              aria-label="Workspaces"
-              className={headerBtn}
-            >
-              <span className="sm:hidden">Spaces</span>
-              <span className="hidden sm:inline">Workspaces</span>
-            </Link>
-            <button
-              type="button"
-              title="Notifications"
-              aria-label={
-                unreadCount > 0
-                  ? `Notifications, ${unreadCount} unread`
-                  : "Notifications"
-              }
-              onClick={() => setPanel("notifications")}
-              className={cn(
-                headerBtn,
-                "relative size-8 px-0",
-                panel === "notifications" &&
-                  "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
-              )}
-            >
-              <Bell className="size-4" />
-              {unreadCount > 0 ? (
-                <span className="absolute -top-1.5 -right-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-hearth-moss px-1 py-0.5 text-[10px] leading-none text-primary-foreground">
-                  {unreadCount > 99 ? "99+" : unreadCount}
+        <header className="sticky top-0 z-20 border-b border-hearth-ink/8 bg-[color-mix(in_srgb,var(--hearth-paper)_82%,white)]/90 backdrop-blur-md">
+          <div className="flex h-14 items-center justify-between gap-4 px-4 md:h-16 md:px-8">
+            <div className="flex h-9 min-w-0 items-center">
+              <div className="flex h-9 items-center md:hidden">
+                <BrandMark href="/" size="sm" />
+                <span className="sr-only">Workspace {workspaceName}</span>
+              </div>
+              <div className="hidden h-9 min-w-0 items-center gap-3 md:flex">
+                <span
+                  aria-hidden
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--hearth-moss)_14%,white)] font-heading text-sm leading-none text-hearth-moss"
+                >
+                  {workspaceName.trim().charAt(0).toUpperCase() || "H"}
                 </span>
-              ) : null}
-            </button>
-            <button
-              type="button"
-              title="Settings"
-              aria-label="Settings"
-              onClick={() => setPanel("settings")}
-              className={cn(
-                headerBtn,
-                "size-8 px-0",
-                panel === "settings" &&
-                  "border-hearth-moss/50 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))]",
-              )}
+                <div className="flex h-9 min-w-0 flex-col justify-center gap-1">
+                  <p className="truncate text-[10px] font-medium leading-none uppercase tracking-[0.14em] text-hearth-ink/45">
+                    Workspace
+                  </p>
+                  <p className="truncate text-sm font-medium leading-none text-hearth-ink">
+                    {workspaceName}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <nav
+              aria-label="Workspace actions"
+              className="flex h-9 shrink-0 items-center gap-1"
             >
-              <Settings className="size-4" />
-            </button>
-            <form action={logoutAction}>
-              <Button
-                type="submit"
-                variant="ghost"
-                size="sm"
+              <Link
+                href="/app"
+                prefetch
+                title="Workspaces"
+                aria-label="Workspaces"
+                className={cn(topbarIcon, "w-auto min-w-8 gap-1.5 px-2.5")}
+              >
+                <LayoutGrid className="size-3.5 shrink-0" aria-hidden />
+                <span className="hidden text-xs font-medium leading-none sm:inline">
+                  Spaces
+                </span>
+              </Link>
+              <button
+                type="button"
+                title="Notifications"
+                aria-label={
+                  unreadCount > 0
+                    ? `Notifications, ${unreadCount} unread`
+                    : "Notifications"
+                }
+                onClick={() => setPanel("notifications")}
                 className={cn(
-                  headerBtn,
-                  "border-transparent hover:border-hearth-moss/45",
+                  topbarIcon,
+                  "relative",
+                  panel === "notifications" && topbarIconActive,
                 )}
               >
-                <LogOut className="size-4" />
-                <span className="hidden sm:inline">Sign out</span>
-              </Button>
-            </form>
+                <Bell className="size-3.5" aria-hidden />
+                {unreadCount > 0 ? (
+                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-hearth-moss" />
+                ) : null}
+              </button>
+              <button
+                type="button"
+                title="Settings"
+                aria-label="Settings"
+                onClick={() => setPanel("settings")}
+                className={cn(
+                  topbarIcon,
+                  panel === "settings" && topbarIconActive,
+                )}
+              >
+                <Settings className="size-3.5" aria-hidden />
+              </button>
+              <span
+                aria-hidden
+                className="mx-1 h-4 w-px shrink-0 bg-hearth-ink/12"
+              />
+              <form action={logoutAction} className="contents">
+                <button
+                  type="submit"
+                  title="Sign out"
+                  aria-label="Sign out"
+                  className={topbarIcon}
+                >
+                  <LogOut className="size-3.5" aria-hidden />
+                </button>
+              </form>
+            </nav>
           </div>
         </header>
 
@@ -331,7 +348,7 @@ export function WorkspaceShell({
           })}
         </div>
 
-        <main className="hearth-enter flex-1 px-4 py-6 md:px-8">
+        <main className="hearth-enter hearth-enter-delay-1 flex-1 px-4 py-8 md:px-10 md:py-10">
           {children}
         </main>
       </div>
@@ -344,13 +361,13 @@ export function WorkspaceShell({
       >
         <SheetContent
           side="right"
-          className="w-full gap-0 p-0 duration-300 ease-out sm:max-w-md"
+          className="w-full gap-0 border-l border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_72%,white)] p-0 duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:max-w-md"
         >
-          <SheetHeader className="shrink-0 border-b border-border/70 px-5 py-4 pr-12">
-            <SheetTitle>
+          <SheetHeader className="shrink-0 border-b border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_55%,white)] px-5 py-4 pr-12">
+            <SheetTitle className="font-heading text-xl tracking-tight text-hearth-ink">
               {panel === "settings" ? "Settings" : "Alerts"}
             </SheetTitle>
-            <SheetDescription>
+            <SheetDescription className="text-hearth-ink/55">
               {panel === "settings"
                 ? "Workspace and profile preferences."
                 : "Invites, bills, and budget warnings."}

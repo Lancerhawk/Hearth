@@ -48,7 +48,7 @@ export default async function ExpensesPage({
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
         title="Expenses"
-        description="Day-to-day spending with attribution."
+        description="Day-to-day spending with clear attribution."
         trailing={<MonthPicker basePath={base} year={year} month={month} />}
       />
 

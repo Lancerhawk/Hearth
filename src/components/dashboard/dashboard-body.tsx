@@ -93,20 +93,19 @@ export async function DashboardBody({
       : 0;
 
   return (
-    <>
-      <Surface
-        padding="lg"
-        className="bg-[color-mix(in_srgb,var(--hearth-moss)_6%,var(--hearth-paper))]"
-      >
-        <p className="text-sm text-muted-foreground">Remaining this month</p>
-        <p className="mt-1 font-heading text-5xl tracking-tight text-hearth-ink">
+    <div className="flex flex-col gap-8">
+      <Surface tone="emphasis" padding="lg">
+        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-hearth-moss">
+          Remaining this month
+        </p>
+        <p className="mt-2 font-heading text-5xl tracking-tight text-hearth-ink tabular-money md:text-6xl">
           {formatCurrency(summary.remaining, currency)}
         </p>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-3 text-sm leading-relaxed text-hearth-ink/60">
           of {formatCurrency(summary.totalIncome, currency)}{" "}
           {inLabel.toLowerCase()} · {progress}% spent
         </p>
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+        <div className="mt-5 h-2 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--hearth-moss)_12%,white)]">
           <div
             className="h-full rounded-full bg-hearth-moss transition-all"
             style={{ width: `${progress}%` }}
@@ -125,30 +124,33 @@ export async function DashboardBody({
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Surface>
+        <Surface tone="quiet">
           <SectionTitle>By category</SectionTitle>
-          <div className="mt-3">
+          <div className="mt-4">
             <CategoryChart data={chartData} />
           </div>
         </Surface>
 
-        <Surface>
+        <Surface tone="quiet">
           <SectionTitle>Bills this month</SectionTitle>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-4 space-y-3">
             {budget.billInstances.length === 0 ? (
-              <li className="text-sm text-muted-foreground">
+              <li className="text-sm text-hearth-ink/55">
                 No recurring bills yet.
               </li>
             ) : (
               budget.billInstances.slice(0, 6).map((b) => (
-                <li key={b.id} className="flex justify-between text-sm">
-                  <span>
-                    {b.recurringBill.name}{" "}
-                    <span className="text-muted-foreground">
-                      ({b.status.toLowerCase()})
+                <li key={b.id} className="flex justify-between gap-3 text-sm">
+                  <span className="min-w-0">
+                    <span className="font-medium text-hearth-ink">
+                      {b.recurringBill.name}
+                    </span>
+                    <span className="text-hearth-ink/50">
+                      {" "}
+                      · {b.status.toLowerCase()}
                     </span>
                   </span>
-                  <span className="font-medium text-hearth-ink">
+                  <span className="shrink-0 font-heading tabular-money text-hearth-ink">
                     {formatCurrency(b.amount, currency)}
                   </span>
                 </li>
@@ -159,7 +161,7 @@ export async function DashboardBody({
             href={`${base}/bills`}
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
-              "mt-4",
+              "mt-5",
             )}
           >
             Manage bills
@@ -167,11 +169,11 @@ export async function DashboardBody({
         </Surface>
       </div>
 
-      <Surface>
+      <Surface tone="quiet">
         <SectionTitle>Recent activity</SectionTitle>
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-4 space-y-3">
           {recent.length === 0 ? (
-            <li className="text-sm text-muted-foreground">
+            <li className="text-sm text-hearth-ink/55">
               Nothing logged yet this month.
             </li>
           ) : (
@@ -180,16 +182,16 @@ export async function DashboardBody({
                 key={row.id}
                 className="flex flex-wrap justify-between gap-2 text-sm"
               >
-                <span>
+                <span className="min-w-0">
                   <span className="font-medium text-hearth-ink">
                     {row.label}
                   </span>
-                  <span className="text-muted-foreground">
+                  <span className="text-hearth-ink/50">
                     {" "}
                     · {row.kind} · {row.by}
                   </span>
                 </span>
-                <span className="font-heading text-hearth-ink">
+                <span className="font-heading tabular-money text-hearth-ink">
                   {formatCurrency(row.amount, currency)}
                 </span>
               </li>
@@ -198,17 +200,20 @@ export async function DashboardBody({
         </ul>
       </Surface>
 
-      <div className="flex flex-wrap gap-2">
-        <Link href={`${base}/month`} className={cn(buttonVariants())}>
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href={`${base}/month`}
+          className={cn(buttonVariants({ size: "lg" }))}
+        >
           Open month calendar
         </Link>
         <Link
           href={`${base}/statements/preview?year=${year}&month=${month}`}
-          className={cn(buttonVariants({ variant: "outline" }))}
+          className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
         >
           Export statement
         </Link>
       </div>
-    </>
+    </div>
   );
 }

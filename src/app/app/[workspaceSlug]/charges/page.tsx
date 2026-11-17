@@ -41,7 +41,7 @@ export default async function ChargesPage({
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
         title="Charges"
-        description="One-off or card charges for the month."
+        description="Card and one-off charges for the month."
         trailing={
           <MonthPicker
             basePath={`/app/${workspaceSlug}/charges`}
@@ -61,6 +61,7 @@ export default async function ChargesPage({
 
       <MoneyList
         emptyTitle="No charges this month"
+        emptyDescription="Log a card swipe or one-off charge when it lands."
         items={charges.map((row) => ({
           id: row.id,
           title: row.title,

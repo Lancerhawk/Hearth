@@ -13,6 +13,8 @@
   --color-hearth-ink: var(--hearth-ink);
   --color-hearth-moss: var(--hearth-moss);
   --color-hearth-paper: var(--hearth-paper);
+  --color-hearth-ember: var(--hearth-ember);
+  --color-hearth-mist: var(--hearth-mist);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -52,60 +54,73 @@
 }
 
 /*
-  Hearth brand trio (locked):
-  Ink  #1C1917  — type + structure
-  Moss #3F5E4A  — action + focus
-  Paper #F3EFE6 — room / canvas
+  Domestic Quiet — Hearth brand
+  Ink   #121614  — type + structure (cool forest-black)
+  Moss  #355C45  — action + focus
+  Paper #E9E5DC  — linen canvas
+  Ember #B8895A  — sparse money-in accent
+  Mist  — soft sage wash (derived)
 */
 :root {
-  --hearth-ink: #1c1917;
-  --hearth-moss: #3f5e4a;
-  --hearth-paper: #f3efe6;
-
-  --background: color-mix(in srgb, var(--hearth-paper) 92%, white);
-  --foreground: var(--hearth-ink);
-  --card: color-mix(in srgb, var(--hearth-paper) 55%, white);
-  --card-foreground: var(--hearth-ink);
-  --popover: color-mix(in srgb, var(--hearth-paper) 40%, white);
-  --popover-foreground: var(--hearth-ink);
-  --primary: var(--hearth-moss);
-  --primary-foreground: #f7f5f0;
-  --secondary: color-mix(in srgb, var(--hearth-paper) 70%, white);
-  --secondary-foreground: var(--hearth-ink);
-  --muted: color-mix(in srgb, var(--hearth-paper) 78%, white);
-  --muted-foreground: color-mix(
+  --hearth-ink: #121614;
+  --hearth-moss: #355c45;
+  --hearth-paper: #e9e5dc;
+  --hearth-ember: #b8895a;
+  --hearth-mist: color-mix(
     in srgb,
-    var(--hearth-ink) 55%,
+    var(--hearth-moss) 22%,
     var(--hearth-paper)
   );
-  --accent: color-mix(in srgb, var(--hearth-moss) 14%, var(--hearth-paper));
+
+  --background: color-mix(in srgb, var(--hearth-paper) 88%, white);
+  --foreground: var(--hearth-ink);
+  --card: color-mix(in srgb, var(--hearth-paper) 42%, white);
+  --card-foreground: var(--hearth-ink);
+  --popover: color-mix(in srgb, var(--hearth-paper) 28%, white);
+  --popover-foreground: var(--hearth-ink);
+  --primary: var(--hearth-moss);
+  --primary-foreground: #f4f1ea;
+  --secondary: color-mix(in srgb, var(--hearth-paper) 62%, white);
+  --secondary-foreground: var(--hearth-ink);
+  --muted: color-mix(in srgb, var(--hearth-paper) 72%, white);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--hearth-ink) 52%,
+    var(--hearth-paper)
+  );
+  --accent: color-mix(in srgb, var(--hearth-moss) 12%, var(--hearth-paper));
   --accent-foreground: var(--hearth-ink);
-  --destructive: #9a3f2f;
-  --border: color-mix(in srgb, var(--hearth-ink) 12%, var(--hearth-paper));
-  --input: color-mix(in srgb, var(--hearth-ink) 14%, var(--hearth-paper));
+  --destructive: #8f3d32;
+  --border: color-mix(in srgb, var(--hearth-ink) 11%, var(--hearth-paper));
+  --input: color-mix(in srgb, var(--hearth-ink) 13%, var(--hearth-paper));
   --ring: var(--hearth-moss);
   --chart-1: var(--hearth-moss);
-  --chart-2: color-mix(in srgb, var(--hearth-moss) 55%, #c4a574);
-  --chart-3: color-mix(in srgb, var(--hearth-ink) 70%, var(--hearth-moss));
-  --chart-4: color-mix(in srgb, var(--hearth-moss) 70%, white);
-  --chart-5: color-mix(in srgb, var(--hearth-ink) 45%, var(--hearth-paper));
-  --radius: 0.7rem;
-  --sidebar: color-mix(in srgb, var(--hearth-paper) 85%, white);
+  --chart-2: var(--hearth-ember);
+  --chart-3: color-mix(in srgb, var(--hearth-ink) 65%, var(--hearth-moss));
+  --chart-4: color-mix(in srgb, var(--hearth-moss) 55%, white);
+  --chart-5: color-mix(in srgb, var(--hearth-ink) 40%, var(--hearth-paper));
+  --radius: 0.65rem;
+  --sidebar: color-mix(in srgb, var(--hearth-mist) 55%, white);
   --sidebar-foreground: var(--hearth-ink);
   --sidebar-primary: var(--hearth-moss);
-  --sidebar-primary-foreground: #f7f5f0;
+  --sidebar-primary-foreground: #f4f1ea;
   --sidebar-accent: color-mix(
     in srgb,
-    var(--hearth-moss) 12%,
+    var(--hearth-moss) 14%,
     var(--hearth-paper)
   );
   --sidebar-accent-foreground: var(--hearth-ink);
   --sidebar-border: color-mix(
     in srgb,
-    var(--hearth-ink) 10%,
+    var(--hearth-ink) 9%,
     var(--hearth-paper)
   );
   --sidebar-ring: var(--hearth-moss);
+
+  --hearth-elevate: 0 1px 0
+    color-mix(in srgb, var(--hearth-ink) 5%, transparent);
+  --hearth-elevate-soft: 0 10px 40px -24px
+    color-mix(in srgb, var(--hearth-ink) 18%, transparent);
 }
 
 .dark {
@@ -115,7 +130,7 @@
   --card-foreground: var(--hearth-paper);
   --popover: color-mix(in srgb, var(--hearth-ink) 82%, black);
   --popover-foreground: var(--hearth-paper);
-  --primary: color-mix(in srgb, var(--hearth-moss) 70%, white);
+  --primary: color-mix(in srgb, var(--hearth-moss) 68%, white);
   --primary-foreground: var(--hearth-ink);
   --secondary: color-mix(in srgb, var(--hearth-ink) 75%, var(--hearth-moss));
   --secondary-foreground: var(--hearth-paper);
@@ -128,7 +143,7 @@
   --input: color-mix(in srgb, var(--hearth-paper) 14%, transparent);
   --ring: color-mix(in srgb, var(--hearth-moss) 70%, white);
   --chart-1: color-mix(in srgb, var(--hearth-moss) 70%, white);
-  --chart-2: #c4a574;
+  --chart-2: var(--hearth-ember);
   --chart-3: color-mix(in srgb, var(--hearth-paper) 40%, var(--hearth-moss));
   --chart-4: color-mix(in srgb, var(--hearth-moss) 50%, white);
   --chart-5: color-mix(in srgb, var(--hearth-paper) 35%, transparent);
@@ -157,6 +172,24 @@
   }
 }
 
+@keyframes hearth-soft-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hearth-rail-in {
+  from {
+    box-shadow: inset 0 0 0 var(--hearth-moss);
+  }
+  to {
+    box-shadow: inset 3px 0 0 var(--hearth-moss);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -167,20 +200,25 @@
     background-color: var(--hearth-paper);
     background-image:
       radial-gradient(
-        ellipse 90% 55% at 8% -8%,
-        color-mix(in srgb, var(--hearth-moss) 18%, transparent),
-        transparent 62%
+        ellipse 100% 70% at 0% -10%,
+        color-mix(in srgb, var(--hearth-moss) 20%, transparent),
+        transparent 58%
       ),
       radial-gradient(
-        ellipse 70% 45% at 100% 0%,
-        color-mix(in srgb, var(--hearth-ink) 6%, transparent),
-        transparent 55%
+        ellipse 80% 50% at 100% 0%,
+        color-mix(in srgb, var(--hearth-ember) 10%, transparent),
+        transparent 52%
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 70% 100%,
+        color-mix(in srgb, var(--hearth-moss) 12%, transparent),
+        transparent 60%
       ),
       linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--hearth-paper) 88%, white) 0%,
-        var(--hearth-paper) 45%,
-        color-mix(in srgb, var(--hearth-paper) 92%, var(--hearth-moss)) 100%
+        165deg,
+        color-mix(in srgb, var(--hearth-paper) 82%, white) 0%,
+        var(--hearth-paper) 42%,
+        color-mix(in srgb, var(--hearth-paper) 90%, var(--hearth-mist)) 100%
       );
     background-attachment: fixed;
   }
@@ -195,18 +233,69 @@
   .font-heading {
     font-family: var(--font-fraunces), ui-serif, Georgia, serif;
     color: var(--hearth-ink);
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
   }
 }
 
 @layer utilities {
   .hearth-enter {
-    animation: hearth-fade-up 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: hearth-fade-up 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .hearth-soft-in {
+    animation: hearth-soft-in 420ms ease both;
+  }
+
+  .hearth-enter-delay-1 {
+    animation-delay: 60ms;
+  }
+
+  .hearth-enter-delay-2 {
+    animation-delay: 120ms;
+  }
+
+  .hearth-grain {
+    position: relative;
+  }
+
+  .hearth-grain::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
   }
 
   .hearth-nav-active {
-    background: color-mix(in srgb, var(--hearth-moss) 14%, var(--hearth-paper));
+    background: color-mix(in srgb, var(--hearth-moss) 16%, var(--hearth-paper));
     color: var(--hearth-ink);
     box-shadow: inset 3px 0 0 var(--hearth-moss);
+    animation: hearth-rail-in 220ms ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hearth-enter,
+    .hearth-soft-in,
+    .hearth-nav-active {
+      animation: none !important;
+    }
+  }
+
+  .hearth-elevate {
+    box-shadow: var(--hearth-elevate);
+  }
+
+  .hearth-elevate-soft {
+    box-shadow: var(--hearth-elevate-soft);
+  }
+
+  .tabular-money {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -214,6 +303,10 @@
   body {
     background: white !important;
     background-image: none !important;
+  }
+
+  .hearth-grain::before {
+    display: none !important;
   }
 
   aside,

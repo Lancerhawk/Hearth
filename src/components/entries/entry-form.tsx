@@ -100,7 +100,7 @@ export function EntryForm({
             <select
               id="categoryId"
               name="categoryId"
-              className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm"
+              className="h-8 w-full rounded-lg border border-input bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-2 text-sm text-hearth-ink"
               disabled={pending}
               defaultValue={defaults?.categoryId ?? ""}
             >
@@ -124,12 +124,12 @@ export function EntryForm({
           defaultValue={defaults?.note ?? ""}
         />
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" size="lg" disabled={pending}>
         {pending ? "Saving…" : submitLabel}
       </Button>
     </form>
   );
 
   if (bare) return form;
-  return <Surface>{form}</Surface>;
+  return <Surface tone="quiet">{form}</Surface>;
 }

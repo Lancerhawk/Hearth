@@ -54,6 +54,7 @@ export default async function IncomePage({
       />
 
       <MoneyList
+        amountTone="ember"
         emptyTitle={`No ${label.toLowerCase()} this month`}
         emptyDescription="Add a paycheck or one-off. Leftover from last month is brought forward automatically."
         items={incomes.map((row) => ({
