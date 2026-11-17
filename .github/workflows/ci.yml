@@ -68,22 +68,29 @@ jobs:
         run: pnpm build:verify
 
   # Always runs after quality + build (PR and main) so the check is never skipped.
-  # PRs: verify deploy config only. main push: trigger the real production deploy.
+  # PRs: verify secrets/config. main: trigger hook and wait until Vercel is READY/ERROR.
   deploy:
     name: Deploy production
     needs: [quality, build]
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
-      - name: Verify deploy hook is configured
+      - name: Verify deploy config
         id: verify
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           HOOK=$(printf '%s' "$VERCEL_DEPLOY_HOOK" | tr -d '[:space:]')
+          TOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')
+          ORG=$(printf '%s' "$VERCEL_ORG_ID" | tr -d '[:space:]')
+          PROJECT=$(printf '%s' "$VERCEL_PROJECT_ID" | tr -d '[:space:]')
+
           if [ -z "$HOOK" ]; then
-            echo "::error::Missing VERCEL_DEPLOY_HOOK secret. In Vercel → Hearth → Settings → Git → Deploy Hooks, create a hook for branch main, then paste the URL into GitHub Actions secrets as VERCEL_DEPLOY_HOOK."
+            echo "::error::Missing VERCEL_DEPLOY_HOOK secret."
             exit 1
           fi
           case "$HOOK" in
@@ -92,24 +99,93 @@ jobs:
               echo "::warning::Hook URL does not look like a Vercel Deploy Hook, continuing anyway."
               ;;
             *)
-              echo "::error::VERCEL_DEPLOY_HOOK must be an https URL from Vercel Deploy Hooks."
+              echo "::error::VERCEL_DEPLOY_HOOK must be an https Deploy Hook URL."
               exit 1
               ;;
           esac
-          echo "Deploy hook is configured."
-          echo "hook<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$HOOK" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "PR check only — production deploy runs after merge to main."
+
+          if [ -z "$TOKEN" ] || [ -z "$ORG" ] || [ -z "$PROJECT" ]; then
+            echo "::error::Missing VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID (needed to wait until the Vercel build finishes)."
+            exit 1
           fi
 
-      - name: Deploy to Vercel (production)
+          # Sanity-check API access against deployments list (not /v2/user whoami).
+          CODE=$(curl -sS -o /tmp/vercel-check.json -w "%{http_code}" \
+            -H "Authorization: Bearer $TOKEN" \
+            "https://api.vercel.com/v6/deployments?projectId=${PROJECT}&teamId=${ORG}&limit=1")
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Vercel API check failed (HTTP $CODE). Response:"
+            cat /tmp/vercel-check.json || true
+            echo
+            echo "::error::Create a Full Account token at https://vercel.com/account/tokens and update VERCEL_TOKEN. Team-only tokens often break status polling."
+            exit 1
+          fi
+
+          echo "Deploy config OK (hook + API access)."
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "PR check only — production deploy + wait runs after merge to main."
+          fi
+
+      - name: Deploy and wait until Ready
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
-          HOOK: ${{ steps.verify.outputs.hook }}
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          GIT_SHA: ${{ github.sha }}
         run: |
-          echo "Triggering production deploy hook…"
+          set -euo pipefail
+          HOOK=$(printf '%s' "$VERCEL_DEPLOY_HOOK" | tr -d '[:space:]')
+          TOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')
+          ORG=$(printf '%s' "$VERCEL_ORG_ID" | tr -d '[:space:]')
+          PROJECT=$(printf '%s' "$VERCEL_PROJECT_ID" | tr -d '[:space:]')
+
+          echo "Triggering production deploy hook for $GIT_SHA…"
           curl -fsS -X POST "$HOOK"
           echo
-          echo "Deploy hook accepted. Watch the deployment in the Vercel dashboard."
+          echo "Waiting for Vercel deployment to become READY (or ERROR)…"
+
+          # Poll up to ~15 minutes
+          for i in $(seq 1 60); do
+            RESP=$(curl -fsS \
+              -H "Authorization: Bearer $TOKEN" \
+              "https://api.vercel.com/v6/deployments?projectId=${PROJECT}&teamId=${ORG}&sha=${GIT_SHA}&limit=5")
+
+            META=$(printf '%s' "$RESP" | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          deps = data.get("deployments") or []
+          if not deps:
+              print("")
+          else:
+              d = deps[0]
+              print("%s|%s|%s" % (d.get("uid") or d.get("id") or "", d.get("readyState") or d.get("state") or "", d.get("url") or ""))
+          ')
+
+            if [ -n "$META" ]; then
+              ID="${META%%|*}"
+              REST="${META#*|}"
+              STATE="${REST%%|*}"
+              URL="${REST#*|}"
+              echo "[$i/60] deployment $ID → $STATE ${URL:+(https://$URL)}"
+
+              case "$STATE" in
+                READY)
+                  echo "Production deployment is READY."
+                  exit 0
+                  ;;
+                ERROR|CANCELED)
+                  echo "::error::Vercel deployment ended in $STATE. Open https://vercel.com and inspect the failed build."
+                  exit 1
+                  ;;
+              esac
+            else
+              echo "[$i/60] no deployment for sha $GIT_SHA yet…"
+            fi
+
+            sleep 15
+          done
+
+          echo "::error::Timed out waiting for Vercel deployment READY."
+          exit 1
