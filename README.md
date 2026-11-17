@@ -198,7 +198,9 @@ GitHub Actions owns the pipeline end-to-end (Vercel Git auto-deploy is off).
 1. **Prettier · Lint · Typecheck**
 2. **Build** (`build:verify` — generate + `next build`, no migrate)
 
-**On push to `main` only (after both pass):** 3. **Deploy production** via `vercel deploy --prod` using `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` repo secrets.
+**On push to `main` only (after both pass):**
+
+3. **Deploy production** — Actions POSTs `VERCEL_DEPLOY_HOOK` (Vercel Deploy Hook for `main`). No personal access token.
 
 ```mermaid
 flowchart LR
@@ -206,16 +208,18 @@ flowchart LR
   PR --> B[Build]
   Main[Merge to main] --> Q
   Main --> B
-  Q --> D[Deploy production]
+  Q --> D[Deploy hook]
   B --> D
   D --> Prod[Vercel production]
 ```
 
-If deploy fails with an auth error, rotate the personal token at [vercel.com/account/tokens](https://vercel.com/account/tokens) and update the `VERCEL_TOKEN` secret.
+**One-time setup:** Vercel → Hearth → **Settings → Git → Deploy Hooks** → create hook for branch `main` → paste the URL into GitHub → **Settings → Secrets → Actions** as `VERCEL_DEPLOY_HOOK`.
+
+Vercel Git auto-deploy stays off (`vercel.json`) so only this CI hook ships production.
 
 Locally: `pnpm check` runs format, lint, typecheck, and `build:verify`.
 
-On Vercel build (from Actions deploy): `pnpm build` regenerates the Prisma client, runs `migrate deploy` (prefers `DIRECT_URL` / session `:5432`), then `next build`.
+On Vercel build: `pnpm build` regenerates the Prisma client, runs `migrate deploy` (prefers `DIRECT_URL` / session `:5432`), then `next build`.
 
 ---
 
