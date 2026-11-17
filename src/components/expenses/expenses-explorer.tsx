@@ -13,7 +13,7 @@ export type ExpenseListItem = {
   action: React.ReactNode;
 };
 
-function Chip({
+function MemberChip({
   active,
   children,
   onClick,
@@ -27,10 +27,10 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors",
+        "shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors duration-150",
         active
-          ? "border-hearth-moss bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] text-hearth-ink"
-          : "border-border text-muted-foreground hover:border-hearth-moss/40 hover:text-hearth-ink",
+          ? "border-hearth-moss/40 bg-[color-mix(in_srgb,var(--hearth-moss)_14%,var(--hearth-paper))] text-hearth-ink"
+          : "border-border/80 text-hearth-ink/60 hover:border-hearth-moss/35 hover:text-hearth-ink",
       )}
     >
       {children}
@@ -75,19 +75,19 @@ export function ExpensesExplorer({
     : items;
 
   return (
-    <>
+    <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <Chip active={!memberFilter} onClick={() => selectMember("")}>
+        <MemberChip active={!memberFilter} onClick={() => selectMember("")}>
           Everyone
-        </Chip>
+        </MemberChip>
         {members.map((m) => (
-          <Chip
+          <MemberChip
             key={m.userId}
             active={memberFilter === m.userId}
             onClick={() => selectMember(m.userId)}
           >
             {m.label}
-          </Chip>
+          </MemberChip>
         ))}
       </div>
 
@@ -102,6 +102,6 @@ export function ExpensesExplorer({
           action: row.action,
         }))}
       />
-    </>
+    </div>
   );
 }

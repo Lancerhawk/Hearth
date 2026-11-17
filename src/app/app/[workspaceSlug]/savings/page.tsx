@@ -35,7 +35,7 @@ export default async function SavingsPage({
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
         title="Savings"
-        description="Transfers into savings goals."
+        description="Set money aside for goals without mixing it into spend."
         trailing={
           <MonthPicker
             basePath={`/app/${workspaceSlug}/savings`}
@@ -52,7 +52,9 @@ export default async function SavingsPage({
       />
 
       <MoneyList
+        amountTone="moss"
         emptyTitle="No savings this month"
+        emptyDescription="Record a transfer when you move money into a goal."
         items={savings.map((row) => ({
           id: row.id,
           title: row.title,

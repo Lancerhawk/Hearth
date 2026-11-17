@@ -14,11 +14,13 @@ export function MoneyList({
   emptyTitle = "Nothing here yet",
   emptyDescription,
   className,
+  amountTone = "default",
 }: {
   items: MoneyListItem[];
   emptyTitle?: string;
   emptyDescription?: string;
   className?: string;
+  amountTone?: "default" | "ember" | "moss";
 }) {
   if (items.length === 0) {
     return (
@@ -44,12 +46,19 @@ export function MoneyList({
         >
           <div className="min-w-0">
             <p className="font-medium text-hearth-ink">{item.title}</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            <p className="mt-0.5 text-xs leading-relaxed text-hearth-ink/55">
               {item.meta}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-heading text-lg tracking-tight text-hearth-ink tabular-money">
+            <span
+              className={cn(
+                "font-heading text-lg tracking-tight tabular-money",
+                amountTone === "ember" && "text-hearth-ember",
+                amountTone === "moss" && "text-hearth-moss",
+                amountTone === "default" && "text-hearth-ink",
+              )}
+            >
               {item.amount}
             </span>
             {item.action}
