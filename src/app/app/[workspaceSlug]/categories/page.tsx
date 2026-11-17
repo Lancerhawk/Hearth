@@ -5,7 +5,7 @@ import {
 } from "@/actions/categories";
 import { CategoryForm } from "@/components/categories/category-form";
 import { PageHeader } from "@/components/design/page-header";
-import { Button } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { requireMembership } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
 
@@ -59,9 +59,13 @@ export default async function CategoriesPage({
                   await deleteCategoryAction(workspaceSlug, c.id);
                 }}
               >
-                <Button type="submit" size="sm" variant="ghost">
+                <PendingSubmitButton
+                  size="sm"
+                  variant="ghost"
+                  pendingLabel="Deleting…"
+                >
                   Delete
-                </Button>
+                </PendingSubmitButton>
               </form>
             ) : null}
           </li>

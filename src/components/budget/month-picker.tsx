@@ -1,6 +1,17 @@
-import Link from "next/link";
+"use client";
+
+import Link, { useLinkStatus } from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+function NavArrow({ children }: { children: React.ReactNode }) {
+  const { pending } = useLinkStatus();
+  return (
+    <span className={cn(pending && "opacity-50")}>
+      {pending ? "…" : children}
+    </span>
+  );
+}
 
 export function MonthPicker({
   basePath,
@@ -25,15 +36,17 @@ export function MonthPicker({
       <Link
         href={`${basePath}?year=${prev.year}&month=${prev.month}`}
         className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+        scroll={false}
       >
-        ←
+        <NavArrow>←</NavArrow>
       </Link>
       <p className="min-w-40 text-center font-heading text-lg">{label}</p>
       <Link
         href={`${basePath}?year=${next.year}&month=${next.month}`}
         className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+        scroll={false}
       >
-        →
+        <NavArrow>→</NavArrow>
       </Link>
     </div>
   );

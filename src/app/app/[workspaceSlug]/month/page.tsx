@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CounterStrip } from "@/components/budget/counter-strip";
 import { MonthPicker } from "@/components/budget/month-picker";
-import { FilterChip } from "@/components/design/filter-chip";
 import { PageHeader } from "@/components/design/page-header";
 import { RouteLoadingSkeleton } from "@/components/design/route-loading";
 import { MonthBody } from "@/components/month/month-body";
@@ -44,16 +43,10 @@ export default async function MonthPage({
   ]);
 
   const base = `/app/${workspaceSlug}/month`;
-  const qs = (extra: Record<string, string | number | undefined>) => {
-    const p = new URLSearchParams();
-    p.set("year", String(year));
-    p.set("month", String(month));
-    p.set("view", String(extra.view ?? view));
-    if (extra.day) p.set("day", String(extra.day));
-    const member = extra.member !== undefined ? extra.member : memberFilter;
-    if (member) p.set("member", String(member));
-    return `?${p.toString()}`;
-  };
+  const memberOptions = members.map((m) => ({
+    userId: m.userId,
+    label: m.user.name ?? m.user.email,
+  }));
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
@@ -73,36 +66,6 @@ export default async function MonthPage({
         moneyInLabel={moneyInLabel(workspace.kind)}
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <FilterChip
-          href={`${base}${qs({ view: "calendar", day: selectedDay })}`}
-          active={view === "calendar"}
-        >
-          Calendar
-        </FilterChip>
-        <FilterChip
-          href={`${base}${qs({ view: "list", day: undefined })}`}
-          active={view === "list"}
-        >
-          List
-        </FilterChip>
-        <FilterChip
-          href={`${base}${qs({ member: "" })}`}
-          active={!memberFilter}
-        >
-          Everyone
-        </FilterChip>
-        {members.map((m) => (
-          <FilterChip
-            key={m.userId}
-            href={`${base}${qs({ member: m.userId })}`}
-            active={memberFilter === m.userId}
-          >
-            {m.user.name ?? m.user.email}
-          </FilterChip>
-        ))}
-      </div>
-
       <Suspense fallback={<RouteLoadingSkeleton variant="month" />}>
         <MonthBody
           workspaceId={workspace.id}
@@ -114,6 +77,7 @@ export default async function MonthPage({
           selectedDay={selectedDay}
           memberFilter={memberFilter}
           base={base}
+          members={memberOptions}
         />
       </Suspense>
     </div>
