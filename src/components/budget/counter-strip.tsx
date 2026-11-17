@@ -8,6 +8,7 @@ export function CounterStrip({
   remaining,
   entryCount,
   pendingBills,
+  skippedBills,
   upcoming,
   moneyInLabel = "Funds",
   showRemaining = true,
@@ -18,6 +19,7 @@ export function CounterStrip({
   remaining: number;
   entryCount: number;
   pendingBills: number;
+  skippedBills?: number;
   upcoming?: number;
   moneyInLabel?: string;
   /** Set false when Remaining is already shown in a hero above. */
@@ -58,10 +60,19 @@ export function CounterStrip({
       tone: "default" as const,
     },
     {
-      label: "Bills due",
+      label: "Bills due this month",
       value: String(pendingBills),
       tone: "default" as const,
     },
+    ...(skippedBills != null && skippedBills > 0
+      ? [
+          {
+            label: "Bills skipped this month",
+            value: String(skippedBills),
+            tone: "default" as const,
+          },
+        ]
+      : []),
   ];
 
   const cols =

@@ -145,6 +145,7 @@ export async function DashboardBody({
         remaining={summary.remaining}
         entryCount={summary.monthEntryCount}
         pendingBills={summary.pendingBillsCount}
+        skippedBills={summary.skippedBillsCount}
         upcoming={summary.upcomingOutflow}
         moneyInLabel={inLabel}
         showRemaining={false}

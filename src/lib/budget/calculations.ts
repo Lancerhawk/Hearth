@@ -64,6 +64,7 @@ export function calculateBudgetSummary(input: {
 
   const paidBills = input.bills.filter((b) => b.status === "PAID");
   const pendingBills = input.bills.filter((b) => b.status === "PENDING");
+  const skippedBills = input.bills.filter((b) => b.status === "SKIPPED");
   const totalPaidBills = sumAmounts(paidBills);
 
   // Pending bills due after asOf stay "upcoming obligations"; due on/before asOf stay pending-now.
@@ -102,7 +103,10 @@ export function calculateBudgetSummary(input: {
     totalSavings,
     totalPaidBills,
     pendingBillsTotal,
-    pendingBillsCount: pendingNow.length,
+    /** All pending bills in this month (due now or later). */
+    pendingBillsCount: pendingBills.length,
+    /** Skipped bills filed under this month. */
+    skippedBillsCount: skippedBills.length,
     upcomingOutflow,
     upcomingCount:
       expenses.upcoming.length +
