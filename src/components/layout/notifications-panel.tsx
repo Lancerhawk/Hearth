@@ -9,6 +9,7 @@ import {
   markNotificationReadAction,
   type NotificationListItem,
 } from "@/actions/notifications";
+import { QuietList, QuietListItem } from "@/components/design/quiet-list";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatAlertedAt } from "@/lib/notifications/format";
@@ -111,56 +112,55 @@ export function NotificationsPanel({
             />
           ))}
         </div>
+      ) : notifications.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-border/80 bg-[color-mix(in_srgb,var(--hearth-paper)_45%,white)] px-4 py-8 text-center text-sm text-hearth-ink/55">
+          No alerts yet — invites, bills, and budget notes will land here.
+        </p>
       ) : (
-        <ul className="divide-y divide-border/70 overflow-hidden rounded-xl border border-border/80 bg-card/70">
-          {notifications.length === 0 ? (
-            <li className="px-3 py-5 text-sm text-muted-foreground">
-              No notifications yet.
-            </li>
-          ) : (
-            notifications.map((n) => (
-              <li
-                key={n.id}
-                className={cn(
-                  "flex flex-col gap-2 px-3 py-3",
-                  n.readAt && "opacity-70",
-                )}
-              >
-                <div>
-                  <p className="font-medium text-hearth-ink">{n.title}</p>
-                  {n.body ? (
-                    <p className="text-sm text-muted-foreground">{n.body}</p>
-                  ) : null}
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {formatAlertedAt(n.createdAt)}
-                  </p>
-                  {n.href ? (
-                    <Link
-                      href={n.href}
-                      className={cn(
-                        buttonVariants({ variant: "link", size: "sm" }),
-                        "px-0",
-                      )}
-                    >
-                      Open
-                    </Link>
-                  ) : null}
-                </div>
-                {!n.readAt ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={marking}
-                    onClick={() => markOne(n.id)}
-                  >
-                    Mark read
-                  </Button>
+        <QuietList>
+          {notifications.map((n) => (
+            <QuietListItem
+              key={n.id}
+              className={cn(
+                "flex-col items-stretch gap-2",
+                n.readAt && "opacity-70",
+              )}
+            >
+              <div>
+                <p className="font-medium text-hearth-ink">{n.title}</p>
+                {n.body ? (
+                  <p className="mt-0.5 text-sm text-hearth-ink/60">{n.body}</p>
                 ) : null}
-              </li>
-            ))
-          )}
-        </ul>
+                <p className="mt-1 text-xs text-hearth-ink/45">
+                  {formatAlertedAt(n.createdAt)}
+                </p>
+                {n.href ? (
+                  <Link
+                    href={n.href}
+                    className={cn(
+                      buttonVariants({ variant: "link", size: "sm" }),
+                      "px-0",
+                    )}
+                  >
+                    Open
+                  </Link>
+                ) : null}
+              </div>
+              {!n.readAt ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="self-start"
+                  disabled={marking}
+                  onClick={() => markOne(n.id)}
+                >
+                  Mark read
+                </Button>
+              ) : null}
+            </QuietListItem>
+          ))}
+        </QuietList>
       )}
     </div>
   );
