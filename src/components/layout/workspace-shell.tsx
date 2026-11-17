@@ -163,15 +163,15 @@ export function WorkspaceShell({
         >
           {collapsed ? (
             <Link
-              href={`${base}/dashboard`}
-              title="Hearth"
-              aria-label="Hearth"
+              href="/"
+              title="Hearth home"
+              aria-label="Hearth home"
               className="font-heading text-xl tracking-tight text-hearth-ink transition-opacity hover:opacity-80"
             >
               H
             </Link>
           ) : (
-            <BrandMark href={`${base}/dashboard`} size="md" />
+            <BrandMark href="/" size="md" />
           )}
         </div>
 
@@ -238,7 +238,7 @@ export function WorkspaceShell({
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-hearth-ink/8 bg-[color-mix(in_srgb,var(--hearth-paper)_82%,white)]/90 px-4 backdrop-blur-md md:h-16 md:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <div className="md:hidden">
-              <BrandMark href={`${base}/dashboard`} size="sm" />
+              <BrandMark href="/" size="sm" />
               <span className="sr-only">Workspace {workspaceName}</span>
             </div>
             <div className="hidden min-w-0 items-center gap-3 md:flex">
