@@ -19,7 +19,7 @@ export function CategoryForm({
   const [state, formAction, pending] = useActionState(action, {});
 
   return (
-    <Surface>
+    <Surface tone="quiet">
       <form action={formAction} className="space-y-3">
         {state.error ? (
           <FormBanner tone="error">{state.error}</FormBanner>
@@ -30,14 +30,20 @@ export function CategoryForm({
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" required disabled={pending} />
+            <Input
+              id="name"
+              name="name"
+              required
+              disabled={pending}
+              placeholder="Groceries"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="type">Type</Label>
             <select
               id="type"
               name="type"
-              className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm"
+              className="h-8 w-full rounded-lg border border-input bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-2 text-sm text-hearth-ink"
               defaultValue="EXPENSE"
               disabled={pending}
             >
@@ -52,7 +58,7 @@ export function CategoryForm({
             <Input
               id="color"
               name="color"
-              placeholder="#6b7c5a"
+              placeholder="#355C45"
               disabled={pending}
             />
           </div>
