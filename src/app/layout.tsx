@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
-import { Fraunces, Geist_Mono, Source_Sans_3 } from "next/font/google";
+import {
+  Fraunces,
+  Geist_Mono,
+  Noto_Sans_Devanagari,
+  Source_Sans_3,
+} from "next/font/google";
+import { LocaleProvider } from "@/components/i18n/locale-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -16,6 +24,13 @@ const sourceSans = Source_Sans_3({
   display: "swap",
 });
 
+const notoDevanagari = Noto_Sans_Devanagari({
+  variable: "--font-noto-devanagari",
+  subsets: ["devanagari"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -29,15 +44,26 @@ export const metadata: Metadata = {
   description: "Household money, kept together.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+
   return (
     <html
-      lang="en"
-      className={`${fraunces.variable} ${sourceSans.variable} ${geistMono.variable} h-full`}
+      lang={locale}
+      className={`${fraunces.variable} ${sourceSans.variable} ${notoDevanagari.variable} ${geistMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster richColors position="top-right" />
+      <body
+        className={
+          locale === "hi"
+            ? "min-h-full flex flex-col font-[family-name:var(--font-noto-devanagari),var(--font-source-sans),sans-serif]"
+            : "min-h-full flex flex-col"
+        }
+      >
+        <LocaleProvider locale={locale} dict={dict}>
+          {children}
+          <Toaster richColors position="top-right" />
+        </LocaleProvider>
       </body>
     </html>
   );
