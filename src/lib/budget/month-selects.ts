@@ -10,6 +10,10 @@ export const amountOnly = {
   select: { amount: true },
 } as const;
 
+export const incomeAmountDate = {
+  select: { amount: true, earnedOn: true },
+} as const;
+
 export const expenseAmountDate = {
   select: { amount: true, spentOn: true },
 } as const;

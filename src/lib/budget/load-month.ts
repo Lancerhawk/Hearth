@@ -4,17 +4,20 @@ import {
   isUpcomingDate,
 } from "@/lib/budget/calculations";
 import { buildDayMap } from "@/lib/budget/day-map";
+import { CARRYOVER_NOTE_PREFIX } from "@/lib/budget/carryover";
 import {
   billAmountStatus,
   categorySelect,
   chargeAmountDate,
   creatorSelect,
   expenseAmountDate,
+  incomeAmountDate,
   savingsAmountDate,
 } from "@/lib/budget/month-selects";
 import { withPerfLog } from "@/lib/budget/perf-log";
-import { summaryAsOf } from "@/lib/budget/period";
+import { monthName, nextPeriod, summaryAsOf } from "@/lib/budget/period";
 import { prepareMonthBudget } from "@/lib/budget/prepare-month";
+import { toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 /** Shared per-request so parallel loaders do not re-query summary parts. */
@@ -26,7 +29,7 @@ const loadSummaryParts = cache(async function loadSummaryParts(
   const [incomes, expenses, charges, savings, bills] = await Promise.all([
     prisma.incomeEntry.findMany({
       where: { budgetId },
-      select: { amount: true },
+      ...incomeAmountDate,
     }),
     prisma.expenseEntry.findMany({
       where: { budgetId },
@@ -47,7 +50,7 @@ const loadSummaryParts = cache(async function loadSummaryParts(
   ]);
 
   return calculateBudgetSummary({
-    incomes,
+    incomes: incomes.map((i) => ({ amount: i.amount, on: i.earnedOn })),
     expenses: expenses.map((e) => ({ amount: e.amount, on: e.spentOn })),
     charges: charges.map((c) => ({ amount: c.amount, on: c.chargedOn })),
     savings: savings.map((s) => ({ amount: s.amount, on: s.savedOn })),
@@ -142,7 +145,69 @@ export async function loadBillsForMonth(
   return { budgetId: budget.id, billInstances };
 }
 
-/** Dashboard: summary + ranking rows + upcoming + recent activity. */
+/**
+ * Logged money-in for the next calendar month (no prepare/carryover write).
+ * Carryover rows are excluded — leftover is called out separately on the UI.
+ */
+export async function loadNextMonthFundsPreview(
+  workspaceId: string,
+  year: number,
+  month: number,
+) {
+  const next = nextPeriod(year, month);
+  const budget = await prisma.monthlyBudget.findUnique({
+    where: {
+      workspaceId_year_month: {
+        workspaceId,
+        year: next.year,
+        month: next.month,
+      },
+    },
+    select: { id: true },
+  });
+
+  if (!budget) {
+    return {
+      year: next.year,
+      month: next.month,
+      label: monthName(next.year, next.month),
+      amount: 0,
+      count: 0,
+      rows: [] as Array<{
+        id: string;
+        title: string;
+        amount: number;
+        on: Date;
+      }>,
+    };
+  }
+
+  const incomes = await prisma.incomeEntry.findMany({
+    where: { budgetId: budget.id },
+    select: { id: true, title: true, amount: true, earnedOn: true, note: true },
+    orderBy: { earnedOn: "asc" },
+  });
+
+  const rows = incomes
+    .filter((i) => !i.note?.startsWith(CARRYOVER_NOTE_PREFIX))
+    .map((i) => ({
+      id: i.id,
+      title: i.title,
+      amount: toNumber(i.amount),
+      on: i.earnedOn,
+    }));
+
+  return {
+    year: next.year,
+    month: next.month,
+    label: monthName(next.year, next.month),
+    amount: rows.reduce((acc, r) => acc + r.amount, 0),
+    count: rows.length,
+    rows: rows.slice(0, 6),
+  };
+}
+
+/** Dashboard: summary + ranking rows + upcoming + next-month funds. */
 export async function loadDashboardMonth(
   workspaceId: string,
   year: number,
@@ -153,34 +218,42 @@ export async function loadDashboardMonth(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [summary, incomes, expenses, charges, savings, upcoming] =
-    await Promise.all([
-      loadSummaryParts(budget.id, year, month),
-      prisma.incomeEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect },
-        orderBy: { earnedOn: "desc" },
-        take: 12,
-      }),
-      prisma.expenseEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect, category: categorySelect },
-        orderBy: { spentOn: "desc" },
-      }),
-      prisma.chargeEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect },
-        orderBy: { chargedOn: "desc" },
-        take: 12,
-      }),
-      prisma.savingsEntry.findMany({
-        where: { budgetId: budget.id },
-        include: { createdBy: creatorSelect },
-        orderBy: { savedOn: "desc" },
-        take: 12,
-      }),
-      loadUpcomingOutflows(workspaceId, today, 10),
-    ]);
+  const [
+    summary,
+    incomes,
+    expenses,
+    charges,
+    savings,
+    upcoming,
+    nextMonthFunds,
+  ] = await Promise.all([
+    loadSummaryParts(budget.id, year, month),
+    prisma.incomeEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect },
+      orderBy: { earnedOn: "desc" },
+      take: 12,
+    }),
+    prisma.expenseEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect, category: categorySelect },
+      orderBy: { spentOn: "desc" },
+    }),
+    prisma.chargeEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect },
+      orderBy: { chargedOn: "desc" },
+      take: 12,
+    }),
+    prisma.savingsEntry.findMany({
+      where: { budgetId: budget.id },
+      include: { createdBy: creatorSelect },
+      orderBy: { savedOn: "desc" },
+      take: 12,
+    }),
+    loadUpcomingMoney(workspaceId, today, 10),
+    loadNextMonthFundsPreview(workspaceId, year, month),
+  ]);
 
   return {
     budget: {
@@ -194,15 +267,16 @@ export async function loadDashboardMonth(
     },
     summary,
     upcoming,
+    nextMonthFunds,
   };
 }
 
 /**
- * Future-dated outflows (any month) for Upcoming on the dashboard.
+ * Future-dated money (any month) for Upcoming on the dashboard.
  * Calendar rule: date > today is upcoming; today is already committed/done.
  * Query from start of tomorrow so noon-stamped “today” rows never slip in.
  */
-export async function loadUpcomingOutflows(
+export async function loadUpcomingMoney(
   workspaceId: string,
   today: Date,
   take = 10,
@@ -211,7 +285,22 @@ export async function loadUpcomingOutflows(
   startOfTomorrow.setHours(0, 0, 0, 0);
   startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
 
-  const [expenses, charges, savings, bills] = await Promise.all([
+  const [incomes, expenses, charges, savings, bills] = await Promise.all([
+    prisma.incomeEntry.findMany({
+      where: {
+        earnedOn: { gte: startOfTomorrow },
+        budget: { workspaceId },
+      },
+      select: {
+        id: true,
+        title: true,
+        amount: true,
+        earnedOn: true,
+        note: true,
+      },
+      orderBy: { earnedOn: "asc" },
+      take: take * 2,
+    }),
     prisma.expenseEntry.findMany({
       where: {
         spentOn: { gte: startOfTomorrow },
@@ -251,6 +340,16 @@ export async function loadUpcomingOutflows(
   ]);
 
   return [
+    ...incomes
+      .filter((i) => !i.note?.startsWith(CARRYOVER_NOTE_PREFIX))
+      .map((i) => ({
+        id: i.id,
+        title: i.title,
+        kind: "Income" as const,
+        amount: i.amount,
+        on: i.earnedOn,
+        meta: null as string | null,
+      })),
     ...expenses.map((e) => ({
       id: e.id,
       title: e.title,
@@ -289,6 +388,9 @@ export async function loadUpcomingOutflows(
     .slice(0, take);
 }
 
+/** @deprecated Use loadUpcomingMoney */
+export const loadUpcomingOutflows = loadUpcomingMoney;
+
 /** Full month graph for calendar / day map. */
 export async function loadMonthBudget(
   workspaceId: string,
@@ -325,7 +427,10 @@ export async function loadMonthBudget(
     });
 
     const summary = calculateBudgetSummary({
-      incomes: full.incomes,
+      incomes: full.incomes.map((i) => ({
+        amount: i.amount,
+        on: i.earnedOn,
+      })),
       expenses: full.expenses.map((e) => ({
         amount: e.amount,
         on: e.spentOn,

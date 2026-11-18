@@ -7,20 +7,38 @@ export function AfterUpcoming({
   currency,
   remaining,
   stillAhead,
+  expectedIn,
   projectedRemaining,
+  moneyInLabel,
   billsHref,
 }: {
   currency: string;
   remaining: number;
   /** Pending bills due now + future-dated outflows */
   stillAhead: number;
+  /** Same-month funds dated after today */
+  expectedIn: number;
   projectedRemaining: number;
+  moneyInLabel: string;
   billsHref: string;
 }) {
   const rows = [
-    { label: "Remaining now", value: remaining },
-    { label: "Still ahead", value: stillAhead },
-    { label: "Left when it clears", value: projectedRemaining },
+    { label: "Remaining now", value: remaining, emphasize: false },
+    ...(expectedIn > 0
+      ? [
+          {
+            label: `Expected ${moneyInLabel.toLowerCase()}`,
+            value: expectedIn,
+            emphasize: false,
+          },
+        ]
+      : []),
+    { label: "Still ahead", value: stillAhead, emphasize: false },
+    {
+      label: "Left when it clears",
+      value: projectedRemaining,
+      emphasize: true,
+    },
   ];
 
   return (
@@ -29,7 +47,8 @@ export function AfterUpcoming({
         After upcoming
       </h2>
       <p className="mt-1 text-xs text-hearth-ink/50">
-        What remains once scheduled spend and pending bills land.
+        Remaining after expected {moneyInLabel.toLowerCase()} lands and
+        scheduled spend clears.
       </p>
 
       <ul className="mt-4 space-y-3">
@@ -42,9 +61,7 @@ export function AfterUpcoming({
             <span
               className={cn(
                 "shrink-0 font-heading tabular-money",
-                row.label === "Left when it clears"
-                  ? "text-hearth-moss"
-                  : "text-hearth-ink",
+                row.emphasize ? "text-hearth-moss" : "text-hearth-ink",
               )}
             >
               {formatCurrency(row.value, currency)}
@@ -53,7 +70,7 @@ export function AfterUpcoming({
         ))}
       </ul>
 
-      {stillAhead <= 0 ? (
+      {stillAhead <= 0 && expectedIn <= 0 ? (
         <p className="mt-4 text-sm text-hearth-ink/55">
           Nothing scheduled ahead — remaining stays as is.
         </p>

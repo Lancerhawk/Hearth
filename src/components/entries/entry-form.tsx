@@ -91,8 +91,9 @@ export function EntryForm({
             disabled={pending}
           />
           <p className="text-xs text-muted-foreground">
-            Filed under this date’s month. Dates after today stay Upcoming and
-            don’t cut remaining until that day.
+            Filed under this date’s month. Dates after today stay Upcoming —
+            funds don’t raise totals and spend doesn’t cut remaining until that
+            day.
           </p>
         </div>
         {showCategory ? (

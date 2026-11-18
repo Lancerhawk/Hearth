@@ -75,7 +75,10 @@ export async function syncCarryoverFunds(
   // so early open of next month doesn’t pull unspent future rows forward.
   const remaining = prevBudget
     ? calculateBudgetSummary({
-        incomes: prevBudget.incomes,
+        incomes: prevBudget.incomes.map((i) => ({
+          amount: i.amount,
+          on: i.earnedOn,
+        })),
         expenses: prevBudget.expenses.map((e) => ({
           amount: e.amount,
           on: e.spentOn,
