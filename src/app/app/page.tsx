@@ -3,13 +3,19 @@ import { logoutAction } from "@/actions/auth";
 import { Atmosphere } from "@/components/design/atmosphere";
 import { BrandMark } from "@/components/design/brand-mark";
 import { Surface } from "@/components/design/surface";
+import { LocaleToggle } from "@/components/i18n/locale-toggle";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { listUserWorkspaces, requireUser } from "@/lib/budget/access";
 import { cn } from "@/lib/utils";
 
 export default async function AppHomePage() {
   const user = await requireUser();
   const memberships = await listUserWorkspaces(user.id);
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string) => t(dict, path);
 
   return (
     <Atmosphere className="flex flex-1 flex-col">
@@ -18,14 +24,17 @@ export default async function AppHomePage() {
           <div>
             <BrandMark href="/" size="lg" />
             <p className="mt-4 text-[0.95rem] leading-relaxed text-muted-foreground">
-              Hi {user.name ?? user.email} — pick a workspace or create one.
+              {user.name ?? user.email} — {tr("workspaces.title")}
             </p>
           </div>
-          <form action={logoutAction}>
-            <Button type="submit" variant="outline" size="sm">
-              Sign out
-            </Button>
-          </form>
+          <div className="flex items-center gap-2">
+            <LocaleToggle locale={locale} />
+            <form action={logoutAction}>
+              <Button type="submit" variant="outline" size="sm">
+                {tr("nav.signOut")}
+              </Button>
+            </form>
+          </div>
         </div>
 
         {memberships.length === 0 ? (
@@ -35,16 +44,16 @@ export default async function AppHomePage() {
             className="hearth-enter hearth-enter-delay-1 text-center"
           >
             <p className="font-heading text-2xl tracking-tight">
-              No workspaces yet
+              {tr("workspaces.empty")}
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Create your first space to start tracking this month together.
+              {tr("workspaces.emptyBody")}
             </p>
             <Link
               href="/app/workspaces/new"
               className={cn(buttonVariants({ size: "lg", className: "mt-8" }))}
             >
-              Create workspace
+              {tr("workspaces.create")}
             </Link>
           </Surface>
         ) : (
@@ -62,12 +71,12 @@ export default async function AppHomePage() {
                     <p className="mt-0.5 text-sm text-muted-foreground">
                       {m.role.toLowerCase()} · {m.workspace.currency}
                       {m.workspace.kind === "PERSONAL"
-                        ? " · just you"
-                        : " · home"}
+                        ? ` · ${tr("workspaces.kindPersonal")}`
+                        : ` · ${tr("workspaces.kindHome")}`}
                     </p>
                   </div>
                   <span className="text-sm text-muted-foreground transition-colors group-hover:text-hearth-moss">
-                    Open →
+                    {tr("workspaces.open")} →
                   </span>
                 </Link>
               </li>
@@ -85,9 +94,7 @@ export default async function AppHomePage() {
             }),
           )}
         >
-          {memberships.length > 0
-            ? "Create another workspace"
-            : "Create workspace"}
+          {tr("workspaces.create")}
         </Link>
       </div>
     </Atmosphere>
