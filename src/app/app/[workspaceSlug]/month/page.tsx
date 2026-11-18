@@ -65,6 +65,7 @@ export default async function MonthPage({
         pendingBills={summary.pendingBillsCount}
         skippedBills={summary.skippedBillsCount}
         upcoming={summary.upcomingOutflow}
+        expectedFunds={summary.upcomingInflow}
         moneyInLabel={moneyInLabel(workspace.kind)}
       />
 

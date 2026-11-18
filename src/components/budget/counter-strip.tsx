@@ -10,6 +10,7 @@ export function CounterStrip({
   pendingBills,
   skippedBills,
   upcoming,
+  expectedFunds,
   moneyInLabel = "Funds",
   showRemaining = true,
 }: {
@@ -21,6 +22,8 @@ export function CounterStrip({
   pendingBills: number;
   skippedBills?: number;
   upcoming?: number;
+  /** Same-month funds dated after today */
+  expectedFunds?: number;
   moneyInLabel?: string;
   /** Set false when Remaining is already shown in a hero above. */
   showRemaining?: boolean;
@@ -45,10 +48,19 @@ export function CounterStrip({
           },
         ]
       : []),
+    ...(expectedFunds != null && expectedFunds > 0
+      ? [
+          {
+            label: `Expected ${moneyInLabel.toLowerCase()}`,
+            value: formatCurrency(expectedFunds, currency),
+            tone: "ember" as const,
+          },
+        ]
+      : []),
     ...(upcoming != null && upcoming > 0
       ? [
           {
-            label: "Upcoming",
+            label: "Upcoming spend",
             value: formatCurrency(upcoming, currency),
             tone: "default" as const,
           },
@@ -71,15 +83,8 @@ export function CounterStrip({
     },
   ];
 
-  const cols =
-    items.length >= 6
-      ? "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6"
-      : items.length === 5
-        ? "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
-        : "grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4";
-
   return (
-    <div className={`grid items-stretch ${cols}`}>
+    <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4">
       {items.map((item) => (
         <StatTile
           key={item.label}
