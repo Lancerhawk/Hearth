@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireMembership } from "@/lib/budget/access";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { prisma } from "@/lib/prisma";
 
 const schema = z.object({
@@ -43,7 +45,8 @@ export async function createCategoryAction(
   }
 
   revalidatePath(`/app/${workspaceSlug}/categories`);
-  return { success: "Category created." };
+  const dict = await getDictionary(await getLocale());
+  return { success: t(dict, "system.updated") };
 }
 
 export async function deleteCategoryAction(

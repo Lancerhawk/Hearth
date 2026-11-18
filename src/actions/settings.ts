@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireMembership, requireUser } from "@/lib/budget/access";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { prisma } from "@/lib/prisma";
 
 export type SettingsActionState = {
@@ -41,7 +43,8 @@ export async function updateWorkspaceSettingsAction(
 
   // Shell shows workspace name/currency — layout revalidate is required here.
   revalidatePath(`/app/${workspaceSlug}`, "layout");
-  return { success: "Workspace updated." };
+  const dict = await getDictionary(await getLocale());
+  return { success: t(dict, "system.updated") };
 }
 
 export async function updateProfileAction(
@@ -58,5 +61,6 @@ export async function updateProfileAction(
   });
 
   revalidatePath("/app", "layout");
-  return { success: "Profile updated." };
+  const dict = await getDictionary(await getLocale());
+  return { success: t(dict, "settings.saved") };
 }
