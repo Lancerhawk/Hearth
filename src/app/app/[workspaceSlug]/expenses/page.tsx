@@ -14,6 +14,8 @@ import { isUpcomingDate } from "@/lib/budget/calculations";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadExpensesForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
@@ -28,6 +30,9 @@ export default async function ExpensesPage({
 }) {
   const { workspaceSlug } = await params;
   const sp = await searchParams;
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string) => t(dict, path);
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
   const { expenses } = await loadExpensesForMonth(workspace.id, year, month);
@@ -44,12 +49,13 @@ export default async function ExpensesPage({
   const action = addExpenseAction.bind(null, workspaceSlug, year, month);
   const base = `/app/${workspaceSlug}/expenses`;
   const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
+  const upcomingTag = tr("money.upcomingTag");
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Expenses"
-        description="Day-to-day spending with clear attribution."
+        title={tr("money.expensesTitle")}
+        description={tr("money.expensesDescription")}
         trailing={<MonthPicker basePath={base} year={year} month={month} />}
       />
 
@@ -58,7 +64,7 @@ export default async function ExpensesPage({
         categories={categoryOptions}
         defaultDate={toIsoDate()}
         showCategory
-        submitLabel="Add expense"
+        submitLabel={tr("money.addExpense")}
       />
 
       <ExpensesExplorer
@@ -74,8 +80,8 @@ export default async function ExpensesPage({
         items={expenses.map((row) => ({
           id: row.id,
           title: row.title,
-          meta: `${toIsoDate(row.spentOn)}${row.category ? ` · ${row.category.name}` : ""}${isUpcomingDate(row.spentOn) ? " · Upcoming" : ""} · added by ${actorLabel(row.createdBy)}`,
-          amount: formatCurrency(row.amount, workspace.currency),
+          meta: `${toIsoDate(row.spentOn)}${row.category ? ` · ${row.category.name}` : ""}${isUpcomingDate(row.spentOn) ? ` · ${upcomingTag}` : ""} · added by ${actorLabel(row.createdBy)}`,
+          amount: formatCurrency(row.amount, workspace.currency, locale),
           createdById: row.createdById,
           action: (
             <EntryRowActions
