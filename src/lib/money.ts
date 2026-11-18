@@ -1,4 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
+import { intlLocale, type Locale } from "@/i18n/config";
 
 export type MoneyInput = Decimal | number | string;
 
@@ -11,10 +12,11 @@ export function toNumber(value: MoneyInput): number {
 export function formatCurrency(
   value: MoneyInput,
   currency = "INR",
-  locale = "en-IN",
+  locale: Locale | string = "en-IN",
 ): string {
   const amount = toNumber(value);
-  return new Intl.NumberFormat(locale, {
+  const tag = locale === "en" || locale === "hi" ? intlLocale(locale) : locale;
+  return new Intl.NumberFormat(tag, {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
@@ -25,10 +27,11 @@ export function formatCurrency(
 export function formatCurrencyCompact(
   value: MoneyInput,
   currency = "INR",
-  locale = "en-IN",
+  locale: Locale | string = "en-IN",
 ): string {
   const amount = toNumber(value);
-  return new Intl.NumberFormat(locale, {
+  const tag = locale === "en" || locale === "hi" ? intlLocale(locale) : locale;
+  return new Intl.NumberFormat(tag, {
     style: "currency",
     currency,
     notation: "compact",

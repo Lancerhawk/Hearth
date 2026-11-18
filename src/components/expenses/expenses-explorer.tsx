@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MoneyList } from "@/components/design/money-list";
+import { useT } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 
 export type ExpenseListItem = {
@@ -53,6 +54,7 @@ export function ExpensesExplorer({
   items: ExpenseListItem[];
   initialMember: string;
 }) {
+  const t = useT();
   const [memberFilter, setMemberFilter] = useState(initialMember);
 
   function selectMember(member: string) {
@@ -78,7 +80,7 @@ export function ExpensesExplorer({
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         <MemberChip active={!memberFilter} onClick={() => selectMember("")}>
-          Everyone
+          {t("common.everyone")}
         </MemberChip>
         {members.map((m) => (
           <MemberChip
@@ -92,8 +94,8 @@ export function ExpensesExplorer({
       </div>
 
       <MoneyList
-        emptyTitle="No expenses this month"
-        emptyDescription="Log a purchase to see it here with who added it."
+        emptyTitle={t("money.noExpenses")}
+        emptyDescription={t("money.noExpensesBody")}
         items={rows.map((row) => ({
           id: row.id,
           title: row.title,

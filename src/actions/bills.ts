@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireMembership } from "@/lib/budget/access";
 import { ensureMonthlyBudget } from "@/lib/budget/period";
 import { revalidateMoneyPaths } from "@/lib/budget/revalidate-money";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { billAlertSourceKeys } from "@/lib/notifications/source-key";
 import { prisma } from "@/lib/prisma";
 import { recurringBillSchema } from "@/lib/validators/entries";
@@ -49,7 +51,8 @@ export async function createRecurringBillAction(
   );
 
   revalidateMoneyPaths(workspaceSlug, "bill");
-  return { success: "Recurring bill added." };
+  const dict = await getDictionary(await getLocale());
+  return { success: t(dict, "system.billUpdated") };
 }
 
 export async function setBillStatusAction(
@@ -135,7 +138,8 @@ export async function updateRecurringBillAction(
   });
 
   revalidateMoneyPaths(workspaceSlug, "bill");
-  return { success: "Bill template updated." };
+  const dict = await getDictionary(await getLocale());
+  return { success: t(dict, "system.billUpdated") };
 }
 
 export async function updateBillInstanceAction(
@@ -164,5 +168,6 @@ export async function updateBillInstanceAction(
   });
 
   revalidateMoneyPaths(workspaceSlug, "bill");
-  return { success: "Bill amount updated." };
+  const dict = await getDictionary(await getLocale());
+  return { success: t(dict, "system.billUpdated") };
 }

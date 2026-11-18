@@ -1,46 +1,52 @@
 import Link from "next/link";
 import { Atmosphere } from "@/components/design/atmosphere";
+import { LocaleToggle } from "@/components/i18n/locale-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { cn } from "@/lib/utils";
-
-const monthFlow = [
-  {
-    title: "Money in",
-    body: "Log salary and other earnings for the month. Everyone sees the same shared pot.",
-  },
-  {
-    title: "Bills & obligations",
-    body: "Track rent, EMI, utilities — pending, paid, or skipped — with due dates that alert the house.",
-  },
-  {
-    title: "Daily spend",
-    body: "Add groceries, food, and transport on the calendar day they happened, or as a simple list.",
-  },
-  {
-    title: "Savings & charges",
-    body: "Park money aside and catch one-off charges without losing the month’s remaining balance.",
-  },
-];
-
-const pillars = [
-  {
-    title: "Attribution built in",
-    body: "Every entry shows who logged it and when — so “who spent on groceries?” is never a fight.",
-  },
-  {
-    title: "Month-scoped clarity",
-    body: "November never mixes with October. Counters for spent, remaining, and bills due stay honest.",
-  },
-  {
-    title: "Statements you can print",
-    body: "Filter by kind, member, or category, then preview and print a clean household statement.",
-  },
-];
 
 export default async function Home() {
   const session = await auth();
   const signedIn = Boolean(session?.user);
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string) => t(dict, path);
+
+  const monthFlow = [
+    {
+      title: tr("landing.flowMoneyInTitle"),
+      body: tr("landing.flowMoneyInBody"),
+    },
+    {
+      title: tr("landing.flowBillsTitle"),
+      body: tr("landing.flowBillsBody"),
+    },
+    {
+      title: tr("landing.flowSpendTitle"),
+      body: tr("landing.flowSpendBody"),
+    },
+    {
+      title: tr("landing.flowSavingsTitle"),
+      body: tr("landing.flowSavingsBody"),
+    },
+  ];
+
+  const pillars = [
+    {
+      title: tr("landing.pillarAttributionTitle"),
+      body: tr("landing.pillarAttributionBody"),
+    },
+    {
+      title: tr("landing.pillarMonthTitle"),
+      body: tr("landing.pillarMonthBody"),
+    },
+    {
+      title: tr("landing.pillarStatementsTitle"),
+      body: tr("landing.pillarStatementsBody"),
+    },
+  ];
 
   return (
     <Atmosphere className="relative flex min-h-dvh flex-1 flex-col">
@@ -49,9 +55,10 @@ export default async function Home() {
           href="/"
           className="font-heading text-lg tracking-tight text-hearth-ink/65 transition-opacity hover:opacity-80 md:text-xl"
         >
-          Hearth
+          {tr("common.appName")}
         </Link>
         <div className="flex items-center gap-2">
+          <LocaleToggle locale={locale} />
           {signedIn ? (
             <Link
               href="/app"
@@ -60,7 +67,7 @@ export default async function Home() {
                 "bg-hearth-moss shadow-none hover:bg-[color-mix(in_srgb,var(--hearth-moss)_86%,black)]",
               )}
             >
-              Go to workspaces
+              {tr("landing.goToWorkspaces")}
             </Link>
           ) : (
             <>
@@ -71,7 +78,7 @@ export default async function Home() {
                   "text-hearth-ink/80",
                 )}
               >
-                Sign in
+                {tr("landing.signIn")}
               </Link>
               <Link
                 href="/register"
@@ -80,7 +87,7 @@ export default async function Home() {
                   "border-hearth-ink/15 bg-white/45",
                 )}
               >
-                Get started
+                {tr("landing.getStarted")}
               </Link>
             </>
           )}
@@ -100,14 +107,13 @@ export default async function Home() {
         <div className="relative flex flex-1 flex-col justify-center px-6 pb-16 pt-6 md:px-10 md:pb-24">
           <div className="hearth-enter mx-auto w-full max-w-4xl text-center sm:text-left">
             <p className="font-heading text-[clamp(5.5rem,18vw,12rem)] leading-[0.8] tracking-[-0.05em] text-hearth-ink">
-              Hearth
+              {tr("common.appName")}
             </p>
             <h1 className="mx-auto mt-8 max-w-2xl font-heading text-[clamp(1.55rem,3.4vw,2.35rem)] leading-[1.12] tracking-tight text-hearth-ink sm:mx-0 md:mt-10">
-              Household money, kept together.
+              {tr("landing.heroTitle")}
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-hearth-ink/65 sm:mx-0 md:text-[1.1rem]">
-              Salary, bills, daily spend, and savings in one quiet ledger — with
-              clear attribution for everyone at home.
+              {tr("landing.heroBody")}
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3 sm:justify-start">
               {signedIn ? (
@@ -118,7 +124,7 @@ export default async function Home() {
                     "bg-hearth-moss px-7 shadow-none hover:bg-[color-mix(in_srgb,var(--hearth-moss)_86%,black)]",
                   )}
                 >
-                  Go to workspaces
+                  {tr("landing.goToWorkspaces")}
                 </Link>
               ) : (
                 <>
@@ -129,7 +135,7 @@ export default async function Home() {
                       "bg-hearth-moss px-7 shadow-none hover:bg-[color-mix(in_srgb,var(--hearth-moss)_86%,black)]",
                     )}
                   >
-                    Create your workspace
+                    {tr("landing.ctaStart")}
                   </Link>
                   <Link
                     href="/login"
@@ -138,7 +144,7 @@ export default async function Home() {
                       "border-hearth-ink/15 bg-white/50 px-7 backdrop-blur-sm",
                     )}
                   >
-                    I already have an account
+                    {tr("landing.ctaSignIn")}
                   </Link>
                 </>
               )}
@@ -163,15 +169,13 @@ export default async function Home() {
         <div className="mx-auto grid w-full max-w-5xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-hearth-moss">
-              How a month works
+              {tr("landing.howTitle")}
             </p>
             <h2 className="mt-3 font-heading text-3xl tracking-tight text-hearth-ink md:text-4xl">
-              One ledger. One household. One clear month.
+              {tr("landing.howBody")}
             </h2>
             <p className="mt-4 max-w-md text-base leading-relaxed text-hearth-ink/60">
-              Hearth keeps every month self-contained — so remaining balance,
-              bills due, and day-by-day spend always match the period you’re
-              looking at.
+              {tr("landing.heroBody")}
             </p>
           </div>
           <ol className="space-y-0 divide-y divide-hearth-ink/10 border-y border-hearth-ink/10">
@@ -319,9 +323,9 @@ export default async function Home() {
       <footer className="relative z-10 border-t border-hearth-ink/10 px-6 py-8 md:px-10">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 text-sm text-hearth-ink/50 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-heading text-lg tracking-tight text-hearth-ink/70">
-            Hearth
+            {tr("common.appName")}
           </p>
-          <p>Household money, kept together.</p>
+          <p>{tr("landing.footerTag")}</p>
         </div>
       </footer>
     </Atmosphere>

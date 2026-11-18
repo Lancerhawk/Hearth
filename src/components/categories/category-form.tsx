@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { CategoryActionState } from "@/actions/categories";
 import { FormBanner } from "@/components/design/form-banner";
 import { Surface } from "@/components/design/surface";
+import { useT } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ export function CategoryForm({
     formData: FormData,
   ) => Promise<CategoryActionState>;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState(action, {});
 
   return (
@@ -29,7 +31,7 @@ export function CategoryForm({
         ) : null}
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t("categories.name")}</Label>
             <Input
               id="name"
               name="name"
@@ -39,7 +41,7 @@ export function CategoryForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type">{t("workspaces.kindLabel")}</Label>
             <select
               id="type"
               name="type"
@@ -47,14 +49,14 @@ export function CategoryForm({
               defaultValue="EXPENSE"
               disabled={pending}
             >
-              <option value="EXPENSE">Expense</option>
-              <option value="CHARGE">Charge</option>
-              <option value="SAVINGS">Savings</option>
-              <option value="INCOME">Income</option>
+              <option value="EXPENSE">{t("categories.typeExpense")}</option>
+              <option value="CHARGE">{t("categories.typeCharge")}</option>
+              <option value="SAVINGS">{t("money.savingsTitle")}</option>
+              <option value="INCOME">{t("money.incomeTitle")}</option>
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="color">Color</Label>
+            <Label htmlFor="color">{t("categories.color")}</Label>
             <Input
               id="color"
               name="color"
@@ -64,7 +66,7 @@ export function CategoryForm({
           </div>
         </div>
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : "Add category"}
+          {pending ? t("common.loading") : t("categories.add")}
         </Button>
       </form>
     </Surface>

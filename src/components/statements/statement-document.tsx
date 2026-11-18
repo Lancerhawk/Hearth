@@ -1,4 +1,7 @@
 import { Surface } from "@/components/design/surface";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
+import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/lib/money";
 import {
   formatSignedAmount,
@@ -28,6 +31,10 @@ export async function StatementDocument({
   filters: StatementFilters;
   chips: string[];
 }) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string, vars?: Record<string, string | number>) =>
+    t(dict, path, vars);
   const { rows, totals, range } = await loadFilteredStatement(
     workspaceId,
     filters,
@@ -36,7 +43,7 @@ export async function StatementDocument({
   const rangeLabel =
     range.from === range.to ? range.from : `${range.from} → ${range.to}`;
   const displayChips = range.clampedToToday
-    ? [...chips, `Through today (${range.through})`]
+    ? [...chips, tr("statements.throughToday", { date: range.through })]
     : chips;
 
   return (
@@ -55,7 +62,7 @@ export async function StatementDocument({
         <p className="mt-1 text-sm text-hearth-ink/55">{rangeLabel}</p>
         {range.clampedToToday ? (
           <p className="mt-1 text-xs text-hearth-ink/50">
-            Future-dated rows stay Upcoming and are left out of this statement.
+            {tr("statements.futureLeftOut")}
           </p>
         ) : null}
         <div className="mt-3 flex flex-wrap gap-2">
@@ -70,12 +77,17 @@ export async function StatementDocument({
         </div>
       </header>
 
-      <SummaryStrip totals={totals} currency={currency} />
+      <SummaryStrip
+        totals={totals}
+        currency={currency}
+        locale={locale}
+        tr={tr}
+      />
 
       <div className="mt-6 space-y-3 md:hidden print:hidden">
         {rows.length === 0 ? (
           <p className="py-6 text-sm text-hearth-ink/55">
-            Nothing matches these filters.
+            {tr("statements.nothingMatches")}
           </p>
         ) : (
           rows.map((row, i) => (
@@ -84,30 +96,48 @@ export async function StatementDocument({
               index={i + 1}
               row={row}
               currency={currency}
+              locale={locale}
             />
           ))
         )}
-        <MobileTotals totals={totals} currency={currency} />
+        <MobileTotals
+          totals={totals}
+          currency={currency}
+          locale={locale}
+          tr={tr}
+        />
       </div>
 
       <table className="mt-6 hidden w-full text-left text-sm md:table print:table">
         <thead>
           <tr className="border-b border-border/70 text-[11px] uppercase tracking-[0.1em] text-hearth-ink/45">
             <th className="py-2 pr-2 font-medium">#</th>
-            <th className="py-2 pr-2 font-medium">Date</th>
-            <th className="py-2 pr-2 font-medium">Title</th>
-            <th className="py-2 pr-2 font-medium">Category</th>
-            <th className="py-2 pr-2 font-medium">Type</th>
-            <th className="py-2 pr-2 text-right font-medium">Amount</th>
-            <th className="py-2 pr-2 font-medium">Added by</th>
-            <th className="py-2 font-medium">Recorded</th>
+            <th className="py-2 pr-2 font-medium">
+              {tr("statements.colDate")}
+            </th>
+            <th className="py-2 pr-2 font-medium">
+              {tr("statements.colTitle")}
+            </th>
+            <th className="py-2 pr-2 font-medium">
+              {tr("statements.colCategory")}
+            </th>
+            <th className="py-2 pr-2 font-medium">
+              {tr("statements.colType")}
+            </th>
+            <th className="py-2 pr-2 text-right font-medium">
+              {tr("statements.colAmount")}
+            </th>
+            <th className="py-2 pr-2 font-medium">
+              {tr("statements.colAddedBy")}
+            </th>
+            <th className="py-2 font-medium">{tr("statements.colRecorded")}</th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (
             <tr>
               <td colSpan={8} className="py-8 text-hearth-ink/55">
-                Nothing matches these filters.
+                {tr("statements.nothingMatches")}
               </td>
             </tr>
           ) : (
@@ -146,7 +176,7 @@ export async function StatementDocument({
         <tfoot>
           <tr className="border-t border-border/70">
             <td colSpan={5} className="pt-4 font-medium text-hearth-ink">
-              Net (in − out)
+              {tr("statements.netInOut")}
             </td>
             <td className="pt-4 text-right font-heading tabular-money text-hearth-ink">
               {formatSignedAmount(
@@ -162,10 +192,10 @@ export async function StatementDocument({
           {totals.pendingOutflow > 0 ? (
             <tr>
               <td colSpan={5} className="pt-1 text-sm text-hearth-ink/55">
-                Pending bills (not in net)
+                {tr("statements.pendingBillsNotInNet")}
               </td>
               <td className="pt-1 text-right text-sm tabular-money text-hearth-ink/55">
-                {formatCurrency(totals.pendingOutflow, currency)}
+                {formatCurrency(totals.pendingOutflow, currency, locale)}
               </td>
               <td colSpan={2} />
             </tr>
@@ -185,11 +215,14 @@ function StatementMobileCard({
   index,
   row,
   currency,
+  locale,
 }: {
   index: number;
   row: StatementRow;
   currency: string;
+  locale: Locale;
 }) {
+  void locale;
   return (
     <article className="rounded-xl border border-border/70 bg-[color-mix(in_srgb,var(--hearth-paper)_40%,white)] px-3 py-3">
       <div className="flex items-start justify-between gap-3">
@@ -223,14 +256,20 @@ function StatementMobileCard({
 function MobileTotals({
   totals,
   currency,
+  locale,
+  tr,
 }: {
   totals: StatementTotals;
   currency: string;
+  locale: Locale;
+  tr: (path: string, vars?: Record<string, string | number>) => string;
 }) {
   return (
     <div className="rounded-xl border border-hearth-moss/20 bg-[color-mix(in_srgb,var(--hearth-moss)_6%,var(--hearth-paper))] px-3 py-3">
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-medium text-hearth-ink">Net (in − out)</span>
+        <span className="font-medium text-hearth-ink">
+          {tr("statements.netInOut")}
+        </span>
         <span className="font-heading tabular-money text-hearth-ink">
           {formatSignedAmount(
             {
@@ -243,9 +282,9 @@ function MobileTotals({
       </div>
       {totals.pendingOutflow > 0 ? (
         <div className="mt-2 flex items-center justify-between gap-3 text-xs text-hearth-ink/55">
-          <span>Pending bills</span>
+          <span>{tr("statements.pendingBills")}</span>
           <span className="tabular-money">
-            {formatCurrency(totals.pendingOutflow, currency)}
+            {formatCurrency(totals.pendingOutflow, currency, locale)}
           </span>
         </div>
       ) : null}
@@ -256,23 +295,27 @@ function MobileTotals({
 function SummaryStrip({
   totals,
   currency,
+  locale,
+  tr,
 }: {
   totals: StatementTotals;
   currency: string;
+  locale: Locale;
+  tr: (path: string, vars?: Record<string, string | number>) => string;
 }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <SummaryCell
-        label="In"
-        value={formatCurrency(totals.inflow, currency)}
+        label={tr("statements.in")}
+        value={formatCurrency(totals.inflow, currency, locale)}
         tone="ember"
       />
       <SummaryCell
-        label="Out"
-        value={formatCurrency(totals.outflow, currency)}
+        label={tr("statements.out")}
+        value={formatCurrency(totals.outflow, currency, locale)}
       />
       <SummaryCell
-        label="Net"
+        label={tr("statements.net")}
         value={formatSignedAmount(
           {
             amount: Math.abs(totals.net),
@@ -282,7 +325,10 @@ function SummaryStrip({
         )}
         tone="moss"
       />
-      <SummaryCell label="Rows" value={String(totals.rowCount)} />
+      <SummaryCell
+        label={tr("statements.rows")}
+        value={String(totals.rowCount)}
+      />
     </div>
   );
 }

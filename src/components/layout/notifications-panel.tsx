@@ -10,6 +10,7 @@ import {
   type NotificationListItem,
 } from "@/actions/notifications";
 import { QuietList, QuietListItem } from "@/components/design/quiet-list";
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatAlertedAt } from "@/lib/notifications/format";
@@ -25,6 +26,8 @@ export function NotificationsPanel({
   open: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
+  const { locale, dict } = useLocale();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loading, startLoading] = useTransition();
@@ -99,7 +102,9 @@ export function NotificationsPanel({
           disabled={marking || !notifications.some((n) => !n.readAt)}
           onClick={markAll}
         >
-          {marking ? "Updating…" : "Mark all read"}
+          {marking
+            ? t("notifications.updating")
+            : t("notifications.markAllRead")}
         </Button>
       </div>
 
@@ -114,7 +119,7 @@ export function NotificationsPanel({
         </div>
       ) : notifications.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border/80 bg-[color-mix(in_srgb,var(--hearth-paper)_45%,white)] px-4 py-8 text-center text-sm text-hearth-ink/55">
-          No alerts yet — invites, bills, and budget notes will land here.
+          {t("notifications.emptyHint")}
         </p>
       ) : (
         <QuietList>
@@ -132,7 +137,7 @@ export function NotificationsPanel({
                   <p className="mt-0.5 text-sm text-hearth-ink/60">{n.body}</p>
                 ) : null}
                 <p className="mt-1 text-xs text-hearth-ink/45">
-                  {formatAlertedAt(n.createdAt)}
+                  {formatAlertedAt(n.createdAt, { locale, dict })}
                 </p>
                 {n.href ? (
                   <Link
@@ -142,7 +147,7 @@ export function NotificationsPanel({
                       "px-0",
                     )}
                   >
-                    Open
+                    {t("notifications.open")}
                   </Link>
                 ) : null}
               </div>
@@ -155,7 +160,7 @@ export function NotificationsPanel({
                   disabled={marking}
                   onClick={() => markOne(n.id)}
                 >
-                  Mark read
+                  {t("notifications.markRead")}
                 </Button>
               ) : null}
             </QuietListItem>

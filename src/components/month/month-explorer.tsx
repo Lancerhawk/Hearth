@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { MoneyList } from "@/components/design/money-list";
 import { SectionTitle } from "@/components/design/section-title";
 import { Surface } from "@/components/design/surface";
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import { MonthCalendar } from "@/components/month/month-calendar";
 import type { DayBucket } from "@/lib/budget/day-map";
 import { formatCurrency } from "@/lib/money";
@@ -99,6 +100,8 @@ export function MonthExplorer({
   initialDay?: number;
   initialMember: string;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
   const [view, setView] = useState<"calendar" | "list">(initialView);
   const [selectedDay, setSelectedDay] = useState<number | undefined>(
     initialDay,
@@ -136,7 +139,7 @@ export function MonthExplorer({
             });
           }}
         >
-          Calendar
+          {t("month.calendar")}
         </Chip>
         <Chip
           active={view === "list"}
@@ -146,7 +149,7 @@ export function MonthExplorer({
             syncUrl({ view: "list", day: undefined, member: memberFilter });
           }}
         >
-          List
+          {t("month.list")}
         </Chip>
         <Chip
           active={!memberFilter}
@@ -159,7 +162,7 @@ export function MonthExplorer({
             });
           }}
         >
-          Everyone
+          {t("common.everyone")}
         </Chip>
         {members.map((m) => (
           <Chip
@@ -181,12 +184,12 @@ export function MonthExplorer({
 
       {view === "list" ? (
         <MoneyList
-          emptyTitle="No activity this month"
+          emptyTitle={t("month.noActivity")}
           items={filtered.map((row) => ({
             id: row.id,
             title: row.title,
-            meta: `${row.date} · ${row.kind}${row.category ? ` · ${row.category}` : ""}${row.date > new Date().toISOString().slice(0, 10) ? " · Upcoming" : ""} · added by ${row.addedBy}`,
-            amount: formatCurrency(row.amount, currency),
+            meta: `${row.date} · ${row.kind}${row.category ? ` · ${row.category}` : ""}${row.date > new Date().toISOString().slice(0, 10) ? ` · ${t("money.upcomingTag")}` : ""} · added by ${row.addedBy}`,
+            amount: formatCurrency(row.amount, currency, locale),
           }))}
         />
       ) : (
@@ -211,14 +214,16 @@ export function MonthExplorer({
           </Surface>
           <Surface>
             <SectionTitle>
-              {selectedDay ? `Day ${selectedDay}` : "Pick a day"}
+              {selectedDay
+                ? t("month.dayN", { day: selectedDay })
+                : t("month.pickDay")}
             </SectionTitle>
             <ul className="mt-3 space-y-2">
               {filtered.length === 0 ? (
                 <li className="text-sm text-muted-foreground">
                   {selectedDay
-                    ? "Nothing logged."
-                    : "Select a day on the calendar."}
+                    ? t("month.nothingLogged")
+                    : t("month.selectDay")}
                 </li>
               ) : (
                 filtered.map((row) => (
@@ -228,7 +233,7 @@ export function MonthExplorer({
                         {row.title}
                       </span>
                       <span className="font-heading text-hearth-ink">
-                        {formatCurrency(row.amount, currency)}
+                        {formatCurrency(row.amount, currency, locale)}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -243,7 +248,7 @@ export function MonthExplorer({
               href={`/app/${workspaceSlug}/expenses?year=${year}&month=${month}`}
               className="mt-4 inline-block text-sm text-hearth-moss underline-offset-4 hover:underline"
             >
-              Add expense
+              {t("money.addExpense")}
             </Link>
           </Surface>
         </div>

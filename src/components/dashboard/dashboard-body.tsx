@@ -12,6 +12,8 @@ import { toDateKey } from "@/lib/budget/calculations";
 import { loadDashboardMonth } from "@/lib/budget/load-month";
 import { mapCounterBreakdownInput } from "@/lib/budget/map-counter-input";
 import { currentPeriod, summaryAsOf } from "@/lib/budget/period";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { WorkspaceKind } from "@/types/prisma";
@@ -32,10 +34,17 @@ export async function DashboardBody({
   year: number;
   month: number;
 }) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string, vars?: Record<string, string | number>) =>
+    t(dict, path, vars);
   const { budget, summary, upcoming, nextMonthFunds } =
     await loadDashboardMonth(workspaceId, year, month);
   const base = `/app/${workspaceSlug}`;
   const inLabel = moneyInLabel(workspaceKind);
+  const fundsLabel =
+    inLabel === "Income" ? tr("counters.income") : tr("counters.funds");
+  const fundsLower = fundsLabel.toLowerCase();
   const asOf = summaryAsOf(year, month);
   const asOfKey = asOf ? toDateKey(asOf) : null;
   const isCommitted = (on: Date) => !asOfKey || toDateKey(on) <= asOfKey;
@@ -139,19 +148,35 @@ export async function DashboardBody({
     <div className="flex flex-col gap-8">
       <Surface tone="emphasis" padding="lg">
         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-hearth-moss">
-          Remaining available
+          {tr("dashboard.remainingAvailable")}
         </p>
         <p className="mt-2 font-heading text-5xl tracking-tight text-hearth-ink tabular-money md:text-6xl">
-          {formatCurrency(summary.remaining, currency)}
+          {formatCurrency(summary.remaining, currency, locale)}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-hearth-ink/60">
-          of {formatCurrency(summary.totalIncome, currency)}{" "}
-          {inLabel.toLowerCase()} · {progress}% spent so far
+          {tr("dashboard.ofFunds", {
+            amount: formatCurrency(summary.totalIncome, currency, locale),
+            label: fundsLower,
+          })}{" "}
+          · {tr("dashboard.spentSoFar", { pct: progress })}
           {summary.upcomingInflow > 0
-            ? ` · ${formatCurrency(summary.upcomingInflow, currency)} expected ${inLabel.toLowerCase()}`
+            ? ` · ${tr("dashboard.expectedFunds", {
+                amount: formatCurrency(
+                  summary.upcomingInflow,
+                  currency,
+                  locale,
+                ),
+                label: fundsLower,
+              })}`
             : ""}
           {summary.upcomingOutflow > 0
-            ? ` · ${formatCurrency(summary.upcomingOutflow, currency)} upcoming spend`
+            ? ` · ${tr("dashboard.upcomingSpend", {
+                amount: formatCurrency(
+                  summary.upcomingOutflow,
+                  currency,
+                  locale,
+                ),
+              })}`
             : ""}
         </p>
         <div className="mt-5 h-2 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--hearth-moss)_12%,white)]">
@@ -187,14 +212,14 @@ export async function DashboardBody({
         </Surface>
 
         <Surface tone="quiet">
-          <SectionTitle>Upcoming</SectionTitle>
+          <SectionTitle>{tr("dashboard.upcoming")}</SectionTitle>
           <p className="mt-1 text-xs text-hearth-ink/50">
-            After today only — today’s money is already counted.
+            {tr("dashboard.upcomingHint")}
           </p>
           <ul className="mt-4 space-y-3">
             {upcoming.length === 0 ? (
               <li className="text-sm text-hearth-ink/55">
-                Nothing scheduled ahead.
+                {tr("dashboard.nothingScheduled")}
               </li>
             ) : (
               upcoming.map((row) => (
@@ -222,7 +247,7 @@ export async function DashboardBody({
                     )}
                   >
                     {row.kind === "Income" ? "+" : ""}
-                    {formatCurrency(toNumber(row.amount), currency)}
+                    {formatCurrency(toNumber(row.amount), currency, locale)}
                   </span>
                 </li>
               ))
@@ -261,11 +286,11 @@ export async function DashboardBody({
           </Surface>
         ) : (
           <Surface tone="quiet">
-            <SectionTitle>Recent activity</SectionTitle>
+            <SectionTitle>{tr("dashboard.recentActivity")}</SectionTitle>
             <ul className="mt-4 space-y-3">
               {recent.length === 0 ? (
                 <li className="text-sm text-hearth-ink/55">
-                  Nothing committed this month yet.
+                  {tr("dashboard.nothingCommitted")}
                 </li>
               ) : (
                 recent.map((row) => (
@@ -283,7 +308,7 @@ export async function DashboardBody({
                       </span>
                     </span>
                     <span className="font-heading tabular-money text-hearth-ink">
-                      {formatCurrency(row.amount, currency)}
+                      {formatCurrency(row.amount, currency, locale)}
                     </span>
                   </li>
                 ))
@@ -295,11 +320,11 @@ export async function DashboardBody({
 
       {viewingCurrent ? (
         <Surface tone="quiet">
-          <SectionTitle>Recent activity</SectionTitle>
+          <SectionTitle>{tr("dashboard.recentActivity")}</SectionTitle>
           <ul className="mt-4 space-y-3">
             {recent.length === 0 ? (
               <li className="text-sm text-hearth-ink/55">
-                Nothing committed this month yet.
+                {tr("dashboard.nothingCommitted")}
               </li>
             ) : (
               recent.map((row) => (
@@ -317,7 +342,7 @@ export async function DashboardBody({
                     </span>
                   </span>
                   <span className="font-heading tabular-money text-hearth-ink">
-                    {formatCurrency(row.amount, currency)}
+                    {formatCurrency(row.amount, currency, locale)}
                   </span>
                 </li>
               ))
@@ -331,13 +356,13 @@ export async function DashboardBody({
           href={`${base}/month`}
           className={cn(buttonVariants({ size: "lg" }))}
         >
-          Open month calendar
+          {tr("dashboard.openCalendar")}
         </Link>
         <Link
           href={`${base}/statements/preview?year=${year}&month=${month}`}
           className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
         >
-          Export statement
+          {tr("dashboard.exportStatement")}
         </Link>
       </div>
     </div>

@@ -14,6 +14,8 @@ import { isUpcomingDate } from "@/lib/budget/calculations";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadChargesForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
@@ -28,6 +30,9 @@ export default async function ChargesPage({
 }) {
   const { workspaceSlug } = await params;
   const sp = await searchParams;
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string) => t(dict, path);
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
   const { charges } = await loadChargesForMonth(workspace.id, year, month);
@@ -37,12 +42,13 @@ export default async function ChargesPage({
   });
   const action = addChargeAction.bind(null, workspaceSlug, year, month);
   const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
+  const upcomingTag = tr("money.upcomingTag");
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Charges"
-        description="Card and one-off charges for the month."
+        title={tr("money.chargesTitle")}
+        description={tr("money.chargesDescription")}
         trailing={
           <MonthPicker
             basePath={`/app/${workspaceSlug}/charges`}
@@ -57,17 +63,17 @@ export default async function ChargesPage({
         categories={categoryOptions}
         defaultDate={toIsoDate()}
         showCategory
-        submitLabel="Add charge"
+        submitLabel={tr("money.addCharge")}
       />
 
       <MoneyList
-        emptyTitle="No charges this month"
-        emptyDescription="Log a card swipe or one-off charge when it lands."
+        emptyTitle={tr("money.noCharges")}
+        emptyDescription={tr("money.noChargesBody")}
         items={charges.map((row) => ({
           id: row.id,
           title: row.title,
-          meta: `${toIsoDate(row.chargedOn)}${row.category ? ` · ${row.category.name}` : ""}${isUpcomingDate(row.chargedOn) ? " · Upcoming" : ""} · added by ${actorLabel(row.createdBy)}`,
-          amount: formatCurrency(row.amount, workspace.currency),
+          meta: `${toIsoDate(row.chargedOn)}${row.category ? ` · ${row.category.name}` : ""}${isUpcomingDate(row.chargedOn) ? ` · ${upcomingTag}` : ""} · added by ${actorLabel(row.createdBy)}`,
+          amount: formatCurrency(row.amount, workspace.currency, locale),
           action: (
             <EntryRowActions
               type="charge"

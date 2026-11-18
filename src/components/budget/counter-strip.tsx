@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CounterDetailSheet } from "@/components/budget/counter-detail-sheet";
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import { StatTile } from "@/components/design/stat-tile";
 import type {
   CounterBreakdown,
@@ -39,8 +40,12 @@ export function CounterStrip({
   /** When set, tiles open a detail sheet for that total. */
   breakdowns?: Record<CounterKey, CounterBreakdown>;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
   const [openKey, setOpenKey] = useState<CounterKey | null>(null);
   const interactive = Boolean(breakdowns);
+  const fundsLabel =
+    moneyInLabel === "Income" ? t("counters.income") : t("counters.funds");
 
   const items: Array<{
     key: CounterKey;
@@ -50,22 +55,22 @@ export function CounterStrip({
   }> = [
     {
       key: "funds",
-      label: moneyInLabel,
-      value: formatCurrency(income, currency),
+      label: fundsLabel,
+      value: formatCurrency(income, currency, locale),
       tone: "ember",
     },
     {
       key: "spent",
-      label: "Spent",
-      value: formatCurrency(spent, currency),
+      label: t("counters.spent"),
+      value: formatCurrency(spent, currency, locale),
       tone: "default",
     },
     ...(showRemaining
       ? [
           {
             key: "remaining" as const,
-            label: "Remaining",
-            value: formatCurrency(remaining, currency),
+            label: t("counters.remaining"),
+            value: formatCurrency(remaining, currency, locale),
             tone: "moss" as const,
           },
         ]
@@ -74,8 +79,10 @@ export function CounterStrip({
       ? [
           {
             key: "expectedFunds" as const,
-            label: `Expected ${moneyInLabel.toLowerCase()}`,
-            value: formatCurrency(expectedFunds, currency),
+            label: t("counters.expectedFunds", {
+              label: fundsLabel.toLowerCase(),
+            }),
+            value: formatCurrency(expectedFunds, currency, locale),
             tone: "ember" as const,
           },
         ]
@@ -84,27 +91,27 @@ export function CounterStrip({
       ? [
           {
             key: "upcomingSpend" as const,
-            label: "Upcoming spend",
-            value: formatCurrency(upcoming, currency),
+            label: t("counters.upcomingSpend"),
+            value: formatCurrency(upcoming, currency, locale),
             tone: "default" as const,
           },
         ]
       : []),
     {
       key: "entries",
-      label: "Entries",
+      label: t("counters.entries"),
       value: String(entryCount),
       tone: "default",
     },
     {
       key: "billsDue",
-      label: "Bills due this month",
+      label: t("counters.billsDue"),
       value: String(pendingBills),
       tone: "default",
     },
     {
       key: "billsSkipped",
-      label: "Bills skipped this month",
+      label: t("counters.billsSkipped"),
       value: String(skippedBills ?? 0),
       tone: "default",
     },
