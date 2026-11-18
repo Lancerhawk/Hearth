@@ -6,9 +6,11 @@ import { TopSpendPanel } from "@/components/dashboard/top-spend-panel";
 import { SectionTitle } from "@/components/design/section-title";
 import { Surface } from "@/components/design/surface";
 import { buttonVariants } from "@/components/ui/button";
+import { buildCounterBreakdowns } from "@/lib/budget/counter-breakdowns";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { toDateKey } from "@/lib/budget/calculations";
 import { loadDashboardMonth } from "@/lib/budget/load-month";
+import { mapCounterBreakdownInput } from "@/lib/budget/map-counter-input";
 import { currentPeriod, summaryAsOf } from "@/lib/budget/period";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -121,6 +123,18 @@ export async function DashboardBody({
     return kind;
   }
 
+  const breakdowns = buildCounterBreakdowns(
+    mapCounterBreakdownInput({
+      moneyInLabel: inLabel,
+      asOf,
+      incomes: budget.incomes,
+      expenses: budget.expenses,
+      charges: budget.charges,
+      savings: budget.savings,
+      billInstances: budget.billInstances,
+    }),
+  );
+
   return (
     <div className="flex flex-col gap-8">
       <Surface tone="emphasis" padding="lg">
@@ -160,6 +174,7 @@ export async function DashboardBody({
         expectedFunds={summary.upcomingInflow}
         moneyInLabel={inLabel}
         showRemaining={false}
+        breakdowns={breakdowns}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
