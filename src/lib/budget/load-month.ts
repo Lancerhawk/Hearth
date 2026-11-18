@@ -59,19 +59,57 @@ const loadSummaryParts = cache(async function loadSummaryParts(
   });
 });
 
-/** Counters only — no full entry graphs. */
+/** Full month rows needed to open counter detail drawers. */
+async function loadCounterSource(budgetId: string) {
+  const [incomes, expenses, charges, savings, billInstances] =
+    await Promise.all([
+      prisma.incomeEntry.findMany({
+        where: { budgetId },
+        include: { createdBy: creatorSelect },
+        orderBy: { earnedOn: "desc" },
+      }),
+      prisma.expenseEntry.findMany({
+        where: { budgetId },
+        include: { createdBy: creatorSelect, category: categorySelect },
+        orderBy: { spentOn: "desc" },
+      }),
+      prisma.chargeEntry.findMany({
+        where: { budgetId },
+        include: { createdBy: creatorSelect, category: categorySelect },
+        orderBy: { chargedOn: "desc" },
+      }),
+      prisma.savingsEntry.findMany({
+        where: { budgetId },
+        include: { createdBy: creatorSelect },
+        orderBy: { savedOn: "desc" },
+      }),
+      prisma.billInstance.findMany({
+        where: { budgetId },
+        include: { recurringBill: { select: { name: true } } },
+        orderBy: { dueDate: "asc" },
+      }),
+    ]);
+
+  return { incomes, expenses, charges, savings, billInstances };
+}
+
+/** Counters + rows for detail drawers — no calendar day map. */
 export async function loadMonthSummary(
   workspaceId: string,
   year: number,
   month: number,
 ) {
   const budget = await prepareMonthBudget(workspaceId, year, month);
-  const summary = await loadSummaryParts(budget.id, year, month);
+  const [summary, source] = await Promise.all([
+    loadSummaryParts(budget.id, year, month),
+    loadCounterSource(budget.id),
+  ]);
   return {
     budgetId: budget.id,
     year: budget.year,
     month: budget.month,
     summary,
+    ...source,
   };
 }
 
@@ -218,39 +256,9 @@ export async function loadDashboardMonth(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [
-    summary,
-    incomes,
-    expenses,
-    charges,
-    savings,
-    upcoming,
-    nextMonthFunds,
-  ] = await Promise.all([
+  const [summary, source, upcoming, nextMonthFunds] = await Promise.all([
     loadSummaryParts(budget.id, year, month),
-    prisma.incomeEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { earnedOn: "desc" },
-      take: 12,
-    }),
-    prisma.expenseEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect, category: categorySelect },
-      orderBy: { spentOn: "desc" },
-    }),
-    prisma.chargeEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { chargedOn: "desc" },
-      take: 12,
-    }),
-    prisma.savingsEntry.findMany({
-      where: { budgetId: budget.id },
-      include: { createdBy: creatorSelect },
-      orderBy: { savedOn: "desc" },
-      take: 12,
-    }),
+    loadCounterSource(budget.id),
     loadUpcomingMoney(workspaceId, today, 10),
     loadNextMonthFundsPreview(workspaceId, year, month),
   ]);
@@ -260,10 +268,11 @@ export async function loadDashboardMonth(
       id: budget.id,
       year: budget.year,
       month: budget.month,
-      incomes,
-      expenses,
-      charges,
-      savings,
+      incomes: source.incomes,
+      expenses: source.expenses,
+      charges: source.charges,
+      savings: source.savings,
+      billInstances: source.billInstances,
     },
     summary,
     upcoming,

@@ -6,8 +6,10 @@ import { PageHeader } from "@/components/design/page-header";
 import { RouteLoadingSkeleton } from "@/components/design/route-loading";
 import { MonthBody } from "@/components/month/month-body";
 import { requireMembership } from "@/lib/budget/access";
+import { buildCounterBreakdowns } from "@/lib/budget/counter-breakdowns";
 import { loadMonthSummary } from "@/lib/budget/load-month";
-import { parsePeriod } from "@/lib/budget/period";
+import { mapCounterBreakdownInput } from "@/lib/budget/map-counter-input";
+import { parsePeriod, summaryAsOf } from "@/lib/budget/period";
 import { prisma } from "@/lib/prisma";
 import { moneyInLabel } from "@/lib/workspace/labels";
 
@@ -34,13 +36,27 @@ export default async function MonthPage({
   const selectedDay = sp.day ? Number(sp.day) : undefined;
   const memberFilter = sp.member?.trim() || "";
 
-  const [{ summary }, members] = await Promise.all([
+  const [monthData, members] = await Promise.all([
     loadMonthSummary(workspace.id, year, month),
     prisma.workspaceMembership.findMany({
       where: { workspaceId: workspace.id },
       include: { user: true },
     }),
   ]);
+  const { summary, incomes, expenses, charges, savings, billInstances } =
+    monthData;
+  const inLabel = moneyInLabel(workspace.kind);
+  const breakdowns = buildCounterBreakdowns(
+    mapCounterBreakdownInput({
+      moneyInLabel: inLabel,
+      asOf: summaryAsOf(year, month),
+      incomes,
+      expenses,
+      charges,
+      savings,
+      billInstances,
+    }),
+  );
 
   const base = `/app/${workspaceSlug}/month`;
   const memberOptions = members.map((m) => ({
@@ -66,7 +82,8 @@ export default async function MonthPage({
         skippedBills={summary.skippedBillsCount}
         upcoming={summary.upcomingOutflow}
         expectedFunds={summary.upcomingInflow}
-        moneyInLabel={moneyInLabel(workspace.kind)}
+        moneyInLabel={inLabel}
+        breakdowns={breakdowns}
       />
 
       <Suspense fallback={<RouteLoadingSkeleton variant="month" />}>
