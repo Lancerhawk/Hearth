@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -22,20 +25,30 @@ export function AfterUpcoming({
   moneyInLabel: string;
   billsHref: string;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
+  const fundsLabel =
+    moneyInLabel === "Income" ? t("counters.income") : t("counters.funds");
+  const fundsLower = fundsLabel.toLowerCase();
+
   const rows = [
-    { label: "Remaining now", value: remaining, emphasize: false },
+    {
+      label: t("dashboard.remainingNow"),
+      value: remaining,
+      emphasize: false,
+    },
     ...(expectedIn > 0
       ? [
           {
-            label: `Expected ${moneyInLabel.toLowerCase()}`,
+            label: t("counters.expectedFunds", { label: fundsLower }),
             value: expectedIn,
             emphasize: false,
           },
         ]
       : []),
-    { label: "Still ahead", value: stillAhead, emphasize: false },
+    { label: t("dashboard.stillAhead"), value: stillAhead, emphasize: false },
     {
-      label: "Left when it clears",
+      label: t("dashboard.leftWhenClears"),
       value: projectedRemaining,
       emphasize: true,
     },
@@ -44,11 +57,10 @@ export function AfterUpcoming({
   return (
     <div>
       <h2 className="font-heading text-xl tracking-tight text-hearth-ink">
-        After upcoming
+        {t("dashboard.afterUpcoming")}
       </h2>
       <p className="mt-1 text-xs text-hearth-ink/50">
-        Remaining after expected {moneyInLabel.toLowerCase()} lands and
-        scheduled spend clears.
+        {t("dashboard.afterUpcomingHint", { label: fundsLower })}
       </p>
 
       <ul className="mt-4 space-y-3">
@@ -64,7 +76,7 @@ export function AfterUpcoming({
                 row.emphasize ? "text-hearth-moss" : "text-hearth-ink",
               )}
             >
-              {formatCurrency(row.value, currency)}
+              {formatCurrency(row.value, currency, locale)}
             </span>
           </li>
         ))}
@@ -72,7 +84,7 @@ export function AfterUpcoming({
 
       {stillAhead <= 0 && expectedIn <= 0 ? (
         <p className="mt-4 text-sm text-hearth-ink/55">
-          Nothing scheduled ahead — remaining stays as is.
+          {t("dashboard.nothingAhead")}
         </p>
       ) : null}
 
@@ -83,7 +95,7 @@ export function AfterUpcoming({
           "mt-5",
         )}
       >
-        Manage bills
+        {t("bills.manage")}
       </Link>
     </div>
   );

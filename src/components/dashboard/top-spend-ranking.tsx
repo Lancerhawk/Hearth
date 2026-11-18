@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import { formatCurrency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -15,10 +18,13 @@ export function TopSpendRanking({
   currency: string;
   totalSpent: number;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
+
   if (rows.length === 0) {
     return (
       <p className="text-sm text-hearth-ink/55">
-        No committed spend this month yet.
+        {t("dashboard.noCommittedSpend")}
       </p>
     );
   }
@@ -42,11 +48,11 @@ export function TopSpendRanking({
                   {row.name}
                 </p>
                 <p className="mt-0.5 text-xs text-hearth-ink/45">
-                  {share}% of spent
+                  {t("dashboard.ofSpent", { pct: share })}
                 </p>
               </div>
               <span className="shrink-0 font-heading text-base tabular-money text-hearth-ink">
-                {formatCurrency(row.amount, currency)}
+                {formatCurrency(row.amount, currency, locale)}
               </span>
             </div>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--hearth-moss)_10%,white)]">
