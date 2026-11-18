@@ -48,6 +48,18 @@ export function periodFromDate(date: Date) {
   };
 }
 
+export function nextPeriod(year: number, month: number) {
+  if (month === 12) return { year: year + 1, month: 1 };
+  return { year, month: month + 1 };
+}
+
+export function monthName(year: number, month: number) {
+  return new Date(year, month - 1, 1).toLocaleString("en", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
 /**
  * As-of date for committed vs upcoming totals.
  * - Past month → null (everything committed)

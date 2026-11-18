@@ -41,11 +41,12 @@ export function splitByAsOf(rows: DatedMoneyRow[], asOf: Date | null) {
 
 /**
  * Month totals.
- * - `asOf` null: every outflow is committed (past months / statements).
- * - `asOf` set: only outflows on or before that day cut Remaining; later dates are Upcoming.
+ * - `asOf` null: everything committed (past months / statements).
+ * - `asOf` set: only money on or before that day counts in Funds/Spent/Remaining;
+ *   later-dated funds and outflows stay Upcoming until that day.
  */
 export function calculateBudgetSummary(input: {
-  incomes: MoneyRow[];
+  incomes: DatedMoneyRow[];
   expenses: DatedMoneyRow[];
   charges: DatedMoneyRow[];
   savings: DatedMoneyRow[];
@@ -53,11 +54,13 @@ export function calculateBudgetSummary(input: {
   asOf?: Date | null;
 }) {
   const asOf = input.asOf ?? null;
+  const incomes = splitByAsOf(input.incomes, asOf);
   const expenses = splitByAsOf(input.expenses, asOf);
   const charges = splitByAsOf(input.charges, asOf);
   const savings = splitByAsOf(input.savings, asOf);
 
-  const totalIncome = sumAmounts(input.incomes);
+  const totalIncome = sumAmounts(incomes.committed);
+  const upcomingInflow = sumAmounts(incomes.upcoming);
   const totalExpenses = sumAmounts(expenses.committed);
   const totalCharges = sumAmounts(charges.committed);
   const totalSavings = sumAmounts(savings.committed);
@@ -89,7 +92,8 @@ export function calculateBudgetSummary(input: {
   const totalSpent =
     totalExpenses + totalCharges + totalSavings + totalPaidBills;
   const remaining = totalIncome - totalSpent;
-  const projectedRemaining = remaining - pendingBillsTotal - upcomingOutflow;
+  const projectedRemaining =
+    remaining + upcomingInflow - pendingBillsTotal - upcomingOutflow;
   const monthEntryCount =
     expenses.committed.length +
     charges.committed.length +
@@ -98,6 +102,8 @@ export function calculateBudgetSummary(input: {
 
   return {
     totalIncome,
+    upcomingInflow,
+    upcomingInflowCount: incomes.upcoming.length,
     totalExpenses,
     totalCharges,
     totalSavings,
@@ -112,7 +118,8 @@ export function calculateBudgetSummary(input: {
       expenses.upcoming.length +
       charges.upcoming.length +
       savings.upcoming.length +
-      pendingUpcoming.length,
+      pendingUpcoming.length +
+      incomes.upcoming.length,
     totalSpent,
     remaining,
     projectedRemaining,

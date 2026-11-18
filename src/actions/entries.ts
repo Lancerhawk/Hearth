@@ -61,7 +61,10 @@ async function maybeBudgetLow(
   });
   if (!budget) return;
   const summary = calculateBudgetSummary({
-    incomes: budget.incomes,
+    incomes: budget.incomes.map((i) => ({
+      amount: i.amount,
+      on: i.earnedOn,
+    })),
     expenses: budget.expenses.map((e) => ({
       amount: e.amount,
       on: e.spentOn,
