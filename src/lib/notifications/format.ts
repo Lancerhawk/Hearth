@@ -2,7 +2,7 @@ import { formatDistanceToNowStrict, format } from "date-fns";
 import { enIN, hi } from "date-fns/locale";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/types";
-import { t } from "@/i18n/get-dictionary";
+import { t } from "@/i18n/translate";
 
 const dateLocales = { en: enIN, hi } as const;
 
