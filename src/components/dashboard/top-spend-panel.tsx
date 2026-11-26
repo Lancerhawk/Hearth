@@ -14,6 +14,7 @@ import {
   TopSpendRanking,
   type TopSpendRow,
 } from "@/components/dashboard/top-spend-ranking";
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import { formatCurrency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,8 @@ export function TopSpendPanel({
   currency: string;
   totalSpent: number;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
   const [view, setView] = useState<ViewMode>("list");
 
   return (
@@ -35,28 +38,28 @@ export function TopSpendPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="font-heading text-xl tracking-tight text-hearth-ink">
-            Top spend this month
+            {t("dashboard.topSpend")}
           </h2>
           <p className="mt-1 text-xs text-hearth-ink/50">
-            Committed so far — future-dated rows stay under Upcoming.
+            {t("dashboard.topSpendHint")}
           </p>
         </div>
         <div
           className="inline-flex rounded-lg border border-border/80 p-0.5"
           role="group"
-          aria-label="Top spend view"
+          aria-label={t("dashboard.topSpend")}
         >
           <ToggleButton
             active={view === "list"}
             onClick={() => setView("list")}
           >
-            List
+            {t("dashboard.list")}
           </ToggleButton>
           <ToggleButton
             active={view === "graph"}
             onClick={() => setView("graph")}
           >
-            Graph
+            {t("dashboard.graph")}
           </ToggleButton>
         </div>
       </div>
@@ -69,7 +72,7 @@ export function TopSpendPanel({
             totalSpent={totalSpent}
           />
         ) : (
-          <TopSpendGraph rows={rows} currency={currency} />
+          <TopSpendGraph rows={rows} currency={currency} locale={locale} />
         )}
       </div>
     </div>
@@ -105,14 +108,17 @@ function ToggleButton({
 function TopSpendGraph({
   rows,
   currency,
+  locale,
 }: {
   rows: TopSpendRow[];
   currency: string;
+  locale: string;
 }) {
+  const t = useT();
   if (rows.length === 0) {
     return (
       <p className="text-sm text-hearth-ink/55">
-        No committed spend this month yet.
+        {t("dashboard.noCommittedSpend")}
       </p>
     );
   }
@@ -135,7 +141,7 @@ function TopSpendGraph({
           <XAxis
             type="number"
             tickFormatter={(v: number) =>
-              formatCurrency(v, currency).replace(/\.00$/, "")
+              formatCurrency(v, currency, locale).replace(/\.00$/, "")
             }
             tick={{
               fill: "color-mix(in srgb, var(--hearth-ink) 45%, white)",
@@ -157,8 +163,8 @@ function TopSpendGraph({
               fill: "color-mix(in srgb, var(--hearth-moss) 8%, white)",
             }}
             formatter={(value) => [
-              formatCurrency(Number(value ?? 0), currency),
-              "Spent",
+              formatCurrency(Number(value ?? 0), currency, locale),
+              t("counters.spent"),
             ]}
             contentStyle={{
               borderRadius: 12,

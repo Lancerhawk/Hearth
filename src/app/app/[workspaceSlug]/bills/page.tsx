@@ -21,6 +21,8 @@ import { SectionTitle } from "@/components/design/section-title";
 import { requireMembership } from "@/lib/budget/access";
 import { loadBillsForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { formatCurrency, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
@@ -35,6 +37,10 @@ export default async function BillsPage({
 }) {
   const { workspaceSlug } = await params;
   const sp = await searchParams;
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string, vars?: Record<string, string | number>) =>
+    t(dict, path, vars);
   const { workspace, membership } = await requireMembership(workspaceSlug);
   const canAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
   const { year, month } = parsePeriod(sp.year, sp.month);
@@ -44,12 +50,18 @@ export default async function BillsPage({
     orderBy: { dayOfMonth: "asc" },
   });
   const create = createRecurringBillAction.bind(null, workspaceSlug);
+  const statusLabel = (status: string) => {
+    if (status === "PENDING") return tr("bills.pending");
+    if (status === "PAID") return tr("bills.paid");
+    if (status === "SKIPPED") return tr("bills.skipped");
+    return status.toLowerCase();
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Bills"
-        description="Recurring templates and this month’s instances."
+        title={tr("bills.title")}
+        description={tr("bills.description")}
         trailing={
           <MonthPicker
             basePath={`/app/${workspaceSlug}/bills`}
@@ -59,14 +71,16 @@ export default async function BillsPage({
         }
       />
 
-      {canAdmin ? <BillForm action={create} /> : null}
+      {canAdmin ? (
+        <BillForm action={create} submitLabel={tr("bills.add")} />
+      ) : null}
 
       <section className="space-y-3">
-        <SectionTitle>This month</SectionTitle>
+        <SectionTitle>{tr("bills.thisMonth")}</SectionTitle>
         {billInstances.length === 0 ? (
           <EmptyHint
-            title="No bills this month"
-            description="Active templates create instances when the month opens."
+            title={tr("bills.noBillsThisMonth")}
+            description={tr("bills.noBillsThisMonthBody")}
           />
         ) : (
           <QuietList>
@@ -77,13 +91,15 @@ export default async function BillsPage({
                     {b.recurringBill.name}
                   </p>
                   <p className="mt-0.5 text-xs text-hearth-ink/55">
-                    Due {b.dueDate.toISOString().slice(0, 10)} ·{" "}
-                    {b.status.toLowerCase()}
+                    {tr("bills.due", {
+                      date: b.dueDate.toISOString().slice(0, 10),
+                    })}{" "}
+                    · {statusLabel(b.status)}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-heading text-lg tabular-money text-hearth-ink">
-                    {formatCurrency(b.amount, workspace.currency)}
+                    {formatCurrency(b.amount, workspace.currency, locale)}
                   </span>
                   <BillInstanceEditButton
                     amount={String(toNumber(b.amount))}
@@ -106,44 +122,44 @@ export default async function BillsPage({
       </section>
 
       <section className="space-y-3">
-        <SectionTitle>Templates</SectionTitle>
+        <SectionTitle>{tr("bills.templates")}</SectionTitle>
         {templates.length === 0 ? (
           <EmptyHint
-            title="No recurring templates"
-            description="Add rent, utilities, or subscriptions once — Hearth remakes them each month."
+            title={tr("bills.empty")}
+            description={tr("bills.emptyBody")}
           />
         ) : (
           <QuietList>
-            {templates.map((t) => (
-              <QuietListItem key={t.id}>
+            {templates.map((bill) => (
+              <QuietListItem key={bill.id}>
                 <div>
-                  <p className="font-medium text-hearth-ink">{t.name}</p>
+                  <p className="font-medium text-hearth-ink">{bill.name}</p>
                   <p className="mt-0.5 text-xs text-hearth-ink/55">
-                    Day {t.dayOfMonth} ·{" "}
+                    {tr("bills.day", { day: bill.dayOfMonth })} ·{" "}
                     <span className="tabular-money">
-                      {formatCurrency(t.amount, workspace.currency)}
+                      {formatCurrency(bill.amount, workspace.currency, locale)}
                     </span>
-                    {t.isActive ? "" : " · inactive"}
+                    {bill.isActive ? "" : ` · ${tr("bills.inactive")}`}
                   </p>
                 </div>
                 {canAdmin ? (
                   <div className="flex flex-wrap items-center gap-1">
                     <RecurringBillEditButton
                       defaults={{
-                        name: t.name,
-                        amount: String(toNumber(t.amount)),
-                        dayOfMonth: String(t.dayOfMonth),
+                        name: bill.name,
+                        amount: String(toNumber(bill.amount)),
+                        dayOfMonth: String(bill.dayOfMonth),
                       }}
                       updateAction={updateRecurringBillAction.bind(
                         null,
                         workspaceSlug,
-                        t.id,
+                        bill.id,
                       )}
                     />
                     <BillActiveToggle
                       workspaceSlug={workspaceSlug}
-                      billId={t.id}
-                      isActive={t.isActive}
+                      billId={bill.id}
+                      isActive={bill.isActive}
                     />
                   </div>
                 ) : null}

@@ -52,6 +52,7 @@ next-env.d.ts
 /docs/mobile/
 /docs/actions/
 /docs/design/
+/docs/i18n/
 
 # local agent standing prompt
 /prompt.md

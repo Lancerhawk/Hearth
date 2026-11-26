@@ -10,6 +10,8 @@ import { buildCounterBreakdowns } from "@/lib/budget/counter-breakdowns";
 import { loadMonthSummary } from "@/lib/budget/load-month";
 import { mapCounterBreakdownInput } from "@/lib/budget/map-counter-input";
 import { parsePeriod, summaryAsOf } from "@/lib/budget/period";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { prisma } from "@/lib/prisma";
 import { moneyInLabel } from "@/lib/workspace/labels";
 
@@ -30,6 +32,8 @@ export default async function MonthPage({
 }) {
   const { workspaceSlug } = await params;
   const sp = await searchParams;
+  const dict = await getDictionary(await getLocale());
+  const tr = (path: string) => t(dict, path);
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
   const view = sp.view === "list" ? "list" : "calendar";
@@ -67,8 +71,8 @@ export default async function MonthPage({
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
       <PageHeader
-        title="Month"
-        description="See the month as a calendar or a quiet list."
+        title={tr("month.title")}
+        description={tr("month.description")}
         trailing={<MonthPicker basePath={base} year={year} month={month} />}
       />
 

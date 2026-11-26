@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { EntryActionState } from "@/actions/entries";
 import { FormBanner } from "@/components/design/form-banner";
 import { Surface } from "@/components/design/surface";
+import { useT } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,7 @@ export function EntryForm({
   bare?: boolean;
   onSuccess?: () => void;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState(
     async (prev: EntryActionState, formData: FormData) => {
       const result = await action(prev, formData);
@@ -58,7 +60,7 @@ export function EntryForm({
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="title">Title</Label>
+          <Label htmlFor="title">{t("money.title")}</Label>
           <Input
             id="title"
             name="title"
@@ -68,7 +70,7 @@ export function EntryForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="amount">Amount</Label>
+          <Label htmlFor="amount">{t("money.amount")}</Label>
           <Input
             id="amount"
             name="amount"
@@ -81,7 +83,7 @@ export function EntryForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="date">When</Label>
+          <Label htmlFor="date">{t("money.date")}</Label>
           <Input
             id="date"
             name="date"
@@ -90,15 +92,11 @@ export function EntryForm({
             required
             disabled={pending}
           />
-          <p className="text-xs text-muted-foreground">
-            Filed under this date’s month. Dates after today stay Upcoming —
-            funds don’t raise totals and spend doesn’t cut remaining until that
-            day.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("money.dateHint")}</p>
         </div>
         {showCategory ? (
           <div className="space-y-1.5">
-            <Label htmlFor="categoryId">Category</Label>
+            <Label htmlFor="categoryId">{t("money.category")}</Label>
             <select
               id="categoryId"
               name="categoryId"
@@ -106,7 +104,7 @@ export function EntryForm({
               disabled={pending}
               defaultValue={defaults?.categoryId ?? ""}
             >
-              <option value="">None</option>
+              <option value="">{t("common.none")}</option>
               {(categories ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -117,7 +115,7 @@ export function EntryForm({
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="note">Note</Label>
+        <Label htmlFor="note">{t("money.note")}</Label>
         <Textarea
           id="note"
           name="note"
@@ -127,7 +125,7 @@ export function EntryForm({
         />
       </div>
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : submitLabel}
+        {pending ? t("common.loading") : submitLabel}
       </Button>
     </form>
   );

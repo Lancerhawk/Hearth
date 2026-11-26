@@ -8,6 +8,9 @@ import {
   summaryAsOf,
 } from "@/lib/budget/period";
 import { revalidateMoneyPaths } from "@/lib/budget/revalidate-money";
+import { intlLocale, type Locale } from "@/i18n/config";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { createNotification } from "@/lib/notifications/create";
 import { calculateBudgetSummary } from "@/lib/budget/calculations";
 import { prisma } from "@/lib/prisma";
@@ -24,24 +27,34 @@ function parseDate(value: string) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function monthLabel(year: number, month: number) {
-  return new Date(year, month - 1, 1).toLocaleString("en", {
+function monthLabel(year: number, month: number, locale: Locale) {
+  return new Date(year, month - 1, 1).toLocaleString(intlLocale(locale), {
     month: "long",
     year: "numeric",
   });
 }
 
-function savedMessage(
-  kind: string,
+async function savedMessage(
+  kindKey:
+    | "system.expenseAdded"
+    | "system.incomeAdded"
+    | "system.savingsAdded"
+    | "system.chargeAdded",
+  kindLabel: string,
   viewYear: number,
   viewMonth: number,
   date: Date,
 ) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
   const { year, month } = periodFromDate(date);
   if (year === viewYear && month === viewMonth) {
-    return `${kind} added.`;
+    return t(dict, kindKey);
   }
-  return `${kind} saved to ${monthLabel(year, month)}. Switch the month picker to see it.`;
+  return t(dict, "system.savedToMonth", {
+    kind: kindLabel,
+    month: monthLabel(year, month, locale),
+  });
 }
 
 async function maybeBudgetLow(
@@ -143,7 +156,13 @@ export async function addExpenseAction(
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   revalidateMoneyPaths(workspaceSlug, "expense");
   return {
-    success: savedMessage("Expense", year, month, spentOn),
+    success: await savedMessage(
+      "system.expenseAdded",
+      "Expense",
+      year,
+      month,
+      spentOn,
+    ),
   };
 }
 
@@ -187,7 +206,13 @@ export async function addIncomeAction(
   });
   revalidateMoneyPaths(workspaceSlug, "income");
   return {
-    success: savedMessage("Entry", year, month, earnedOn),
+    success: await savedMessage(
+      "system.incomeAdded",
+      "Entry",
+      year,
+      month,
+      earnedOn,
+    ),
   };
 }
 
@@ -232,7 +257,13 @@ export async function addSavingsAction(
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   revalidateMoneyPaths(workspaceSlug, "savings");
   return {
-    success: savedMessage("Savings", year, month, savedOn),
+    success: await savedMessage(
+      "system.savingsAdded",
+      "Savings",
+      year,
+      month,
+      savedOn,
+    ),
   };
 }
 
@@ -279,7 +310,13 @@ export async function addChargeAction(
   await maybeBudgetLow(workspace.id, workspaceSlug, budget.id);
   revalidateMoneyPaths(workspaceSlug, "charge");
   return {
-    success: savedMessage("Charge", year, month, chargedOn),
+    success: await savedMessage(
+      "system.chargeAdded",
+      "Charge",
+      year,
+      month,
+      chargedOn,
+    ),
   };
 }
 
@@ -416,7 +453,8 @@ export async function updateEntryAction(
           ? "savings"
           : "charge";
   revalidateMoneyPaths(workspaceSlug, kind);
-  return { success: "Entry updated." };
+  const dict = await getDictionary(await getLocale());
+  return { success: t(dict, "system.updated") };
 }
 
 export async function deleteEntryAction(

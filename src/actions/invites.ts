@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addDays } from "date-fns";
 import { requireMembership, requireUser } from "@/lib/budget/access";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { sendMail } from "@/lib/mail/send";
 import { inviteEmailHtml, inviteEmailText } from "@/lib/mail/templates/invite";
 import {
@@ -74,23 +76,27 @@ export async function inviteMemberAction(
 
   const inviteUrl = `${appUrl()}/invite/${invite.token}`;
   const inviterName = user.name ?? user.email;
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
 
   let mailSent = true;
   try {
     await sendMail({
       to: email,
-      subject: `Join ${workspace.name} on Hearth`,
+      subject: t(dict, "invite.emailSubject", { name: workspace.name }),
       html: inviteEmailHtml({
         workspaceName: workspace.name,
         inviterName,
         inviteUrl,
         role: parsed.data.role,
+        locale,
       }),
       text: inviteEmailText({
         workspaceName: workspace.name,
         inviterName,
         inviteUrl,
         role: parsed.data.role,
+        locale,
       }),
     });
   } catch (err) {
@@ -116,7 +122,7 @@ export async function inviteMemberAction(
       success: `Invite created for ${email}, but email could not be sent yet. Share this link: ${inviteUrl}`,
     };
   }
-  return { success: `Invite sent to ${email}.` };
+  return { success: t(dict, "system.inviteSent") };
 }
 
 export async function revokeInviteAction(

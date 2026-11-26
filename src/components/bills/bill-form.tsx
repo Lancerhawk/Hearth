@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { BillActionState } from "@/actions/bills";
 import { FormBanner } from "@/components/design/form-banner";
 import { Surface } from "@/components/design/surface";
+import { useT } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,7 @@ export type BillFormDefaults = {
 export function BillForm({
   action,
   defaults,
-  submitLabel = "Add recurring bill",
+  submitLabel,
   bare = false,
   onSuccess,
 }: {
@@ -30,6 +31,7 @@ export function BillForm({
   bare?: boolean;
   onSuccess?: () => void;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState(
     async (prev: BillActionState, formData: FormData) => {
       const result = await action(prev, formData);
@@ -47,7 +49,7 @@ export function BillForm({
       ) : null}
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">{t("bills.name")}</Label>
           <Input
             id="name"
             name="name"
@@ -57,7 +59,7 @@ export function BillForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="amount">Amount</Label>
+          <Label htmlFor="amount">{t("bills.amount")}</Label>
           <Input
             id="amount"
             name="amount"
@@ -70,7 +72,7 @@ export function BillForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="dayOfMonth">Day of month</Label>
+          <Label htmlFor="dayOfMonth">{t("bills.dayOfMonth")}</Label>
           <Input
             id="dayOfMonth"
             name="dayOfMonth"
@@ -84,7 +86,7 @@ export function BillForm({
         </div>
       </div>
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : submitLabel}
+        {pending ? t("common.loading") : (submitLabel ?? t("bills.add"))}
       </Button>
     </form>
   );

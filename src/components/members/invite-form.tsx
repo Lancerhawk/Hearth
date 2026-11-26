@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { InviteActionState } from "@/actions/invites";
 import { FormBanner } from "@/components/design/form-banner";
 import { Surface } from "@/components/design/surface";
+import { useT } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ export function InviteForm({
     formData: FormData,
   ) => Promise<InviteActionState>;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState(action, {});
 
   return (
@@ -29,7 +31,7 @@ export function InviteForm({
         ) : null}
         <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("members.inviteEmail")}</Label>
             <Input
               id="email"
               name="email"
@@ -40,7 +42,7 @@ export function InviteForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="role">{t("members.inviteRole")}</Label>
             <select
               id="role"
               name="role"
@@ -48,13 +50,13 @@ export function InviteForm({
               defaultValue="MEMBER"
               disabled={pending}
             >
-              <option value="MEMBER">Member</option>
-              <option value="ADMIN">Admin</option>
+              <option value="MEMBER">{t("members.roleMember")}</option>
+              <option value="ADMIN">{t("members.roleAdmin")}</option>
             </select>
           </div>
           <div className="flex items-end">
             <Button type="submit" disabled={pending}>
-              {pending ? "Sending…" : "Send invite"}
+              {pending ? t("common.loading") : t("members.invite")}
             </Button>
           </div>
         </div>

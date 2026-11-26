@@ -6,6 +6,8 @@ import { PrintButton } from "@/components/statements/print-button";
 import { StatementDocument } from "@/components/statements/statement-document";
 import { StatementFiltersForm } from "@/components/statements/statement-filters";
 import { requireMembership } from "@/lib/budget/access";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import {
   parseStatementFilters,
   statementFilterSummary,
@@ -24,6 +26,8 @@ export default async function StatementPreviewPage({
 }) {
   const { workspaceSlug } = await params;
   const sp = await searchParams;
+  const dict = await getDictionary(await getLocale());
+  const tr = (path: string) => t(dict, path);
   const { workspace } = await requireMembership(workspaceSlug);
   const filters = parseStatementFilters(sp);
   const fundsLabel = moneyInLabel(workspace.kind);
@@ -58,8 +62,8 @@ export default async function StatementPreviewPage({
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <div className="no-print">
         <PageHeader
-          title="Statement"
-          description="Committed activity through today — future-dated rows stay Upcoming."
+          title={tr("statements.title")}
+          description={tr("statements.description")}
           trailing={<PrintButton />}
         />
         <StatementFiltersForm

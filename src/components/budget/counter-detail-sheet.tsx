@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import {
   Sheet,
   SheetContent,
@@ -7,9 +8,34 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import type { CounterBreakdown } from "@/lib/budget/counter-breakdowns";
+import type {
+  CounterBreakdown,
+  CounterKey,
+} from "@/lib/budget/counter-breakdowns";
 import { formatCurrency } from "@/lib/money";
 import { cn } from "@/lib/utils";
+
+const TITLE_KEYS: Record<CounterKey, string> = {
+  funds: "counters.funds",
+  spent: "counters.spent",
+  remaining: "counters.remaining",
+  expectedFunds: "counters.expectedFunds",
+  upcomingSpend: "counters.upcomingSpend",
+  entries: "counters.entries",
+  billsDue: "counters.billsDue",
+  billsSkipped: "counters.billsSkipped",
+};
+
+const DESC_KEYS: Record<CounterKey, string> = {
+  funds: "counters.fundsDescription",
+  spent: "counters.spentDescription",
+  remaining: "counters.remainingDescription",
+  expectedFunds: "counters.expectedDescription",
+  upcomingSpend: "counters.upcomingDescription",
+  entries: "counters.entriesDescription",
+  billsDue: "counters.billsDueDescription",
+  billsSkipped: "counters.billsSkippedDescription",
+};
 
 export function CounterDetailSheet({
   open,
@@ -24,6 +50,22 @@ export function CounterDetailSheet({
   currency: string;
   moneyInLabel: string;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
+  const fundsLabel =
+    moneyInLabel === "Income" ? t("counters.income") : t("counters.funds");
+
+  const title = breakdown
+    ? breakdown.key === "funds" || breakdown.key === "expectedFunds"
+      ? breakdown.key === "expectedFunds"
+        ? t(TITLE_KEYS[breakdown.key], { label: fundsLabel.toLowerCase() })
+        : fundsLabel
+      : t(TITLE_KEYS[breakdown.key])
+    : "";
+  const description = breakdown
+    ? t(DESC_KEYS[breakdown.key], { label: fundsLabel })
+    : "";
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -34,17 +76,17 @@ export function CounterDetailSheet({
           <>
             <SheetHeader className="shrink-0 border-b border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_55%,white)] px-5 py-4 pr-12">
               <SheetTitle className="font-heading text-xl tracking-tight text-hearth-ink">
-                {breakdown.title}
+                {title}
               </SheetTitle>
               <SheetDescription className="text-hearth-ink/55">
-                {breakdown.description}
+                {description}
               </SheetDescription>
               <p className="mt-3 font-heading text-3xl tracking-tight text-hearth-ink tabular-money">
                 {breakdown.key === "entries" ||
                 breakdown.key === "billsDue" ||
                 breakdown.key === "billsSkipped"
                   ? String(breakdown.total)
-                  : formatCurrency(breakdown.total, currency)}
+                  : formatCurrency(breakdown.total, currency, locale)}
               </p>
             </SheetHeader>
 
@@ -52,29 +94,44 @@ export function CounterDetailSheet({
               {breakdown.mode === "formula" && breakdown.formula ? (
                 <ul className="space-y-3 text-sm">
                   <li className="flex justify-between gap-3">
-                    <span className="text-hearth-ink/65">{moneyInLabel}</span>
+                    <span className="text-hearth-ink/65">{fundsLabel}</span>
                     <span className="font-heading tabular-money text-hearth-ink">
-                      {formatCurrency(breakdown.formula.funds, currency)}
+                      {formatCurrency(
+                        breakdown.formula.funds,
+                        currency,
+                        locale,
+                      )}
                     </span>
                   </li>
                   <li className="flex justify-between gap-3">
-                    <span className="text-hearth-ink/65">Spent</span>
+                    <span className="text-hearth-ink/65">
+                      {t("counters.spent")}
+                    </span>
                     <span className="font-heading tabular-money text-hearth-ink">
-                      −{formatCurrency(breakdown.formula.spent, currency)}
+                      −
+                      {formatCurrency(
+                        breakdown.formula.spent,
+                        currency,
+                        locale,
+                      )}
                     </span>
                   </li>
                   <li className="flex justify-between gap-3 border-t border-border/60 pt-3">
                     <span className="font-medium text-hearth-ink">
-                      Remaining
+                      {t("counters.remaining")}
                     </span>
                     <span className="font-heading tabular-money text-hearth-moss">
-                      {formatCurrency(breakdown.formula.remaining, currency)}
+                      {formatCurrency(
+                        breakdown.formula.remaining,
+                        currency,
+                        locale,
+                      )}
                     </span>
                   </li>
                 </ul>
               ) : breakdown.rows.length === 0 ? (
                 <p className="text-sm text-hearth-ink/55">
-                  Nothing in this total yet.
+                  {t("counters.nothingInTotal")}
                 </p>
               ) : (
                 <ul className="space-y-3">
@@ -103,7 +160,7 @@ export function CounterDetailSheet({
                         )}
                       >
                         {row.sign > 0 ? "+" : ""}
-                        {formatCurrency(row.amount, currency)}
+                        {formatCurrency(row.amount, currency, locale)}
                       </span>
                     </li>
                   ))}

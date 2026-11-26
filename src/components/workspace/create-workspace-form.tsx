@@ -7,6 +7,7 @@ import {
 } from "@/actions/workspaces";
 import { FormBanner } from "@/components/design/form-banner";
 import { Surface } from "@/components/design/surface";
+import { useT } from "@/components/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 const initialState: WorkspaceActionState = {};
 
 export function CreateWorkspaceForm() {
+  const t = useT();
   const [state, formAction, pending] = useActionState(
     createWorkspaceAction,
     initialState,
@@ -23,11 +25,10 @@ export function CreateWorkspaceForm() {
   return (
     <Surface tone="quiet" padding="lg" className="w-full max-w-lg">
       <h1 className="font-heading text-[2rem] tracking-tight text-hearth-ink md:text-3xl">
-        New workspace
+        {t("workspaces.createTitle")}
       </h1>
       <p className="mt-2 text-base leading-relaxed text-hearth-ink/60">
-        Home spaces use Funds. Solo spaces use Income — same feature, clearer
-        naming.
+        {t("workspaces.emptyBody")}
       </p>
 
       <form action={formAction} className="mt-8 space-y-5">
@@ -37,7 +38,7 @@ export function CreateWorkspaceForm() {
 
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-hearth-ink">
-            Who is this for?
+            {t("workspaces.kindLabel")}
           </legend>
           <div className="grid gap-2 sm:grid-cols-2">
             <label
@@ -55,10 +56,10 @@ export function CreateWorkspaceForm() {
                   defaultChecked={(state.values?.kind ?? "HOME") === "HOME"}
                   disabled={pending}
                 />
-                Home
+                {t("workspaces.kindHome")}
               </span>
               <span className="pl-5 text-xs text-hearth-ink/55">
-                Household — money in is labeled Funds
+                {t("money.fundsDescription")}
               </span>
             </label>
             <label
@@ -76,10 +77,10 @@ export function CreateWorkspaceForm() {
                   defaultChecked={state.values?.kind === "PERSONAL"}
                   disabled={pending}
                 />
-                Just you
+                {t("workspaces.kindPersonal")}
               </span>
               <span className="pl-5 text-xs text-hearth-ink/55">
-                Solo — money in is labeled Income
+                {t("money.incomeDescription")}
               </span>
             </label>
           </div>
@@ -91,7 +92,7 @@ export function CreateWorkspaceForm() {
         </fieldset>
 
         <div className="space-y-2">
-          <Label htmlFor="name">Workspace name</Label>
+          <Label htmlFor="name">{t("workspaces.nameLabel")}</Label>
           <Input
             id="name"
             name="name"
@@ -108,7 +109,7 @@ export function CreateWorkspaceForm() {
           ) : null}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="currency">Currency</Label>
+          <Label htmlFor="currency">{t("workspaces.currencyLabel")}</Label>
           <Input
             id="currency"
             name="currency"
@@ -125,7 +126,7 @@ export function CreateWorkspaceForm() {
         </div>
 
         <Button type="submit" size="lg" className="w-full" disabled={pending}>
-          {pending ? "Creating…" : "Create workspace"}
+          {pending ? t("common.loading") : t("workspaces.create")}
         </Button>
       </form>
     </Surface>

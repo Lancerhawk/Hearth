@@ -1,38 +1,46 @@
 import { Atmosphere } from "@/components/design/atmosphere";
 import { BrandMark } from "@/components/design/brand-mark";
+import { LocaleToggle } from "@/components/i18n/locale-toggle";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string) => t(dict, path);
+
   return (
     <Atmosphere className="flex min-h-dvh flex-1 flex-col">
-      {/* Mobile */}
       <div className="flex flex-1 flex-col lg:hidden">
-        <header className="px-6 py-6">
+        <header className="flex items-center justify-between px-6 py-6">
           <BrandMark href="/" size="md" />
+          <LocaleToggle locale={locale} />
         </header>
         <main className="hearth-enter flex flex-1 flex-col justify-center px-6 pb-12">
           <div className="mx-auto w-full max-w-md">{children}</div>
         </main>
       </div>
 
-      {/* Desktop: one stage — moss brand panel + paper form, shared vertical center */}
       <div className="hidden min-h-dvh flex-1 lg:grid lg:grid-cols-2">
         <aside className="relative flex flex-col justify-between overflow-hidden bg-[color-mix(in_srgb,var(--hearth-moss)_92%,black)] px-12 py-12 text-[color-mix(in_srgb,var(--hearth-paper)_96%,white)] xl:px-16">
-          <BrandMark href="/" size="lg" tone="paper" />
+          <div className="relative z-[1] flex items-start justify-between gap-4">
+            <BrandMark href="/" size="lg" tone="paper" />
+            <LocaleToggle locale={locale} tone="paper" />
+          </div>
           <div className="hearth-enter relative z-[1] max-w-md">
             <p className="font-heading text-[2.75rem] leading-[1.08] tracking-tight xl:text-5xl">
-              Money for the house, in one quiet place.
+              {tr("auth.asideTitle")}
             </p>
             <p className="mt-6 text-base leading-relaxed text-[color-mix(in_srgb,var(--hearth-paper)_78%,transparent)]">
-              Bills, spend, and savings in a shared ledger — with clear
-              attribution for everyone at home.
+              {tr("auth.asideBody")}
             </p>
           </div>
           <p className="relative z-[1] text-[11px] uppercase tracking-[0.16em] text-[color-mix(in_srgb,var(--hearth-paper)_45%,transparent)]">
-            Hearth · Household money
+            {tr("auth.asideFooter")}
           </p>
           <div
             aria-hidden

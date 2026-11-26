@@ -14,6 +14,8 @@ import { isUpcomingDate } from "@/lib/budget/calculations";
 import { actorLabel, toIsoDate } from "@/lib/budget/iso-date";
 import { loadSavingsForMonth } from "@/lib/budget/load-month";
 import { parsePeriod } from "@/lib/budget/period";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { formatCurrency, toNumber } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Savings" };
@@ -27,16 +29,20 @@ export default async function SavingsPage({
 }) {
   const { workspaceSlug } = await params;
   const sp = await searchParams;
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  const tr = (path: string) => t(dict, path);
   const { workspace } = await requireMembership(workspaceSlug);
   const { year, month } = parsePeriod(sp.year, sp.month);
   const { savings } = await loadSavingsForMonth(workspace.id, year, month);
   const action = addSavingsAction.bind(null, workspaceSlug, year, month);
+  const upcomingTag = tr("money.upcomingTag");
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Savings"
-        description="Set money aside for goals without mixing it into spend."
+        title={tr("money.savingsTitle")}
+        description={tr("money.savingsDescription")}
         trailing={
           <MonthPicker
             basePath={`/app/${workspaceSlug}/savings`}
@@ -49,18 +55,18 @@ export default async function SavingsPage({
       <EntryForm
         action={action}
         defaultDate={toIsoDate()}
-        submitLabel="Add savings"
+        submitLabel={tr("money.addSavings")}
       />
 
       <MoneyList
         amountTone="moss"
-        emptyTitle="No savings this month"
-        emptyDescription="Record a transfer when you move money into a goal."
+        emptyTitle={tr("money.noSavings")}
+        emptyDescription={tr("money.noSavingsBody")}
         items={savings.map((row) => ({
           id: row.id,
           title: row.title,
-          meta: `${toIsoDate(row.savedOn)}${isUpcomingDate(row.savedOn) ? " · Upcoming" : ""} · added by ${actorLabel(row.createdBy)}`,
-          amount: formatCurrency(row.amount, workspace.currency),
+          meta: `${toIsoDate(row.savedOn)}${isUpcomingDate(row.savedOn) ? ` · ${upcomingTag}` : ""} · added by ${actorLabel(row.createdBy)}`,
+          amount: formatCurrency(row.amount, workspace.currency, locale),
           action: (
             <EntryRowActions
               type="savings"

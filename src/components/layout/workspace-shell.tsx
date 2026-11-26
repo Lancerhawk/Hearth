@@ -6,6 +6,8 @@ import { useState, useSyncExternalStore } from "react";
 import type { SettingsActionState } from "@/actions/settings";
 import { logoutAction } from "@/actions/auth";
 import { BrandMark } from "@/components/design/brand-mark";
+import { LocaleToggle } from "@/components/i18n/locale-toggle";
+import { useLocale, useT } from "@/components/i18n/locale-provider";
 import { NavLink } from "@/components/layout/nav-link";
 import { NotificationsPanel } from "@/components/layout/notifications-panel";
 import { RouteWarmer } from "@/components/layout/route-warmer";
@@ -120,17 +122,21 @@ export function WorkspaceShell({
   ) => Promise<SettingsActionState>;
   children: React.ReactNode;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
+  const fundsLabel =
+    moneyInLabel === "Income" ? t("nav.income") : t("nav.funds");
   const links = [
-    { href: "dashboard", label: "Dashboard" },
-    { href: "month", label: "Month" },
-    { href: "income", label: moneyInLabel },
-    { href: "expenses", label: "Expenses" },
-    { href: "savings", label: "Savings" },
-    { href: "charges", label: "Charges" },
-    { href: "bills", label: "Bills" },
-    { href: "members", label: "Members" },
-    { href: "categories", label: "Categories" },
-    { href: "statements/preview", label: "Statement" },
+    { href: "dashboard", label: t("nav.dashboard") },
+    { href: "month", label: t("nav.month") },
+    { href: "income", label: fundsLabel },
+    { href: "expenses", label: t("nav.expenses") },
+    { href: "savings", label: t("nav.savings") },
+    { href: "charges", label: t("nav.charges") },
+    { href: "bills", label: t("nav.bills") },
+    { href: "members", label: t("nav.members") },
+    { href: "categories", label: t("nav.categories") },
+    { href: "statements/preview", label: t("nav.statements") },
   ];
 
   const base = `/app/${workspaceSlug}`;
@@ -264,26 +270,26 @@ export function WorkspaceShell({
               aria-label="Workspace actions"
               className="flex h-9 shrink-0 items-center gap-1"
             >
+              <LocaleToggle
+                locale={locale}
+                className="mr-1 hidden sm:inline-flex"
+              />
               <Link
                 href="/app"
                 prefetch
-                title="Workspaces"
-                aria-label="Workspaces"
+                title={t("nav.workspaces")}
+                aria-label={t("nav.workspaces")}
                 className={cn(topbarIcon, "w-auto min-w-8 gap-1.5 px-2.5")}
               >
                 <LayoutGrid className="size-3.5 shrink-0" aria-hidden />
                 <span className="hidden text-xs font-medium leading-none sm:inline">
-                  Spaces
+                  {t("nav.workspaces")}
                 </span>
               </Link>
               <button
                 type="button"
-                title="Notifications"
-                aria-label={
-                  unreadCount > 0
-                    ? `Notifications, ${unreadCount} unread`
-                    : "Notifications"
-                }
+                title={t("nav.alerts")}
+                aria-label={t("nav.alerts")}
                 onClick={() => setPanel("notifications")}
                 className={cn(
                   topbarIcon,
@@ -298,8 +304,8 @@ export function WorkspaceShell({
               </button>
               <button
                 type="button"
-                title="Settings"
-                aria-label="Settings"
+                title={t("nav.settings")}
+                aria-label={t("nav.settings")}
                 onClick={() => setPanel("settings")}
                 className={cn(
                   topbarIcon,
@@ -315,8 +321,8 @@ export function WorkspaceShell({
               <form action={logoutAction} className="contents">
                 <button
                   type="submit"
-                  title="Sign out"
-                  aria-label="Sign out"
+                  title={t("nav.signOut")}
+                  aria-label={t("nav.signOut")}
                   className={topbarIcon}
                 >
                   <LogOut className="size-3.5" aria-hidden />
@@ -365,12 +371,14 @@ export function WorkspaceShell({
         >
           <SheetHeader className="shrink-0 border-b border-border/60 bg-[color-mix(in_srgb,var(--hearth-paper)_55%,white)] px-5 py-4 pr-12">
             <SheetTitle className="font-heading text-xl tracking-tight text-hearth-ink">
-              {panel === "settings" ? "Settings" : "Alerts"}
+              {panel === "settings"
+                ? t("settings.title")
+                : t("notifications.title")}
             </SheetTitle>
             <SheetDescription className="text-hearth-ink/55">
               {panel === "settings"
-                ? "Workspace and profile preferences."
-                : "Invites, bills, and budget warnings."}
+                ? t("settings.description")
+                : t("notifications.description")}
             </SheetDescription>
           </SheetHeader>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5">

@@ -10,6 +10,8 @@ import { QuietList, QuietListItem } from "@/components/design/quiet-list";
 import { SectionTitle } from "@/components/design/section-title";
 import { InviteForm } from "@/components/members/invite-form";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { requireMembership } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
 
@@ -21,6 +23,8 @@ export default async function MembersPage({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
+  const dict = await getDictionary(await getLocale());
+  const tr = (path: string) => t(dict, path);
   const { workspace, membership } = await requireMembership(workspaceSlug);
   const canAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
   const isOwner = membership.role === "OWNER";
@@ -44,14 +48,14 @@ export default async function MembersPage({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Members"
-        description="Family access, roles, and invites for this household."
+        title={tr("members.title")}
+        description={tr("members.description")}
       />
 
       {canAdmin ? <InviteForm action={invite} /> : null}
 
       <section className="space-y-3">
-        <SectionTitle>Household</SectionTitle>
+        <SectionTitle>{tr("members.title")}</SectionTitle>
         <QuietList>
           {members.map((m) => (
             <QuietListItem key={m.id}>
@@ -118,7 +122,7 @@ export default async function MembersPage({
 
       {canAdmin ? (
         <section className="space-y-3">
-          <SectionTitle>Pending invites</SectionTitle>
+          <SectionTitle>{tr("members.pending")}</SectionTitle>
           {invites.length === 0 ? (
             <p className="text-sm text-hearth-ink/55">No pending invites.</p>
           ) : (

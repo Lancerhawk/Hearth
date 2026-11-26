@@ -7,6 +7,8 @@ import { CategoryForm } from "@/components/categories/category-form";
 import { PageHeader } from "@/components/design/page-header";
 import { QuietList, QuietListItem } from "@/components/design/quiet-list";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { getDictionary, t } from "@/i18n/get-dictionary";
+import { getLocale } from "@/i18n/get-locale";
 import { requireMembership } from "@/lib/budget/access";
 import { prisma } from "@/lib/prisma";
 
@@ -18,6 +20,8 @@ export default async function CategoriesPage({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
+  const dict = await getDictionary(await getLocale());
+  const tr = (path: string) => t(dict, path);
   const { workspace, membership } = await requireMembership(workspaceSlug);
   const canAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
   const categories = await prisma.category.findMany({
@@ -29,8 +33,8 @@ export default async function CategoriesPage({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Categories"
-        description="Organize expenses and charges across the household."
+        title={tr("categories.title")}
+        description={tr("categories.description")}
       />
 
       {canAdmin ? <CategoryForm action={create} /> : null}
@@ -46,7 +50,9 @@ export default async function CategoriesPage({
               <div>
                 <p className="font-medium text-hearth-ink">{c.name}</p>
                 <p className="text-xs text-hearth-ink/55">
-                  {c.type.toLowerCase()}
+                  {c.type === "EXPENSE"
+                    ? tr("categories.typeExpense")
+                    : tr("categories.typeCharge")}
                 </p>
               </div>
             </div>
@@ -60,9 +66,9 @@ export default async function CategoriesPage({
                 <PendingSubmitButton
                   size="sm"
                   variant="ghost"
-                  pendingLabel="Deleting…"
+                  pendingLabel={tr("common.loading")}
                 >
-                  Delete
+                  {tr("common.delete")}
                 </PendingSubmitButton>
               </form>
             ) : null}

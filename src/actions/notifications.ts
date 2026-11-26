@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { differenceInCalendarDays, startOfDay } from "date-fns";
 import { requireMembership, requireUser } from "@/lib/budget/access";
+import { isLocale, type Locale } from "@/i18n/config";
+import { dictionaryFor, t } from "@/i18n/get-dictionary";
 import { billDueBody } from "@/lib/notifications/format";
 import { billAlertSourceKey } from "@/lib/notifications/source-key";
 import { prisma } from "@/lib/prisma";
@@ -115,7 +117,7 @@ export async function syncBillNotifications(
     }),
     prisma.workspaceMembership.findMany({
       where: { workspaceId },
-      select: { userId: true },
+      select: { userId: true, user: { select: { locale: true } } },
     }),
   ]);
 
@@ -127,15 +129,19 @@ export async function syncBillNotifications(
     else if (days <= 3) type = "BILL_DUE_SOON";
     if (!type) continue;
 
-    const title =
-      type === "BILL_OVERDUE"
-        ? `${instance.recurringBill.name} is overdue`
-        : `${instance.recurringBill.name} due soon`;
-    const body = billDueBody(days, due);
     const sourceKey = billAlertSourceKey(instance.id, type);
     const href = `/app/${workspaceSlug}/bills`;
 
     for (const member of members) {
+      const locale: Locale = isLocale(member.user.locale)
+        ? member.user.locale
+        : "en";
+      const dict = dictionaryFor(locale);
+      const title =
+        type === "BILL_OVERDUE"
+          ? `${instance.recurringBill.name} · ${t(dict, "system.billOverdue")}`
+          : `${instance.recurringBill.name} · ${t(dict, "system.billDueSoon")}`;
+      const body = billDueBody(days, due, { locale, dict });
       await prisma.notification.upsert({
         where: {
           userId_sourceKey: {
